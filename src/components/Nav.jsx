@@ -41,11 +41,24 @@ export default function Nav() {
             padding: 0,
           }}
         >
-          <img
-            src="/logo.png"
-            alt="DTU Cricket Club"
-            style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 4 }}
-          />
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            boxShadow: '0 1px 4px rgba(0,0,0,.25)',
+            overflow: 'hidden',
+          }}>
+            <img
+              src="/logo.png"
+              alt="DTU Cricket Club"
+              style={{ width: 40, height: 40, objectFit: 'contain' }}
+            />
+          </div>
           <div>
             <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>
               Tamil United CC
