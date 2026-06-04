@@ -52,10 +52,11 @@ function FormDots({ w, l, p }) {
 }
 
 export default function LeagueTable() {
-  const [teams, setTeams]     = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [teams, setTeams]         = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
   const [updatedAt, setUpdatedAt] = useState(null)
+  const [source, setSource]       = useState(null)
 
   useEffect(() => {
     fetch('/api/league-table')
@@ -63,6 +64,7 @@ export default function LeagueTable() {
       .then(d => {
         setTeams(d.teams || [])
         setUpdatedAt(d.updatedAt)
+        setSource(d.source)
         setLoading(false)
       })
       .catch(e => { setError(e.message); setLoading(false) })
@@ -80,11 +82,20 @@ export default function LeagueTable() {
           </div>
           <div style={{ fontSize: 11, color: C.gray3, marginTop: 2 }}>British Tamil Cricket League</div>
         </div>
-        {updatedAt && (
-          <span style={{ fontSize: 11, color: C.gray3 }}>
-            Updated {new Date(updatedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {source === 'live' && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, color: C.ok, fontWeight: 600 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.ok, animation: 'pendingPulse 1.8s ease-in-out infinite', display: 'inline-block' }} />
+              Live
+            </span>
+          )}
+          {updatedAt && (
+            <span style={{ fontSize: 11, color: C.gray3 }}>
+              {source === 'fallback' ? 'As of ' : 'Updated '}
+              {new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Table card */}
