@@ -43,7 +43,7 @@ export default function AdminDashboard() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 22 }}>🏏</span>
+            <img src="/logo.png" alt="DTU CC" style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 4 }} />
             <div>
               <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 13 }}>Tamil United CC</div>
               <div style={{ color: 'rgba(255,255,255,.45)', fontFamily: FONT, fontSize: 10, lineHeight: 1 }}>

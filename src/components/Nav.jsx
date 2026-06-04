@@ -41,7 +41,11 @@ export default function Nav() {
             padding: 0,
           }}
         >
-          <span style={{ fontSize: 24 }}>🏏</span>
+          <img
+            src="/logo.png"
+            alt="DTU Cricket Club"
+            style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 4 }}
+          />
           <div>
             <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>
               Tamil United CC
