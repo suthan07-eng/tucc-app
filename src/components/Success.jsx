@@ -5,17 +5,20 @@ import Nav from './Nav'
 import Footer from './Footer'
 import Button from './ui/Button'
 
+const EASE_OUT = [0.23, 1, 0.32, 1]
+
 const staggerList = {
   hidden:  {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 }
 const fadeUp = {
-  hidden:  { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } },
+  hidden:  { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE_OUT } },
 }
+// Nothing in the real world appears from nothing — start at 0.85, not 0.5
 const popIn = {
-  hidden:  { opacity: 0, scale: 0.5 },
-  visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 18 } },
+  hidden:  { opacity: 0, scale: 0.85 },
+  visible: { opacity: 1, scale: 1, transition: { type: 'spring', duration: 0.5, bounce: 0.3 } },
 }
 
 export default function Success() {

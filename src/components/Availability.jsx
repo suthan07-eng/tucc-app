@@ -11,22 +11,24 @@ import Field, { Input, Textarea, Select } from './ui/Field'
 import Avatar from './ui/Avatar'
 import { useToast } from './Toast'
 
+const EASE_OUT = [0.23, 1, 0.32, 1]
+
 const fadeUp = {
-  hidden:  { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  hidden:  { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE_OUT } },
 }
 const staggerList = {
   hidden:  {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.055, delayChildren: 0.04 } },
 }
 const staggerItem = {
-  hidden:  { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  hidden:  { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
 }
 const stepVariants = {
-  hidden:  { opacity: 0, x: 30 },
-  visible: { opacity: 1, x: 0,  transition: { duration: 0.35, ease: 'easeOut' } },
-  exit:    { opacity: 0, x: -30, transition: { duration: 0.2 } },
+  hidden:  { opacity: 0, x: 24 },
+  visible: { opacity: 1, x: 0,  transition: { duration: 0.28, ease: EASE_OUT } },
+  exit:    { opacity: 0, x: -24, transition: { duration: 0.16 } },
 }
 
 function fmtDate(d) {

@@ -1,6 +1,35 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { C, FONT, MAX_WIDTH } from '../constants'
 
+// Nav hover/active styles
+const STYLE_ID = 'tucc-nav-styles'
+if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
+  const el = document.createElement('style')
+  el.id = STYLE_ID
+  el.textContent = `
+    .tucc-nav-btn {
+      transition: color 150ms ease, background 150ms ease !important;
+      border-radius: 8px;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .tucc-nav-btn:hover {
+        background: rgba(255,255,255,.1) !important;
+      }
+    }
+    .tucc-nav-btn:active {
+      transform: scale(0.96);
+      background: rgba(255,255,255,.15) !important;
+    }
+    .tucc-admin-btn {
+      transition: background 150ms ease, color 150ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1) !important;
+    }
+    .tucc-admin-btn:active {
+      transform: scale(0.96) !important;
+    }
+  `
+  document.head.appendChild(el)
+}
+
 export default function Nav() {
   const nav = useNavigate()
   const { pathname } = useLocation()
@@ -73,12 +102,13 @@ export default function Nav() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button
               onClick={() => nav('/league')}
+              className="tucc-nav-btn"
               style={{
                 color: isLeague ? C.gold : 'rgba(255,255,255,.75)',
-                background: 'none',
+                background: isLeague ? 'rgba(255,255,255,.1)' : 'none',
                 border: 'none',
                 borderBottom: `2px solid ${isLeague ? C.gold : 'transparent'}`,
-                padding: '4px 4px 2px',
+                padding: '4px 10px 2px',
                 cursor: 'pointer',
                 fontFamily: FONT,
                 fontWeight: isLeague ? 700 : 500,
@@ -89,12 +119,13 @@ export default function Nav() {
             </button>
             <button
               onClick={() => nav('/stats')}
+              className="tucc-nav-btn"
               style={{
                 color: isStats ? C.gold : 'rgba(255,255,255,.75)',
-                background: 'none',
+                background: isStats ? 'rgba(255,255,255,.1)' : 'none',
                 border: 'none',
                 borderBottom: `2px solid ${isStats ? C.gold : 'transparent'}`,
-                padding: '4px 4px 2px',
+                padding: '4px 10px 2px',
                 cursor: 'pointer',
                 fontFamily: FONT,
                 fontWeight: isStats ? 700 : 500,
@@ -105,6 +136,7 @@ export default function Nav() {
             </button>
             <button
               onClick={() => nav('/admin/login')}
+              className="tucc-admin-btn"
               style={{
                 color: C.gold,
                 background: 'transparent',

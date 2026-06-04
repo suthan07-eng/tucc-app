@@ -7,26 +7,29 @@ import Nav from './Nav'
 import Footer from './Footer'
 import { Skeleton } from './ui/Loader'
 
+const EASE_OUT   = [0.23, 1, 0.32, 1]
+const EASE_SPRING = { type: 'spring', duration: 0.38, bounce: 0.15 }
+
 const fadeUp = {
-  hidden:  { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  hidden:  { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE_OUT } },
 }
 const staggerList = {
   hidden:  {},
-  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.055, delayChildren: 0.04 } },
 }
 const staggerItem = {
-  hidden:  { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+  hidden:  { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
 }
 const tabFade = {
-  hidden:  { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0,  transition: { duration: 0.3, ease: 'easeOut' } },
-  exit:    { opacity: 0, y: -10, transition: { duration: 0.15 } },
+  hidden:  { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0,  transition: { duration: 0.22, ease: EASE_OUT } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.14 } },
 }
 const medalVariants = {
   hidden:  { opacity: 0, scale: 0.88 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } },
+  visible: { opacity: 1, scale: 1, transition: EASE_SPRING },
 }
 
 const SEASONS = ['2026', '2025', '2024']
@@ -280,7 +283,7 @@ function MedalCards({ items, primaryKey, primaryLabel, secondaryKey, secondaryLa
   const borderColors = [C.gold, '#d1d5db', '#b45309']
   return (
     <motion.div
-      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
       initial="hidden"
       animate="visible"
       style={{ display: 'flex', gap: 10, marginBottom: 20 }}

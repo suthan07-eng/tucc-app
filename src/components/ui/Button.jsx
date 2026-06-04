@@ -8,11 +8,39 @@ const sizes = {
 }
 
 const variants = {
-  primary: { background: C.green,  color: C.white, border: 'none' },
-  danger:  { background: C.red,    color: C.white, border: 'none' },
+  primary: { background: C.green,       color: C.white, border: 'none' },
+  danger:  { background: C.red,         color: C.white, border: 'none' },
   ghost:   { background: 'transparent', color: C.green, border: `1.5px solid ${C.green}` },
-  subtle:  { background: C.greenBg, color: C.green, border: 'none' },
-  gold:    { background: C.gold,   color: C.dark,  border: 'none' },
+  subtle:  { background: C.greenBg,     color: C.green, border: 'none' },
+  gold:    { background: C.gold,        color: C.dark,  border: 'none' },
+}
+
+// Inject global button active/hover styles once
+const STYLE_ID = 'tucc-button-styles'
+if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
+  const el = document.createElement('style')
+  el.id = STYLE_ID
+  el.textContent = `
+    .tucc-btn {
+      transition: transform 160ms cubic-bezier(0.23,1,0.32,1),
+                  opacity 150ms ease,
+                  box-shadow 150ms ease,
+                  background 150ms ease !important;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .tucc-btn:not(:disabled):hover {
+        filter: brightness(1.07);
+        box-shadow: 0 4px 12px rgba(0,0,0,.15) !important;
+        transform: translateY(-1px);
+      }
+    }
+    .tucc-btn:not(:disabled):active {
+      transform: scale(0.97) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,.10) !important;
+      filter: brightness(0.97);
+    }
+  `
+  document.head.appendChild(el)
 }
 
 export default function Button({
@@ -24,6 +52,7 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
+      className="tucc-btn"
       style={{
         fontFamily: FONT,
         borderRadius: 12,
@@ -34,7 +63,6 @@ export default function Button({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        transition: 'opacity .15s, box-shadow .15s',
         opacity: disabled ? 0.55 : 1,
         boxShadow: disabled ? 'none' : '0 1px 4px rgba(0,0,0,.10)',
         ...sizes[size],
