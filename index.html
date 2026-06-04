@@ -46,6 +46,33 @@
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
 
+      /* ── Mobile responsiveness ───────────────────────── */
+
+      /* Prevent horizontal scroll on all screens */
+      html, body { overflow-x: hidden; width: 100%; }
+
+      /* Fluid images */
+      img { max-width: 100%; height: auto; }
+
+      /* On very small screens (< 360px), tighten padding */
+      @media (max-width: 360px) {
+        body { font-size: 14px; }
+      }
+
+      /* Nav: shrink text on small phones */
+      @media (max-width: 400px) {
+        .tucc-nav-brand-text { display: none; }
+      }
+
+      /* Touch-friendly tap targets — at least 44px */
+      button, a, [role="button"] {
+        min-height: 36px;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Smooth momentum scrolling on iOS */
+      * { -webkit-overflow-scrolling: touch; }
+
       /* Accessibility: reduce motion for users who prefer it */
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {

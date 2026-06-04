@@ -3,8 +3,8 @@ import { motion, MotionConfig } from 'framer-motion'
 import { C, FONT, MAX_WIDTH } from '../constants'
 
 const NAV_LINKS = [
-  { path: '/league', label: '🏆 League' },
-  { path: '/stats',  label: '📊 Stats'  },
+  { path: '/league', label: '🏆 League', shortLabel: 'League' },
+  { path: '/stats',  label: '📊 Stats',  shortLabel: 'Stats'  },
 ]
 
 export default function Nav() {
@@ -68,7 +68,7 @@ export default function Nav() {
               style={{ width: 40, height: 40, objectFit: 'contain' }}
             />
           </div>
-          <div>
+          <div className="tucc-nav-brand-text">
             <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>
               Tamil United CC
             </div>
