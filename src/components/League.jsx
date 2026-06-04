@@ -180,7 +180,9 @@ function FallbackCard() {
           textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🏏</div>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.15)', overflow: 'hidden' }}>
+          <img src="/logo.png" alt="DTU CC" style={{ width: 72, height: 72, objectFit: 'contain' }} />
+        </div>
         <div style={{ color: C.gold, fontWeight: 800, fontSize: 18, letterSpacing: 0.4 }}>
           BTCL UK League
         </div>

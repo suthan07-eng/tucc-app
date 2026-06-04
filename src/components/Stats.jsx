@@ -85,7 +85,9 @@ function MatchLogContent({ season }) {
   if (!matches.length) {
     return (
       <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>🏏</div>
+        <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.1)', overflow: 'hidden' }}>
+          <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+        </div>
         <div style={{ fontWeight: 700, fontSize: 16, color: C.dark, marginBottom: 6 }}>No match scorecards yet</div>
         <div style={{ color: C.gray3, fontSize: 14 }}>Admin can add match performances under Stats → Match Scorecards.</div>
       </div>

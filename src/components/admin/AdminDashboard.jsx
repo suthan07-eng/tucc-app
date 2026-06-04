@@ -43,7 +43,9 @@ export default function AdminDashboard() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src="/logo.png" alt="DTU CC" style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 4 }} />
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,.25)', overflow: 'hidden' }}>
+              <img src="/logo.png" alt="DTU CC" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+            </div>
             <div>
               <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 13 }}>Tamil United CC</div>
               <div style={{ color: 'rgba(255,255,255,.45)', fontFamily: FONT, fontSize: 10, lineHeight: 1 }}>

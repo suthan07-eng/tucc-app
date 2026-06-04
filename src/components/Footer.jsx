@@ -25,7 +25,9 @@ export default function Footer() {
       <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
         {/* Brand row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <span style={{ fontSize: 28 }}>🏏</span>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,.25)', overflow: 'hidden' }}>
+            <img src="/logo.png" alt="DTU CC" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+          </div>
           <div>
             <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 15, letterSpacing: 0.3 }}>
               Tamil United CC

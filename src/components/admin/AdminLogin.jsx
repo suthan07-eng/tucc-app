@@ -70,7 +70,9 @@ export default function AdminLogin() {
           transition={{ duration: 0.4, delay: 0.1 }}
           style={{ textAlign: 'center', marginBottom: 28 }}
         >
-          <div style={{ fontSize: 44, marginBottom: 10 }}>🏏</div>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.12)', overflow: 'hidden' }}>
+            <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+          </div>
           <h1 style={{ fontSize: 21, fontWeight: 800, color: C.dark, margin: 0 }}>Admin Login</h1>
           <p style={{ color: C.gray3, fontSize: 13, marginTop: 6 }}>Tamil United Cricket Club</p>
         </motion.div>

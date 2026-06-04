@@ -94,7 +94,9 @@ export default function Register() {
         }}
       >
         <motion.div variants={staggerList} initial="hidden" animate="visible">
-          <motion.div variants={fadeUp} style={{ fontSize: 48, marginBottom: 10 }}>🏏</motion.div>
+          <motion.div variants={fadeUp} style={{ width: 72, height: 72, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.15)', overflow: 'hidden' }}>
+            <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+          </motion.div>
           <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 24, fontWeight: 800, margin: 0 }}>
             Join Tamil United CC
           </motion.h1>
