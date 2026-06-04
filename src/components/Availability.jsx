@@ -382,20 +382,59 @@ export default function Availability() {
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-                <button
-                  onClick={() => { setAvailable(true); setErrors({}) }}
-                  style={{ padding: '22px 16px', borderRadius: 14, border: `2px solid ${available === true ? C.ok : C.gray2}`, background: available === true ? C.okBg : C.white, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'border-color .15s, background .15s' }}
-                >
-                  <span style={{ fontSize: 34 }}>✅</span>
-                  <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: available === true ? C.ok : C.gray5 }}>Yes, I'm in!</span>
-                </button>
-                <button
-                  onClick={() => { setAvailable(false); setErrors({}) }}
-                  style={{ padding: '22px 16px', borderRadius: 14, border: `2px solid ${available === false ? C.red : C.gray2}`, background: available === false ? C.redBg : C.white, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'border-color .15s, background .15s' }}
-                >
-                  <span style={{ fontSize: 34 }}>❌</span>
-                  <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: available === false ? C.red : C.gray5 }}>Can't make it</span>
-                </button>
+                {[
+                  { value: true,  emoji: '✅', label: "Yes, I'm in", activeColor: C.ok,  activeBg: C.okBg,  activeBorder: '#86efac' },
+                  { value: false, emoji: '❌', label: "Can't make it", activeColor: C.red, activeBg: C.redBg, activeBorder: '#fca5a5' },
+                ].map(({ value, emoji, label, activeColor, activeBg, activeBorder }) => {
+                  const isActive = available === value
+                  return (
+                    <motion.button
+                      key={label}
+                      onClick={() => { setAvailable(value); setErrors({}) }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ type: 'spring', duration: 0.25, bounce: 0.1 }}
+                      style={{
+                        padding: '22px 16px',
+                        borderRadius: 16,
+                        border: `2px solid ${isActive ? activeBorder : C.gray2}`,
+                        background: isActive ? activeBg : C.white,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 8,
+                        transition: 'border-color 180ms cubic-bezier(0.23,1,0.32,1), background 180ms cubic-bezier(0.23,1,0.32,1), box-shadow 180ms ease',
+                        boxShadow: isActive ? `0 0 0 3px ${activeBorder}40` : 'none',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <span style={{ fontSize: 34, lineHeight: 1 }}>{emoji}</span>
+                      <span style={{
+                        fontFamily: FONT, fontWeight: 700, fontSize: 15,
+                        color: isActive ? activeColor : C.gray5,
+                        transition: 'color 180ms ease',
+                      }}>{label}</span>
+                      {isActive && (
+                        <motion.span
+                          layoutId="availability-check"
+                          style={{
+                            position: 'absolute', top: 8, right: 8,
+                            width: 18, height: 18, borderRadius: '50%',
+                            background: activeColor,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 10, color: '#fff', fontWeight: 800,
+                          }}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', duration: 0.3, bounce: 0.3 }}
+                        >
+                          ✓
+                        </motion.span>
+                      )}
+                    </motion.button>
+                  )
+                })}
               </div>
 
               {available === false && (
