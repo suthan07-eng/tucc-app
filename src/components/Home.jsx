@@ -10,6 +10,7 @@ import Card from './ui/Card'
 import Button from './ui/Button'
 import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
+import LeagueTable from './LeagueTable'
 
 function fmtDate(d) {
   if (!d) return ''
@@ -408,6 +409,9 @@ export default function Home() {
             </table>
           </Card>
         )}
+
+        {/* ── League Table ── */}
+        <LeagueTable />
 
         {/* ── Upcoming & Recent Matches ── */}
         {!loading && allMatches.length > 0 && (
