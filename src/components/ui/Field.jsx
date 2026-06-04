@@ -21,17 +21,18 @@ export default function Field({ label, error, required, hint, children, style })
 }
 
 const inputBase = (error) => ({
-  height: 46,
+  height: 48,
   padding: '0 14px',
   border: `1.5px solid ${error ? C.red : C.gray2}`,
-  borderRadius: 10,
+  borderRadius: 12,
   fontFamily: FONT,
   fontSize: 15,
+  fontWeight: 500,
   color: C.dark,
   background: C.white,
   width: '100%',
   outline: 'none',
-  transition: 'border-color .15s',
+  transition: 'border-color .15s, box-shadow .15s',
   boxSizing: 'border-box',
 })
 

@@ -1,26 +1,38 @@
 export const C = {
+  // Primary greens — slightly more saturated and vivid
   green:      '#1a5c38',
   greenDark:  '#0f3825',
   greenLight: '#22744a',
-  greenBg:    '#e8f5ee',
-  gold:       '#f5a623',
+  greenBg:    '#e6f4ed',
+
+  // Gold — slightly richer, less orange
+  gold:       '#e9a020',
+
+  // Neutrals — warm-tinted grays (consistent hue, not mixed warm/cool)
   white:      '#ffffff',
-  bg:         '#f2f7f4',
-  gray1:      '#f3f4f6',
-  gray2:      '#e5e7eb',
-  gray3:      '#9ca3af',
-  gray4:      '#6b7280',
-  gray5:      '#374151',
-  dark:       '#111827',
-  red:        '#dc2626',
-  redBg:      '#fef2f2',
-  ok:         '#16a34a',
-  okBg:       '#f0fdf4',
+  bg:         '#f0f6f3',   // slight green tint for cohesion
+  gray1:      '#f1f5f2',   // green-tinted light gray
+  gray2:      '#dde8e2',   // green-tinted border
+  gray3:      '#8fa898',   // muted green-gray
+  gray4:      '#5c7468',   // medium green-gray
+  gray5:      '#2d3f38',   // dark green-gray (replaces blue-gray #374151)
+  dark:       '#0f1f19',   // near-black with green tint
+
+  // Semantic
+  red:        '#c8302a',
+  redBg:      '#fdf1f0',
+  ok:         '#15803d',
+  okBg:       '#edfaf3',
   blue:       '#2563eb',
   blueBg:     '#eff6ff',
+
+  // Shadows — tinted with green hue instead of pure black
+  shadow:     'rgba(15, 56, 37, 0.08)',
+  shadowMd:   'rgba(15, 56, 37, 0.12)',
+  shadowLg:   'rgba(15, 56, 37, 0.18)',
 }
 
-export const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+export const FONT = "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 export const ROLES = ['Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper', 'Fielder']
 

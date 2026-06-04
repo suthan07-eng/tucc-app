@@ -126,7 +126,14 @@ export default function Home() {
       <Nav />
 
       {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg, ${C.greenDark} 0%, ${C.green} 100%)`, padding: '36px 20px 52px' }}>
+      <div style={{
+        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+        padding: '36px 20px 56px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle noise texture for depth */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`, pointerEvents: 'none', opacity: 0.6 }} />
         <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -136,10 +143,10 @@ export default function Home() {
             </div>
           ) : match ? (
             <motion.div variants={staggerList} initial="hidden" animate="visible">
-              <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
-                🏏 {match.format || 'T20'} · Active Match
+              <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10, opacity: 0.9 }}>
+                🏏 {match.format || 'T20'} · Active match
               </motion.div>
-              <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 28, fontWeight: 800, margin: 0, lineHeight: 1.2 }}>
+              <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 30, fontWeight: 900, margin: 0, lineHeight: 1.15, letterSpacing: -0.5, textWrap: 'balance' }}>
                 Tamil United CC vs {match.opponent || 'TBC'}
               </motion.h1>
               <motion.div variants={fadeUp} style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
@@ -210,8 +217,8 @@ export default function Home() {
                 </div>
               ) : (
                 <>
-                  <div style={{ fontSize: 32, fontWeight: 900, color, lineHeight: 1 }}>{count}</div>
-                  <div style={{ fontSize: 11, color: C.gray3, fontWeight: 600, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+                  <div style={{ fontSize: 34, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{count}</div>
+                  <div style={{ fontSize: 10, color: C.gray3, fontWeight: 600, marginTop: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
                 </>
               )}
             </Card>

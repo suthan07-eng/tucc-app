@@ -5,8 +5,8 @@ export default function Card({ children, style, ...props }) {
     <div
       style={{
         background: C.white,
-        borderRadius: 16,
-        boxShadow: '0 2px 16px rgba(0,0,0,.07)',
+        borderRadius: 18,
+        boxShadow: `0 2px 12px ${C.shadow}, 0 1px 3px ${C.shadowMd}`,
         border: `1px solid ${C.gray2}`,
         padding: 24,
         ...style,

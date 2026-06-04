@@ -1,10 +1,10 @@
 import { C, FONT } from '../../constants'
 
 const sizes = {
-  sm:   { padding: '8px 16px',  fontSize: 13, minHeight: 36 },
-  md:   { padding: '10px 20px', fontSize: 15, minHeight: 44 },
-  lg:   { padding: '14px 28px', fontSize: 16, minHeight: 48 },
-  full: { padding: '14px 28px', fontSize: 16, minHeight: 48, width: '100%' },
+  sm:   { padding: '7px 16px',  fontSize: 13, minHeight: 34, letterSpacing: 0.1 },
+  md:   { padding: '10px 22px', fontSize: 15, minHeight: 44, letterSpacing: 0.1 },
+  lg:   { padding: '13px 28px', fontSize: 16, minHeight: 50, letterSpacing: 0.1 },
+  full: { padding: '13px 28px', fontSize: 16, minHeight: 50, width: '100%', letterSpacing: 0.1 },
 }
 
 const variants = {
@@ -63,8 +63,8 @@ export default function Button({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        opacity: disabled ? 0.55 : 1,
-        boxShadow: disabled ? 'none' : '0 1px 4px rgba(0,0,0,.10)',
+        opacity: disabled ? 0.5 : 1,
+        boxShadow: disabled ? 'none' : `0 1px 4px ${C.shadow}, 0 0 0 0 transparent`,
         ...sizes[size],
         ...variants[variant],
         ...style,

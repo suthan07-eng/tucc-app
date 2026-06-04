@@ -5,15 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tamil United Cricket Club</title>
     <meta name="description" content="Tamil United Cricket Club — Player Availability App" />
+    <meta property="og:title" content="Tamil United Cricket Club" />
+    <meta property="og:description" content="Player availability, team selection and stats for Tamil United CC — Plymouth, Devon" />
+    <meta name="theme-color" content="#0f3825" />
+
+    <!-- Outfit — clean, modern variable font with personality -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { background: #f2f7f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      body { background: #f0f6f3; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      /* Tabular nums for all numeric data */
+      .num { font-variant-numeric: tabular-nums; }
+      /* Smooth scroll */
+      html { scroll-behavior: smooth; }
+      /* Skip to content for accessibility */
+      .skip-link { position: absolute; top: -40px; left: 0; background: #0f3825; color: #fff; padding: 8px 16px; z-index: 9999; border-radius: 0 0 8px 0; }
+      .skip-link:focus { top: 0; }
       a { color: inherit; }
       input, select, textarea, button { font-family: inherit; }
       input:focus, select:focus, textarea:focus {
         outline: none;
         border-color: #1a5c38 !important;
-        box-shadow: 0 0 0 3px rgba(26, 92, 56, 0.12);
+        box-shadow: 0 0 0 3.5px rgba(26, 92, 56, 0.14), 0 1px 3px rgba(15, 56, 37, 0.08);
       }
       @keyframes shimmer {
         0%   { background-position: 200% 0; }
