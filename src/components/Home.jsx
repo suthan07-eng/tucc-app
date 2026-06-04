@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../supabase'
@@ -74,8 +74,37 @@ export default function Home() {
   const [responses, setResponses] = useState([])
   const [teamSelection, setTeamSelection] = useState([])
   const [loading, setLoading] = useState(true)
+  const [newResponseIds, setNewResponseIds] = useState(new Set())
+  const prevCounts = useRef({ available: 0, unavailable: 0, pending: 0 })
+  const matchIdRef = useRef(null)
 
   useEffect(() => { load() }, [])
+
+  // ── Real-time subscription (Direction B) ──────────────
+  useEffect(() => {
+    if (!matchIdRef.current) return
+    const channel = supabase
+      .channel('home-availability-live')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'availability',
+        filter: `match_id=eq.${matchIdRef.current}`,
+      }, (payload) => {
+        setResponses(prev => {
+          const next = prev.filter(r => r.player_id !== payload.new?.player_id)
+          if (payload.eventType !== 'DELETE') next.push(payload.new)
+          // Mark newly arrived player id for chip spring-in
+          if (payload.eventType === 'INSERT' && payload.new?.player_id) {
+            setNewResponseIds(ids => new Set([...ids, payload.new.player_id]))
+            setTimeout(() => {
+              setNewResponseIds(ids => { const s = new Set(ids); s.delete(payload.new.player_id); return s })
+            }, 1200)
+          }
+          return next
+        })
+      })
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [match?.id])
 
   async function load() {
     setLoading(true)
@@ -87,6 +116,7 @@ export default function Home() {
     const active = matches.find((m) => m.is_active) || null
     setAllMatches(matches)
     setMatch(active)
+    matchIdRef.current = active?.id ?? null
     setPlayers(ps || [])
     if (active) {
       const [{ data: rs }, { data: ts }] = await Promise.all([
@@ -109,6 +139,14 @@ export default function Home() {
   const countUnavailable = responses.filter((r) => !r.available).length
   const countPending     = players.length - responses.length
 
+  // Detect count changes for flip animation
+  const availChanged   = !loading && countAvailable   !== prevCounts.current.available
+  const unavailChanged = !loading && countUnavailable !== prevCounts.current.unavailable
+  const pendingChanged = !loading && countPending     !== prevCounts.current.pending
+  useEffect(() => {
+    if (!loading) prevCounts.current = { available: countAvailable, unavailable: countUnavailable, pending: countPending }
+  })
+
   function statusOf(playerId) {
     const r = responses.find((r) => r.player_id === playerId)
     if (!r) return 'pending'
@@ -125,12 +163,15 @@ export default function Home() {
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
-      {/* Hero */}
-      <div style={{
-        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
-        padding: '36px 20px 60px',
-        position: 'relative',
-      }}>
+      {/* Hero — scroll-driven parallax container (Direction C) */}
+      <div
+        className="hero-parallax"
+        style={{
+          background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+          padding: '36px 20px 60px',
+          position: 'relative',
+        }}
+      >
         {/* Subtle noise texture for depth — overflow hidden on this element only, not parent */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', borderRadius: 0 }}>
           <div style={{ position: 'absolute', inset: 0, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`, opacity: 0.6 }} />
@@ -146,6 +187,15 @@ export default function Home() {
             <motion.div variants={staggerList} initial="hidden" animate="visible">
               <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10, opacity: 0.9 }}>
                 🏏 {match.format || 'T20'} · Active match
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, verticalAlign: 'middle' }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: '50%', background: '#4ade80',
+                    display: 'inline-block',
+                    boxShadow: '0 0 0 2px rgba(74,222,128,0.3)',
+                    animation: 'pendingPulse 1.8s ease-in-out infinite',
+                  }} />
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>live</span>
+                </span>
               </motion.div>
               <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 30, fontWeight: 900, margin: 0, lineHeight: 1.15, letterSpacing: -0.5, textWrap: 'balance' }}>
                 Tamil United CC vs {match.opponent || 'TBC'}
@@ -218,7 +268,10 @@ export default function Home() {
                 </div>
               ) : (
                 <>
-                  <div style={{ fontSize: 34, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{count}</div>
+                  <div
+                    className={`count-flip${(label === 'Available' && availChanged) || (label === 'Unavailable' && unavailChanged) || (label === 'Pending' && pendingChanged) ? ' changed' : ''}`}
+                    style={{ fontSize: 34, fontWeight: 900, color, lineHeight: 1 }}
+                  >{count}</div>
                   <div style={{ fontSize: 10, color: C.gray3, fontWeight: 600, marginTop: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
                 </>
               )}
@@ -274,12 +327,32 @@ export default function Home() {
               style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}
             >
               {players.map((p) => {
-                const s = chipColors[statusOf(p.id)]
+                const status = statusOf(p.id)
+                const s = chipColors[status]
+                const isNew = newResponseIds.has(p.id)
                 return (
-                  <motion.div key={p.id} variants={chipItem} style={{ display: 'flex', alignItems: 'center', gap: 6, background: s.bg, border: `1px solid ${s.border}`, borderRadius: 99, padding: '3px 10px 3px 4px', fontSize: 13, fontWeight: 500, color: C.gray5, minHeight: 34 }}>
+                  <motion.div
+                    key={p.id}
+                    variants={chipItem}
+                    animate={isNew ? { scale: [1, 1.12, 1], transition: { duration: 0.45, ease: [0.23,1,0.32,1] } } : {}}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: s.bg,
+                      border: `1px solid ${isNew ? s.dot : s.border}`,
+                      borderRadius: 99,
+                      padding: '3px 10px 3px 4px',
+                      fontSize: 13, fontWeight: 500, color: C.gray5,
+                      minHeight: 34,
+                      boxShadow: isNew ? `0 0 0 3px ${s.dot}40` : 'none',
+                      transition: 'box-shadow 400ms ease, border-color 400ms ease',
+                    }}
+                  >
                     <Avatar name={p.name} size={26} />
                     <span>{p.name.split(' ')[0]}</span>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+                    <span
+                      className={status === 'pending' ? 'chip-pending-dot' : ''}
+                      style={{ width: 7, height: 7, borderRadius: '50%', background: s.dot, flexShrink: 0 }}
+                    />
                   </motion.div>
                 )
               })}
@@ -338,7 +411,7 @@ export default function Home() {
 
         {/* ── Upcoming & Recent Matches ── */}
         {!loading && allMatches.length > 0 && (
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 24 }} className="scroll-reveal">
             <div style={{ fontSize: 14, fontWeight: 700, color: C.gray5, marginBottom: 12 }}>
               Upcoming & Recent Matches
             </div>
