@@ -1,41 +1,18 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { motion, MotionConfig } from 'framer-motion'
 import { C, FONT, MAX_WIDTH } from '../constants'
 
-// Nav hover/active styles
-const STYLE_ID = 'tucc-nav-styles'
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-  const el = document.createElement('style')
-  el.id = STYLE_ID
-  el.textContent = `
-    .tucc-nav-btn {
-      transition: color 150ms ease, background 150ms ease !important;
-      border-radius: 8px;
-    }
-    @media (hover: hover) and (pointer: fine) {
-      .tucc-nav-btn:hover {
-        background: rgba(255,255,255,.1) !important;
-      }
-    }
-    .tucc-nav-btn:active {
-      transform: scale(0.96);
-      background: rgba(255,255,255,.15) !important;
-    }
-    .tucc-admin-btn {
-      transition: background 150ms ease, color 150ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1) !important;
-    }
-    .tucc-admin-btn:active {
-      transform: scale(0.96) !important;
-    }
-  `
-  document.head.appendChild(el)
-}
+const NAV_LINKS = [
+  { path: '/league', label: '🏆 League' },
+  { path: '/stats',  label: '📊 Stats'  },
+]
 
 export default function Nav() {
-  const nav = useNavigate()
+  const nav     = useNavigate()
   const { pathname } = useLocation()
-  const isAdmin  = pathname.startsWith('/admin')
-  const isLeague = pathname === '/league'
-  const isStats  = pathname === '/stats'
+  const isAdmin = pathname.startsWith('/admin')
+
+  const activePath = NAV_LINKS.find(l => l.path === pathname)?.path ?? null
 
   return (
     <nav
@@ -58,8 +35,11 @@ export default function Nav() {
           justifyContent: 'space-between',
         }}
       >
-        <button
+        {/* Logo + brand */}
+        <motion.button
           onClick={() => nav('/')}
+          whileTap={{ scale: 0.96 }}
+          transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -96,47 +76,33 @@ export default function Nav() {
               formerly known as DTU CC
             </div>
           </div>
-        </button>
+        </motion.button>
 
+        {/* Nav links with sliding active indicator */}
         {!isAdmin && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <button
-              onClick={() => nav('/league')}
-              className="tucc-nav-btn"
-              style={{
-                color: isLeague ? C.gold : 'rgba(255,255,255,.75)',
-                background: isLeague ? 'rgba(255,255,255,.1)' : 'none',
-                border: 'none',
-                borderBottom: `2px solid ${isLeague ? C.gold : 'transparent'}`,
-                padding: '4px 10px 2px',
-                cursor: 'pointer',
-                fontFamily: FONT,
-                fontWeight: isLeague ? 700 : 500,
-                fontSize: 13,
-              }}
-            >
-              🏆 League
-            </button>
-            <button
-              onClick={() => nav('/stats')}
-              className="tucc-nav-btn"
-              style={{
-                color: isStats ? C.gold : 'rgba(255,255,255,.75)',
-                background: isStats ? 'rgba(255,255,255,.1)' : 'none',
-                border: 'none',
-                borderBottom: `2px solid ${isStats ? C.gold : 'transparent'}`,
-                padding: '4px 10px 2px',
-                cursor: 'pointer',
-                fontFamily: FONT,
-                fontWeight: isStats ? 700 : 500,
-                fontSize: 13,
-              }}
-            >
-              📊 Stats
-            </button>
-            <button
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <MotionConfig transition={{ type: 'spring', duration: 0.4, bounce: 0.18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {NAV_LINKS.map(({ path, label }) => {
+                  const isActive = pathname === path
+                  return (
+                    <NavItem
+                      key={path}
+                      label={label}
+                      isActive={isActive}
+                      onClick={() => nav(path)}
+                    />
+                  )
+                })}
+              </div>
+            </MotionConfig>
+
+            {/* Admin button */}
+            <motion.button
               onClick={() => nav('/admin/login')}
-              className="tucc-admin-btn"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
               style={{
                 color: C.gold,
                 background: 'transparent',
@@ -147,14 +113,76 @@ export default function Nav() {
                 fontFamily: FONT,
                 fontWeight: 600,
                 fontSize: 12,
-                marginLeft: 4,
+                marginLeft: 6,
               }}
             >
               Admin
-            </button>
+            </motion.button>
           </div>
         )}
       </div>
     </nav>
+  )
+}
+
+function NavItem({ label, isActive, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        position: 'relative',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '6px 12px',
+        fontFamily: FONT,
+        fontSize: 13,
+        fontWeight: isActive ? 700 : 500,
+        color: isActive ? C.gold : 'rgba(255,255,255,.75)',
+        borderRadius: 8,
+        transition: 'color 150ms ease',
+      }}
+      onMouseEnter={e => {
+        if (!isActive) e.currentTarget.style.color = '#fff'
+        e.currentTarget.querySelector('.nav-bg').style.opacity = '1'
+      }}
+      onMouseLeave={e => {
+        if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,.75)'
+        if (!isActive) e.currentTarget.querySelector('.nav-bg').style.opacity = '0'
+      }}
+    >
+      {/* Hover background pill */}
+      <span
+        className="nav-bg"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 8,
+          background: 'rgba(255,255,255,.08)',
+          opacity: isActive ? 1 : 0,
+          transition: 'opacity 150ms ease',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Label */}
+      <span style={{ position: 'relative', zIndex: 1 }}>{label}</span>
+
+      {/* Sliding gold underline */}
+      {isActive && (
+        <motion.span
+          layoutId="nav-indicator"
+          style={{
+            position: 'absolute',
+            bottom: 2,
+            left: 8,
+            right: 8,
+            height: 2,
+            borderRadius: 99,
+            background: C.gold,
+          }}
+        />
+      )}
+    </button>
   )
 }
