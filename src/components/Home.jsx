@@ -11,7 +11,47 @@ import Button from './ui/Button'
 import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
-import Results from './Results'
+
+import { ClipboardList, ChevronRight } from 'lucide-react'
+
+function ResultsTeaser() {
+  const nav = useNavigate()
+  return (
+    <motion.div
+      variants={staggerItem}
+      onClick={() => nav('/results')}
+      style={{
+        marginTop: 16, cursor: 'pointer',
+        background: `linear-gradient(135deg, ${C.greenDark} 0%, #163d28 100%)`,
+        borderRadius: 16, padding: '16px 18px',
+        display: 'flex', alignItems: 'center', gap: 14,
+        boxShadow: `0 4px 16px ${C.shadowMd}`,
+        border: `1px solid rgba(255,255,255,.08)`,
+        transition: 'transform 150ms ease, box-shadow 150ms ease',
+      }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: 12,
+        background: 'rgba(255,255,255,.12)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <ClipboardList size={22} color={C.gold} strokeWidth={2} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.white }}>
+          Last 10 Results
+        </div>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>
+          BTCL Premier League 2026 · with scorecards
+        </div>
+      </div>
+      <ChevronRight size={18} color={C.gold} strokeWidth={2.5} />
+    </motion.div>
+  )
+}
 
 function fmtDate(d) {
   if (!d) return ''
@@ -414,8 +454,8 @@ export default function Home() {
         {/* ── League Table ── */}
         <LeagueTable />
 
-        {/* ── Last 10 Results ── */}
-        <Results />
+        {/* ── Results teaser ── */}
+        <ResultsTeaser />
 
         {/* ── Upcoming & Recent Matches ── */}
         {!loading && allMatches.length > 0 && (

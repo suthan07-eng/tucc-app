@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, MotionConfig } from 'framer-motion'
-import { Trophy, BarChart2, ShieldCheck } from 'lucide-react'
+import { Trophy, BarChart2, ShieldCheck, ClipboardList } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 
 const NAV_LINKS = [
-  { path: '/league', label: 'League', Icon: Trophy },
-  { path: '/stats',  label: 'Stats',  Icon: BarChart2 },
+  { path: '/league',  label: 'League',  Icon: Trophy },
+  { path: '/results', label: 'Results', Icon: ClipboardList },
+  { path: '/stats',   label: 'Stats',   Icon: BarChart2 },
 ]
 
 export default function Nav() {

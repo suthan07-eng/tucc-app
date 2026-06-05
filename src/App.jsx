@@ -5,6 +5,7 @@ import Availability from './components/Availability'
 import Success from './components/Success'
 import League from './components/League'
 import Stats from './components/Stats'
+import ResultsPage from './components/ResultsPage'
 import AdminLogin from './components/admin/AdminLogin'
 import AdminDashboard from './components/admin/AdminDashboard'
 
@@ -22,6 +23,7 @@ export default function App() {
       <Route path="/success" element={<Success />} />
       <Route path="/league" element={<League />} />
       <Route path="/stats" element={<Stats />} />
+      <Route path="/results" element={<ResultsPage />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route
         path="/admin"

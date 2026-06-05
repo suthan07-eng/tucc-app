@@ -5,6 +5,7 @@ const LINKS = [
   { label: 'Home',         path: '/'             },
   { label: 'Availability', path: '/availability' },
   { label: 'League',       path: '/league'       },
+  { label: 'Results',      path: '/results'      },
   { label: 'Statistics',   path: '/stats'        },
   { label: 'Register',     path: '/register'     },
 ]
