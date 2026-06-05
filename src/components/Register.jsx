@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { UserPlus } from 'lucide-react'
 import { supabase } from '../supabase'
 import { C, FONT, MAX_WIDTH, ROLES } from '../constants'
 import Nav from './Nav'
@@ -88,22 +89,33 @@ export default function Register() {
       <Nav />
 
       {/* Header */}
-      <div
-        style={{
-          background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`,
-          padding: '44px 20px 36px',
-          textAlign: 'center',
-        }}
-      >
+      <div style={{
+        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+        padding: '44px 20px 40px',
+        textAlign: 'center',
+      }}>
         <motion.div variants={staggerList} initial="hidden" animate="visible">
-          <motion.div variants={fadeUp} style={{ width: 72, height: 72, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.15)', overflow: 'hidden' }}>
+          <motion.div variants={fadeUp} style={{
+            width: 72, height: 72, borderRadius: '50%',
+            background: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 4px 20px rgba(15,56,37,.35), 0 0 0 10px rgba(255,255,255,.08)',
+            overflow: 'hidden',
+          }}>
             <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
           </motion.div>
-          <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 24, fontWeight: 800, margin: 0 }}>
+          <motion.h1 variants={fadeUp} style={{
+            color: C.white, fontSize: 26, fontWeight: 900, margin: '0 0 8px',
+            letterSpacing: -0.4,
+          }}>
             Join Tamil United CC
           </motion.h1>
-          <motion.p variants={fadeUp} style={{ color: 'rgba(255,255,255,.65)', fontSize: 14, marginTop: 8, maxWidth: 320, margin: '8px auto 0' }}>
-            Register once to submit your availability each week
+          <motion.p variants={fadeUp} style={{
+            color: 'rgba(255,255,255,.6)', fontSize: 14, margin: '0 auto',
+            maxWidth: 300, lineHeight: 1.5,
+          }}>
+            Register once — submit your availability every match week
           </motion.p>
         </motion.div>
       </div>
@@ -153,8 +165,9 @@ export default function Register() {
               </Select>
             </Field>
 
-            <Button type="submit" size="full" disabled={loading} style={{ marginTop: 4 }}>
-              {loading ? 'Registering…' : 'Register & Continue →'}
+            <Button type="submit" size="full" loading={loading} style={{ marginTop: 4 }}>
+              {!loading && <UserPlus size={17} strokeWidth={2.5} />}
+              {loading ? 'Registering…' : 'Register & Continue'}
             </Button>
           </form>
         </Card>
