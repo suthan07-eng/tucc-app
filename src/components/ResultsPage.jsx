@@ -13,6 +13,30 @@ const isOurs   = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes(
 const involved = (r) => isOurs(r.team1) || isOurs(r.team2)
 const weWon    = (r) => isOurs(r.winner)
 
+// Definitive logo lookup — keyed by play-cricket badge_image ID
+// Verified by direct scraping of play-cricket.com
+const TEAM_LOGOS = {
+  'Dollishill Tamil United CC - Knights':             'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
+  'Lewisham CC - A':                                  'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',
+  'Northerns CC - A':                                 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  'Northerns CC - B':                                 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  'Kent United CC - 1st XI':                          'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg',
+  'Redbridge Lankians Sports & Social Club CC - 1st XI': 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg',
+  'Stanly CC - A':                                    'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg',
+  'West 3 CC - 1st XI':                              'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG',
+}
+
+function getLogoForTeam(name) {
+  // Exact match first
+  if (TEAM_LOGOS[name]) return TEAM_LOGOS[name]
+  // Partial match
+  const key = Object.keys(TEAM_LOGOS).find(k =>
+    name.toLowerCase().includes(k.toLowerCase().split(' ')[0]) ||
+    k.toLowerCase().includes(name.toLowerCase().split(' ')[0])
+  )
+  return key ? TEAM_LOGOS[key] : ''
+}
+
 function groupByDate(results) {
   const map = {}
   results.forEach(r => {
@@ -23,8 +47,10 @@ function groupByDate(results) {
   return Object.entries(map)
 }
 
-function TeamLogo({ logo, name, size = 44 }) {
+function TeamLogo({ logo: logoProp, name, size = 44 }) {
   const [error, setError] = useState(false)
+  // Always prefer the verified lookup over the scraped logo
+  const logo = getLogoForTeam(name) || logoProp
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   if (!logo || error) {
@@ -218,6 +244,8 @@ export default function ResultsPage() {
   const [updatedAt, setUpdatedAt] = useState(null)
   const [source, setSource]       = useState(null)
   const [refreshing, setRefreshing] = useState(false)
+  // Season stats from league table (accurate full-season record)
+  const [teamStats, setTeamStats] = useState(null)
 
   const load = (bust = false) => {
     setRefreshing(true)
@@ -234,19 +262,20 @@ export default function ResultsPage() {
       .catch(() => { setError(true); setLoading(false); setRefreshing(false) })
   }
 
+  // Fetch accurate season stats from the league table
+  useEffect(() => {
+    fetch('/api/league-table')
+      .then(r => r.json())
+      .then(d => {
+        const ourRow = (d.teams || []).find(t => isOurs(t.team))
+        if (ourRow) setTeamStats(ourRow)
+      })
+      .catch(() => {})
+  }, [])
+
   useEffect(() => { load() }, [])
 
   const grouped = groupByDate(results)
-
-  // Stats summary
-  const ourMatches    = results.filter(r => involved(r))
-  const ourWins       = ourMatches.filter(r => weWon(r)).length
-  const ourLosses     = ourMatches.length - ourWins
-  const ourPts        = results.reduce((sum, r) => {
-    if (isOurs(r.team1)) return sum + parseInt(r.pts1 || 0)
-    if (isOurs(r.team2)) return sum + parseInt(r.pts2 || 0)
-    return sum
-  }, 0)
 
   return (
     <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
@@ -296,32 +325,32 @@ export default function ResultsPage() {
             </div>
           </motion.div>
 
-          {/* Tamil United mini stats */}
-          {!loading && ourMatches.length > 0 && (
+          {/* Tamil United season stats — pulled from live league table */}
+          {teamStats && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: EASE_OUT, delay: 0.1 }}
-              style={{
-                display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap',
-              }}
             >
-              {[
-                { label: 'Matches', value: ourMatches.length, color: 'rgba(255,255,255,.9)' },
-                { label: 'Wins',    value: ourWins,           color: '#86efac' },
-                { label: 'Losses',  value: ourLosses,         color: '#fca5a5' },
-                { label: 'Pts',     value: ourPts,            color: C.gold },
-              ].map(({ label, value, color }) => (
-                <div key={label} style={{
-                  background: 'rgba(255,255,255,.1)', borderRadius: 10,
-                  padding: '8px 14px', textAlign: 'center', minWidth: 56,
-                }}>
-                  <div style={{ color, fontSize: 20, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-                  <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 10, fontWeight: 600, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
-                </div>
-              ))}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 4 }}>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', fontStyle: 'italic' }}>🏏 Tamil United CC stats</span>
+              <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Played', value: teamStats.p, color: 'rgba(255,255,255,.9)' },
+                  { label: 'Won',    value: teamStats.w, color: '#86efac' },
+                  { label: 'Lost',   value: teamStats.l, color: '#fca5a5' },
+                  { label: 'Points', value: teamStats.pts, color: C.gold },
+                  { label: 'NRR',    value: (parseFloat(teamStats.nrr) > 0 ? '+' : '') + teamStats.nrr, color: parseFloat(teamStats.nrr) >= 0 ? '#86efac' : '#fca5a5' },
+                ].map(({ label, value, color }) => (
+                  <div key={label} style={{
+                    background: 'rgba(255,255,255,.1)', borderRadius: 10,
+                    padding: '8px 14px', textAlign: 'center', minWidth: 52,
+                  }}>
+                    <div style={{ color, fontSize: 18, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+                    <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 10, fontWeight: 600, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,.35)', fontStyle: 'italic' }}>
+                🏏 Tamil United CC · 2026 season record
               </div>
             </motion.div>
           )}

@@ -10,6 +10,19 @@ const isOurs    = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes
 const weWon     = (r) => isOurs(r.winner)
 const involved  = (r) => isOurs(r.team1) || isOurs(r.team2)
 
+// Verified logo lookup
+const TEAM_LOGOS = {
+  'Dollishill Tamil United CC - Knights':             'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
+  'Lewisham CC - A':                                  'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',
+  'Northerns CC - A':                                 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  'Northerns CC - B':                                 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  'Kent United CC - 1st XI':                          'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg',
+  'Redbridge Lankians Sports & Social Club CC - 1st XI': 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg',
+  'Stanly CC - A':                                    'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg',
+  'West 3 CC - 1st XI':                              'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG',
+}
+const getLogoForTeam = n => TEAM_LOGOS[n] || Object.entries(TEAM_LOGOS).find(([k]) => n.toLowerCase().includes(k.split(' ')[0].toLowerCase()))?.[1] || ''
+
 function groupByDate(results) {
   const map = {}
   results.forEach(r => {
@@ -21,8 +34,9 @@ function groupByDate(results) {
 }
 
 // Team logo with graceful fallback to initials
-function TeamLogo({ logo, name, size = 36 }) {
+function TeamLogo({ logo: logoProp, name, size = 36 }) {
   const [error, setError] = useState(false)
+  const logo = getLogoForTeam(name) || logoProp
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   if (!logo || error) {
