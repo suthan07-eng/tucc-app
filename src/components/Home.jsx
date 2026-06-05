@@ -11,6 +11,7 @@ import Button from './ui/Button'
 import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
+import Results from './Results'
 
 function fmtDate(d) {
   if (!d) return ''
@@ -412,6 +413,9 @@ export default function Home() {
 
         {/* ── League Table ── */}
         <LeagueTable />
+
+        {/* ── Last 10 Results ── */}
+        <Results />
 
         {/* ── Upcoming & Recent Matches ── */}
         {!loading && allMatches.length > 0 && (
