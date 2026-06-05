@@ -6,37 +6,422 @@ import { C, FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
 import { Skeleton } from './ui/Loader'
+import {
+  BarChart2, Target, Shield, ArrowLeft,
+  TrendingUp, Award, Zap, ChevronDown, ChevronUp
+} from 'lucide-react'
 
-const EASE_OUT   = [0.23, 1, 0.32, 1]
-const EASE_SPRING = { type: 'spring', duration: 0.38, bounce: 0.15 }
+// ── Helpers ────────────────────────────────────────────────
+const EASE_OUT = [0.23, 1, 0.32, 1]
+const fadeUp   = { hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE_OUT } } }
+const stagger  = { hidden: {}, visible: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } } }
+const SEASONS  = ['2026', '2025', '2024']
+const MEDALS   = ['🥇', '🥈', '🥉']
 
-const fadeUp = {
-  hidden:  { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE_OUT } },
-}
-const staggerList = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.055, delayChildren: 0.04 } },
-}
-const staggerItem = {
-  hidden:  { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
-}
-const tabFade = {
-  hidden:  { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0,  transition: { duration: 0.22, ease: EASE_OUT } },
-  exit:    { opacity: 0, y: -8, transition: { duration: 0.14 } },
-}
-const medalVariants = {
-  hidden:  { opacity: 0, scale: 0.88 },
-  visible: { opacity: 1, scale: 1, transition: EASE_SPRING },
+const fmt1 = v => { const n = parseFloat(v); return (!n && n !== 0) || isNaN(n) ? '—' : n.toFixed(1) }
+const fmt2 = v => { const n = parseFloat(v); return (!n && n !== 0) || isNaN(n) ? '—' : n.toFixed(2) }
+const fmtN = v => { const n = parseInt(v);   return (!n && n !== 0) || isNaN(n) ? '—' : n }
+const fmtHS = (r, no) => { const n = parseInt(r); return (!n && n !== 0) ? '—' : `${n}${no ? '*' : ''}` }
+const fmtBest = (w, r) => { const n = parseInt(w); return !n ? '—' : `${n}/${parseInt(r) || 0}` }
+
+function Avatar({ name = '', size = 32 }) {
+  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9']
+  let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
+  const bg = PALETTE[Math.abs(h) % PALETTE.length]
+  const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: `linear-gradient(135deg, ${bg}, ${bg}cc)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#fff', fontFamily: FONT, fontWeight: 800,
+      fontSize: Math.round(size * 0.34), flexShrink: 0, userSelect: 'none',
+      boxShadow: '0 1px 4px rgba(0,0,0,.2)',
+    }}>
+      {initials}
+    </div>
+  )
 }
 
-const SEASONS = ['2026', '2025', '2024']
-const MEDALS  = ['🥇', '🥈', '🥉']
+// ── Stat card (hero metrics) ──────────────────────────────
+function StatCard({ icon: Icon, label, value, sub, color, loading }) {
+  return (
+    <motion.div variants={fadeUp} style={{
+      background: C.white, borderRadius: 16,
+      border: `1px solid ${C.gray2}`,
+      boxShadow: `0 2px 12px ${C.shadow}`,
+      padding: '16px 18px',
+      display: 'flex', flexDirection: 'column', gap: 10,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: `${color}15`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <Icon size={18} color={color} strokeWidth={2.5} />
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 700, color: C.gray3, letterSpacing: 0.8, textTransform: 'uppercase' }}>{label}</span>
+      </div>
+      {loading
+        ? <Skeleton height={28} width={60} />
+        : <div style={{ fontSize: 28, fontWeight: 900, color: C.dark, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      }
+      {sub && !loading && (
+        <div style={{ fontSize: 11, color: C.gray3, fontWeight: 500 }}>{sub}</div>
+      )}
+    </motion.div>
+  )
+}
 
-/* ─── MATCH LOG ────────────────────────────────────────── */
-function MatchLogContent({ season }) {
+// ── Bar chart for runs/wickets ────────────────────────────
+function MiniBar({ value, max, color }) {
+  const pct = max > 0 ? Math.max(4, (value / max) * 100) : 4
+  return (
+    <div style={{ flex: 1, height: 6, background: C.gray1, borderRadius: 99, overflow: 'hidden' }}>
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+        style={{ height: '100%', background: color, borderRadius: 99 }}
+      />
+    </div>
+  )
+}
+
+// ── Top 3 podium ──────────────────────────────────────────
+function Podium({ items, valueKey, label, fmtFn = fmtN }) {
+  const top3 = [...items].filter(s => (parseFloat(s[valueKey]) || 0) > 0)
+    .sort((a, b) => (parseFloat(b[valueKey]) || 0) - (parseFloat(a[valueKey]) || 0))
+    .slice(0, 3)
+  if (!top3.length) return null
+  const borderColors = [C.gold, '#94a3b8', '#b45309']
+  const heights = [96, 72, 60]
+  return (
+    <motion.div
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+      initial="hidden" animate="visible"
+      style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 20 }}
+    >
+      {[top3[1], top3[0], top3[2]].filter(Boolean).map((s, i) => {
+        const realIdx = i === 0 ? 1 : i === 1 ? 0 : 2
+        return (
+          <motion.div
+            key={s.id}
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', duration: 0.5, bounce: 0.2 } } }}
+            style={{
+              flex: 1, background: C.white,
+              borderRadius: 14, padding: '14px 10px',
+              border: `2px solid ${borderColors[realIdx]}`,
+              boxShadow: realIdx === 0 ? `0 4px 20px ${C.gold}30` : `0 2px 10px ${C.shadow}`,
+              textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              minHeight: heights[realIdx],
+            }}
+          >
+            <div style={{ fontSize: 20 }}>{MEDALS[realIdx]}</div>
+            <Avatar name={s.player_name} size={36} />
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: C.dark, lineHeight: 1.2 }}>
+              {s.player_name.split(' ')[0]}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: realIdx === 0 ? C.green : C.gray5, fontVariantNumeric: 'tabular-nums' }}>
+              {fmtFn(s[valueKey])}
+            </div>
+            <div style={{ fontSize: 10, color: C.gray3, fontWeight: 600 }}>{label}</div>
+          </motion.div>
+        )
+      })}
+    </motion.div>
+  )
+}
+
+// ── Batting dashboard ──────────────────────────────────────
+function BattingDashboard({ stats, loading }) {
+  const [sortCol, setSortCol] = useState('bat_runs')
+  const [sortDir, setSortDir] = useState('desc')
+  const [showAll, setShowAll] = useState(false)
+
+  if (loading) return <SkeletonDash />
+
+  if (!stats.length) return <EmptyState tab="batting" />
+
+  const sorted = [...stats].filter(s => s.bat_innings > 0 || s.bat_runs > 0).sort((a, b) => {
+    const av = typeof a[sortCol] === 'string' ? a[sortCol].toLowerCase() : parseFloat(a[sortCol]) || 0
+    const bv = typeof b[sortCol] === 'string' ? b[sortCol].toLowerCase() : parseFloat(b[sortCol]) || 0
+    return sortDir === 'asc' ? (av < bv ? -1 : 1) : (bv < av ? -1 : 1)
+  })
+
+  const maxRuns = Math.max(...sorted.map(s => s.bat_runs || 0))
+  const totalRuns = sorted.reduce((s, p) => s + (parseInt(p.bat_runs) || 0), 0)
+  const totalFifties = sorted.reduce((s, p) => s + (parseInt(p.bat_fifties) || 0), 0)
+  const totalSixes = sorted.reduce((s, p) => s + (parseInt(p.bat_sixes) || 0), 0)
+  const topSR = [...sorted].filter(s => s.bat_balls >= 10).sort((a, b) => (b.bat_strike_rate || 0) - (a.bat_strike_rate || 0))[0]
+
+  const visible = showAll ? sorted : sorted.slice(0, 8)
+
+  const onSort = col => {
+    if (col === sortCol) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir('desc') }
+  }
+
+  return (
+    <div>
+      {/* Hero stat cards */}
+      <motion.div variants={stagger} initial="hidden" animate="visible"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 20 }}
+      >
+        <StatCard icon={TrendingUp}  label="Total runs"  value={totalRuns}   sub={`${sorted.length} batters`} color={C.green}  loading={false} />
+        <StatCard icon={Award}       label="Fifties"     value={totalFifties} sub="50+ scores"               color={C.gold}   loading={false} />
+        <StatCard icon={Zap}         label="Sixes"       value={totalSixes}   sub="this season"              color="#7c3aed"  loading={false} />
+        <StatCard icon={BarChart2}   label="Top SR"      value={topSR ? fmt2(topSR.bat_strike_rate) : '—'} sub={topSR?.player_name?.split(' ')[0] || ''} color={C.blue} loading={false} />
+      </motion.div>
+
+      {/* Podium */}
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.gray5, marginBottom: 12 }}>🏆 Top Run Scorers</div>
+      <Podium items={sorted} valueKey="bat_runs" label="Runs" />
+
+      {/* Full table */}
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.gray5, marginBottom: 10 }}>Batting averages</div>
+      <div style={{
+        background: C.white, borderRadius: 16,
+        border: `1px solid ${C.gray2}`,
+        boxShadow: `0 2px 12px ${C.shadow}`,
+        overflow: 'hidden',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 44px 36px 52px', gap: 0, padding: '10px 14px', background: C.gray1, borderBottom: `1px solid ${C.gray2}` }}>
+          {[
+            { col: 'player_name', label: 'Player', align: 'left' },
+            { col: 'bat_innings', label: 'Inn',  align: 'center' },
+            { col: 'bat_runs',    label: 'Runs', align: 'center' },
+            { col: 'bat_highest', label: 'HS',   align: 'center' },
+            { col: 'bat_fifties', label: '50s',  align: 'center' },
+            { col: 'bat_average', label: 'Avg',  align: 'center' },
+          ].map(({ col, label, align }) => (
+            <button key={col} onClick={() => onSort(col)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              fontFamily: FONT, fontSize: 10, fontWeight: 700, letterSpacing: 0.6,
+              color: sortCol === col ? C.green : C.gray3, textTransform: 'uppercase',
+              textAlign: align, display: 'flex', alignItems: 'center',
+              justifyContent: align === 'left' ? 'flex-start' : 'center', gap: 2,
+            }}>
+              {label}
+              {sortCol === col && (sortDir === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />)}
+            </button>
+          ))}
+        </div>
+
+        {/* Rows */}
+        {visible.map((s, i) => (
+          <motion.div
+            key={s.id}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.24, ease: EASE_OUT, delay: i * 0.03 }}
+            style={{
+              display: 'grid', gridTemplateColumns: '1fr 36px 36px 44px 36px 52px',
+              gap: 0, padding: '11px 14px',
+              borderBottom: i < visible.length - 1 ? `1px solid ${C.gray1}` : 'none',
+              background: i === 0 && sortCol === 'bat_runs' ? `${C.green}08` : 'transparent',
+              alignItems: 'center',
+            }}
+          >
+            {/* Player */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+              <Avatar name={s.player_name} size={28} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {s.player_name}
+                </div>
+                <MiniBar value={s.bat_runs || 0} max={maxRuns} color={C.green} />
+              </div>
+            </div>
+            <div style={cellStyle}>{fmtN(s.bat_innings)}</div>
+            <div style={{ ...cellStyle, fontWeight: 800, color: C.green }}>{fmtN(s.bat_runs)}</div>
+            <div style={cellStyle}>{fmtHS(s.bat_highest, s.bat_highest_not_out)}</div>
+            <div style={{ ...cellStyle, color: s.bat_fifties > 0 ? C.gold : C.gray3, fontWeight: s.bat_fifties > 0 ? 700 : 400 }}>{fmtN(s.bat_fifties)}</div>
+            <div style={{ ...cellStyle, fontWeight: 700 }}>{fmt2(s.bat_average)}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      {sorted.length > 8 && (
+        <button onClick={() => setShowAll(a => !a)} style={{
+          marginTop: 10, width: '100%', background: C.gray1, border: `1px solid ${C.gray2}`,
+          borderRadius: 10, padding: '10px', fontFamily: FONT, fontSize: 13,
+          fontWeight: 600, color: C.gray4, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+        }}>
+          <ChevronDown size={14} style={{ transform: showAll ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
+          {showAll ? 'Show fewer' : `Show all ${sorted.length} batters`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── Bowling dashboard ──────────────────────────────────────
+function BowlingDashboard({ stats, loading }) {
+  const [sortCol, setSortCol] = useState('bowl_wickets')
+  const [sortDir, setSortDir] = useState('desc')
+  const [showAll, setShowAll] = useState(false)
+
+  if (loading) return <SkeletonDash />
+  if (!stats.length) return <EmptyState tab="bowling" />
+
+  const sorted = [...stats].filter(s => s.bowl_overs > 0 || s.bowl_wickets > 0).sort((a, b) => {
+    const av = parseFloat(a[sortCol]) || 0
+    const bv = parseFloat(b[sortCol]) || 0
+    return sortDir === 'asc' ? (av < bv ? -1 : 1) : (bv < av ? -1 : 1)
+  })
+
+  const maxWkts = Math.max(...sorted.map(s => s.bowl_wickets || 0))
+  const totalWkts = sorted.reduce((s, p) => s + (parseInt(p.bowl_wickets) || 0), 0)
+  const totalOvers = sorted.reduce((s, p) => s + (parseFloat(p.bowl_overs) || 0), 0)
+  const bestEcon = [...sorted].filter(s => parseFloat(s.bowl_overs) >= 4)
+    .sort((a, b) => (parseFloat(a.bowl_economy) || 99) - (parseFloat(b.bowl_economy) || 99))[0]
+  const fiveWkts = sorted.reduce((s, p) => s + (parseInt(p.bowl_five_fers) || 0), 0)
+
+  const visible = showAll ? sorted : sorted.slice(0, 8)
+
+  const onSort = col => {
+    if (col === sortCol) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir('desc') }
+  }
+
+  return (
+    <div>
+      {/* Hero cards */}
+      <motion.div variants={stagger} initial="hidden" animate="visible"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 20 }}
+      >
+        <StatCard icon={Target}    label="Wickets"   value={totalWkts}    sub={`${sorted.length} bowlers`}  color={C.red}    loading={false} />
+        <StatCard icon={BarChart2} label="Overs"     value={fmt1(totalOvers)} sub="total bowled"            color={C.green}  loading={false} />
+        <StatCard icon={Zap}       label="Best Econ" value={bestEcon ? fmt2(bestEcon.bowl_economy) : '—'} sub={bestEcon?.player_name?.split(' ')[0] || ''} color="#0891b2" loading={false} />
+        <StatCard icon={Award}     label="5-fers"    value={fiveWkts}     sub="five-wicket hauls"           color={C.gold}   loading={false} />
+      </motion.div>
+
+      {/* Podium */}
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.gray5, marginBottom: 12 }}>🎯 Top Wicket Takers</div>
+      <Podium items={sorted} valueKey="bowl_wickets" label="Wkts" />
+
+      {/* Table */}
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.gray5, marginBottom: 10 }}>Bowling figures</div>
+      <div style={{
+        background: C.white, borderRadius: 16,
+        border: `1px solid ${C.gray2}`,
+        boxShadow: `0 2px 12px ${C.shadow}`,
+        overflow: 'hidden',
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px 36px 48px 52px 52px', gap: 0, padding: '10px 14px', background: C.gray1, borderBottom: `1px solid ${C.gray2}` }}>
+          {[
+            { col: 'player_name',    label: 'Player', align: 'left' },
+            { col: 'bowl_overs',     label: 'Ovr',   align: 'center' },
+            { col: 'bowl_wickets',   label: 'Wkts',  align: 'center' },
+            { col: 'bowl_best_wickets', label: 'Best', align: 'center' },
+            { col: 'bowl_economy',   label: 'Econ',  align: 'center' },
+            { col: 'bowl_average',   label: 'Avg',   align: 'center' },
+          ].map(({ col, label, align }) => (
+            <button key={col} onClick={() => onSort(col)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              fontFamily: FONT, fontSize: 10, fontWeight: 700, letterSpacing: 0.6,
+              color: sortCol === col ? C.green : C.gray3, textTransform: 'uppercase',
+              textAlign: align, display: 'flex', alignItems: 'center',
+              justifyContent: align === 'left' ? 'flex-start' : 'center', gap: 2,
+            }}>
+              {label}
+              {sortCol === col && (sortDir === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />)}
+            </button>
+          ))}
+        </div>
+
+        {visible.map((s, i) => (
+          <motion.div
+            key={s.id}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.24, ease: EASE_OUT, delay: i * 0.03 }}
+            style={{
+              display: 'grid', gridTemplateColumns: '1fr 40px 36px 48px 52px 52px',
+              gap: 0, padding: '11px 14px',
+              borderBottom: i < visible.length - 1 ? `1px solid ${C.gray1}` : 'none',
+              background: i === 0 && sortCol === 'bowl_wickets' ? `${C.red}08` : 'transparent',
+              alignItems: 'center',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+              <Avatar name={s.player_name} size={28} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {s.player_name}
+                </div>
+                <MiniBar value={s.bowl_wickets || 0} max={maxWkts} color={C.red} />
+              </div>
+            </div>
+            <div style={cellStyle}>{fmt1(s.bowl_overs)}</div>
+            <div style={{ ...cellStyle, fontWeight: 800, color: C.red }}>{fmtN(s.bowl_wickets)}</div>
+            <div style={cellStyle}>{fmtBest(s.bowl_best_wickets, s.bowl_best_runs)}</div>
+            <div style={{ ...cellStyle, color: parseFloat(s.bowl_economy) < 6 ? C.ok : parseFloat(s.bowl_economy) < 8 ? C.gold : C.red, fontWeight: 700 }}>
+              {fmt2(s.bowl_economy)}
+            </div>
+            <div style={cellStyle}>{fmt2(s.bowl_average)}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      {sorted.length > 8 && (
+        <button onClick={() => setShowAll(a => !a)} style={{
+          marginTop: 10, width: '100%', background: C.gray1, border: `1px solid ${C.gray2}`,
+          borderRadius: 10, padding: '10px', fontFamily: FONT, fontSize: 13,
+          fontWeight: 600, color: C.gray4, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+        }}>
+          <ChevronDown size={14} style={{ transform: showAll ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
+          {showAll ? 'Show fewer' : `Show all ${sorted.length} bowlers`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── Fielding ───────────────────────────────────────────────
+function FieldingDashboard({ stats, loading }) {
+  if (loading) return <SkeletonDash />
+  const fielders = stats
+    .map(s => ({ ...s, _total: (s.field_catches || 0) + (s.field_run_outs || 0) + (s.field_stumpings || 0) }))
+    .filter(s => s._total > 0)
+    .sort((a, b) => b._total - a._total)
+  if (!fielders.length) return <EmptyState tab="fielding" />
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.gray5, marginBottom: 12 }}>🧤 Fielding contributions</div>
+      <div style={{ background: C.white, borderRadius: 16, border: `1px solid ${C.gray2}`, boxShadow: `0 2px 12px ${C.shadow}`, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 48px 56px 56px 52px', padding: '10px 14px', background: C.gray1, borderBottom: `1px solid ${C.gray2}` }}>
+          {['Player', 'Cat', 'Run Out', 'Stmp', 'Total'].map((h, i) => (
+            <div key={h} style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.6, textAlign: i === 0 ? 'left' : 'center' }}>{h}</div>
+          ))}
+        </div>
+        {fielders.map((s, i) => (
+          <motion.div key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 48px 56px 56px 52px', padding: '11px 14px', borderBottom: i < fielders.length - 1 ? `1px solid ${C.gray1}` : 'none', alignItems: 'center' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <Avatar name={s.player_name} size={28} />
+              <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{s.player_name}</span>
+            </div>
+            <div style={cellStyle}>{fmtN(s.field_catches)}</div>
+            <div style={cellStyle}>{fmtN(s.field_run_outs)}</div>
+            <div style={cellStyle}>{fmtN(s.field_stumpings)}</div>
+            <div style={{ ...cellStyle, fontWeight: 800, color: C.green }}>{s._total}</div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Match log ──────────────────────────────────────────────
+function MatchLogDashboard({ season }) {
   const [matches, setMatches] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [perfs, setPerfs] = useState([])
@@ -46,23 +431,12 @@ function MatchLogContent({ season }) {
   useEffect(() => {
     async function load() {
       setLoadingM(true)
-      // Get matches that have performances for this season
-      const { data: ps } = await supabase
-        .from('match_performances')
-        .select('match_id')
-        .eq('season', season)
-      const ids = [...new Set((ps || []).map((p) => p.match_id))]
+      const { data: ps } = await supabase.from('match_performances').select('match_id').eq('season', season)
+      const ids = [...new Set((ps || []).map(p => p.match_id))]
       if (!ids.length) { setMatches([]); setLoadingM(false); return }
-      const { data: ms } = await supabase
-        .from('matches')
-        .select('id,opponent,date,venue,format')
-        .in('id', ids)
-        .order('date', { ascending: false })
+      const { data: ms } = await supabase.from('matches').select('id,opponent,date,venue,format').in('id', ids).order('date', { ascending: false })
       setMatches(ms || [])
-      if (ms?.length) {
-        setSelectedId(ms[0].id)
-        loadPerfs(ms[0].id)
-      }
+      if (ms?.length) { setSelectedId(ms[0].id); loadPerfs(ms[0].id) }
       setLoadingM(false)
     }
     load()
@@ -70,59 +444,33 @@ function MatchLogContent({ season }) {
 
   async function loadPerfs(mid) {
     setLoadingP(true)
-    const { data } = await supabase
-      .from('match_performances')
-      .select('*')
-      .eq('match_id', mid)
-    setPerfs(data || [])
-    setLoadingP(false)
+    const { data } = await supabase.from('match_performances').select('*').eq('match_id', mid)
+    setPerfs(data || []); setLoadingP(false)
   }
 
-  function selectMatch(id) {
-    setSelectedId(id)
-    loadPerfs(id)
-  }
+  if (loadingM) return <div style={{ color: C.gray3, fontSize: 13, padding: '20px 0' }}>Loading…</div>
+  if (!matches.length) return <EmptyState tab="match log" />
 
-  if (loadingM) return <div style={{ color: C.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
-
-  if (!matches.length) {
-    return (
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.1)', overflow: 'hidden' }}>
-          <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
-        </div>
-        <div style={{ fontWeight: 700, fontSize: 16, color: C.dark, marginBottom: 6 }}>No match scorecards yet</div>
-        <div style={{ color: C.gray3, fontSize: 14 }}>Admin can add match performances under Stats → Match Scorecards.</div>
-      </div>
-    )
-  }
-
-  const batters = perfs.filter((p) => p.bat_did_bat).sort((a, b) => (b.bat_runs || 0) - (a.bat_runs || 0))
-  const bowlers = perfs.filter((p) => p.bowl_did_bowl).sort((a, b) => (b.bowl_wickets || 0) - (a.bowl_wickets || 0))
-  const fielders = perfs.filter((p) => (p.field_catches || 0) + (p.field_run_outs || 0) + (p.field_stumpings || 0) > 0)
+  const batters = perfs.filter(p => p.bat_did_bat).sort((a, b) => (b.bat_runs || 0) - (a.bat_runs || 0))
+  const bowlers = perfs.filter(p => p.bowl_did_bowl).sort((a, b) => (b.bowl_wickets || 0) - (a.bowl_wickets || 0))
 
   return (
     <div>
       {/* Match selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
-        {matches.map((m) => (
-          <button
-            key={m.id}
-            onClick={() => selectMatch(m.id)}
+        {matches.map(m => (
+          <button key={m.id} onClick={() => { setSelectedId(m.id); loadPerfs(m.id) }}
             style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-              borderRadius: 10, border: `2px solid ${m.id === selectedId ? C.green : C.gray2}`,
+              borderRadius: 12, border: `2px solid ${m.id === selectedId ? C.green : C.gray2}`,
               background: m.id === selectedId ? C.greenBg : C.white,
               cursor: 'pointer', textAlign: 'left', width: '100%',
             }}
           >
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: m.id === selectedId ? C.green : C.dark }}>
-                vs {m.opponent || 'TBC'}
-              </div>
-              <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, marginTop: 2 }}>
-                {m.date ? new Date(m.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBD'}
-                {m.venue ? ` · ${m.venue}` : ''}
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: m.id === selectedId ? C.green : C.dark }}>vs {m.opponent || 'TBC'}</div>
+              <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, marginTop: 2 }}>
+                {m.date ? new Date(m.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBD'}{m.venue ? ` · ${m.venue}` : ''}
               </div>
             </div>
             <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3 }}>{m.format || 'T20'}</span>
@@ -130,103 +478,63 @@ function MatchLogContent({ season }) {
         ))}
       </div>
 
-      {loadingP ? (
-        <div style={{ color: C.gray3, fontFamily: FONT, fontSize: 14 }}>Loading scorecard…</div>
-      ) : (
+      {loadingP ? <Skeleton height={200} /> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Batting */}
           {batters.length > 0 && (
             <div>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark, marginBottom: 8 }}>🏏 Batting</div>
-              <TableWrap minWidth={340}>
-                <thead>
-                  <tr>
-                    {['Player','R','B','4s','6s','SR'].map((h) => (
-                      <th key={h} style={{ padding: '8px 8px', fontSize: 12, fontWeight: 700, color: C.gray4, background: C.gray1, textAlign: h === 'Player' ? 'left' : 'center', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {batters.map((p, i) => {
-                    const bg = i % 2 === 0 ? C.white : '#fafafa'
-                    const sr = p.bat_balls ? ((p.bat_runs || 0) * 100 / p.bat_balls).toFixed(0) : '—'
-                    return (
-                      <tr key={p.id}>
-                        <td style={{ ...td(bg), textAlign: 'left', fontWeight: 600, paddingLeft: 12 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <InitAvatar name={p.player_name} size={22} />
-                            {p.player_name}
-                          </div>
-                        </td>
-                        <td style={{ ...td(bg), fontWeight: 700, color: C.green }}>{p.bat_runs ?? '—'}{p.bat_not_out ? '*' : ''}</td>
-                        <td style={td(bg)}>{p.bat_balls ?? '—'}</td>
-                        <td style={td(bg)}>{p.bat_fours ?? '—'}</td>
-                        <td style={td(bg)}>{p.bat_sixes ?? '—'}</td>
-                        <td style={td(bg)}>{sr}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </TableWrap>
-            </div>
-          )}
-
-          {/* Bowling */}
-          {bowlers.length > 0 && (
-            <div>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark, marginBottom: 8 }}>⚡ Bowling</div>
-              <TableWrap minWidth={320}>
-                <thead>
-                  <tr>
-                    {['Player','O','W','R','Econ'].map((h) => (
-                      <th key={h} style={{ padding: '8px 8px', fontSize: 12, fontWeight: 700, color: C.gray4, background: C.gray1, textAlign: h === 'Player' ? 'left' : 'center', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {bowlers.map((p, i) => {
-                    const bg = i % 2 === 0 ? C.white : '#fafafa'
-                    const econ = p.bowl_overs ? (p.bowl_runs / p.bowl_overs).toFixed(2) : '—'
-                    return (
-                      <tr key={p.id}>
-                        <td style={{ ...td(bg), textAlign: 'left', fontWeight: 600, paddingLeft: 12 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <InitAvatar name={p.player_name} size={22} />
-                            {p.player_name}
-                          </div>
-                        </td>
-                        <td style={td(bg)}>{p.bowl_overs ?? '—'}</td>
-                        <td style={{ ...td(bg), fontWeight: 700, color: C.green }}>{p.bowl_wickets ?? '—'}</td>
-                        <td style={td(bg)}>{p.bowl_runs ?? '—'}</td>
-                        <td style={td(bg)}>{econ}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </TableWrap>
-            </div>
-          )}
-
-          {/* Fielding */}
-          {fielders.length > 0 && (
-            <div>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark, marginBottom: 8 }}>🧤 Fielding</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {fielders.map((p) => (
-                  <div key={p.id} style={{ background: C.white, borderRadius: 10, border: `1px solid ${C.gray2}`, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <InitAvatar name={p.player_name} size={24} />
-                    <div>
-                      <div style={{ fontFamily: FONT, fontWeight: 600, fontSize: 13, color: C.dark }}>{p.player_name}</div>
-                      <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray3 }}>
-                        {p.field_catches ? `${p.field_catches}c ` : ''}
-                        {p.field_run_outs ? `${p.field_run_outs}ro ` : ''}
-                        {p.field_stumpings ? `${p.field_stumpings}st` : ''}
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: C.greenDark, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 }}>🏏 Batting</div>
+              <div style={{ background: C.white, borderRadius: 14, border: `1px solid ${C.gray2}`, overflow: 'hidden' }}>
+                {batters.map((p, i) => {
+                  const sr = p.bat_balls ? ((p.bat_runs || 0) * 100 / p.bat_balls).toFixed(0) : '—'
+                  return (
+                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 36px 40px', padding: '10px 14px', borderBottom: i < batters.length - 1 ? `1px solid ${C.gray1}` : 'none', alignItems: 'center', gap: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar name={p.player_name} size={26} />
+                        <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.player_name}</span>
                       </div>
+                      <div style={{ ...cellStyle, fontWeight: 800, color: C.green }}>{p.bat_runs ?? '—'}{p.bat_not_out ? '*' : ''}</div>
+                      <div style={cellStyle}>{p.bat_balls ?? '—'}</div>
+                      <div style={cellStyle}>{p.bat_fours ?? '—'}</div>
+                      <div style={cellStyle}>{p.bat_sixes ?? '—'}</div>
+                      <div style={cellStyle}>{sr}</div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: 16, padding: '6px 2px', fontSize: 10, color: C.gray3, fontFamily: FONT }}>
+                {['Runs','Balls','4s','6s','SR'].map(h => <span key={h} style={{ flex: 1, textAlign: 'center' }}>{h}</span>)}
               </div>
             </div>
+          )}
+
+          {bowlers.length > 0 && (
+            <div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: C.greenDark, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 }}>⚡ Bowling</div>
+              <div style={{ background: C.white, borderRadius: 14, border: `1px solid ${C.gray2}`, overflow: 'hidden' }}>
+                {bowlers.map((p, i) => {
+                  const econ = p.bowl_overs ? (p.bowl_runs / p.bowl_overs).toFixed(2) : '—'
+                  return (
+                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 44px', padding: '10px 14px', borderBottom: i < bowlers.length - 1 ? `1px solid ${C.gray1}` : 'none', alignItems: 'center', gap: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar name={p.player_name} size={26} />
+                        <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.player_name}</span>
+                      </div>
+                      <div style={cellStyle}>{p.bowl_overs ?? '—'}</div>
+                      <div style={{ ...cellStyle, fontWeight: 800, color: C.red }}>{p.bowl_wickets ?? '—'}</div>
+                      <div style={cellStyle}>{p.bowl_runs ?? '—'}</div>
+                      <div style={cellStyle}>{econ}</div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: 16, padding: '6px 2px', fontSize: 10, color: C.gray3, fontFamily: FONT }}>
+                {['Overs','Wkts','Runs','Econ'].map(h => <span key={h} style={{ flex: 1, textAlign: 'center' }}>{h}</span>)}
+              </div>
+            </div>
+          )}
+
+          {!batters.length && !bowlers.length && (
+            <div style={{ textAlign: 'center', padding: '24px', color: C.gray3, fontSize: 13 }}>No scorecard data for this match.</div>
           )}
         </div>
       )}
@@ -234,489 +542,141 @@ function MatchLogContent({ season }) {
   )
 }
 
-function fmt2(v) {
-  const n = parseFloat(v)
-  if (!n || isNaN(n)) return '—'
-  return n.toFixed(2)
-}
-function fmtHS(runs, notOut) {
-  const n = parseInt(runs)
-  if (!n && n !== 0) return '—'
-  return `${n}${notOut ? '*' : ''}`
-}
-function fmtBest(w, r) {
-  const wn = parseInt(w)
-  if (!wn) return '—'
-  return `${wn}/${parseInt(r) || 0}`
-}
-function fmtNum(v) {
-  const n = parseInt(v)
-  if (!n && n !== 0) return '—'
-  return n
-}
+// ── Helpers ────────────────────────────────────────────────
+const cellStyle = { fontFamily: FONT, fontSize: 13, color: C.gray5, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }
 
-function InitAvatar({ name, size = 30 }) {
-  const initials = name
-    ? name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
-    : '?'
+function SkeletonDash() {
   return (
-    <div
-      style={{
-        width: size, height: size, borderRadius: '50%',
-        background: C.green, color: C.white,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontWeight: 800, fontSize: Math.floor(size * 0.38), flexShrink: 0,
-        fontFamily: FONT,
-      }}
-    >
-      {initials}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {[1,2,3,4].map(i => <Skeleton key={i} height={90} borderRadius={16} />)}
+      </div>
+      <Skeleton height={120} borderRadius={16} />
+      <Skeleton height={220} borderRadius={16} />
     </div>
   )
 }
 
-function MedalCards({ items, primaryKey, primaryLabel, secondaryKey, secondaryLabel, fmtPrimary, fmtSecondary }) {
-  const top3 = [...items]
-    .filter((s) => (parseFloat(s[primaryKey]) || 0) > 0)
-    .sort((a, b) => (parseFloat(b[primaryKey]) || 0) - (parseFloat(a[primaryKey]) || 0))
-    .slice(0, 3)
-  if (!top3.length) return null
-  const borderColors = [C.gold, '#d1d5db', '#b45309']
+function EmptyState({ tab }) {
   return (
-    <motion.div
-      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
-      initial="hidden"
-      animate="visible"
-      style={{ display: 'flex', gap: 10, marginBottom: 20 }}
-    >
-      {top3.map((s, i) => (
-        <motion.div
-          key={s.id}
-          variants={medalVariants}
-          style={{
-            flex: 1, background: C.white, borderRadius: 12, padding: '14px 10px',
-            boxShadow: '0 2px 10px rgba(0,0,0,.07)',
-            border: `1.5px solid ${borderColors[i]}`,
-            textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-          }}
-        >
-          <span style={{ fontSize: 22 }}>{MEDALS[i]}</span>
-          <InitAvatar name={s.player_name} size={36} />
-          <div style={{ fontWeight: 700, fontSize: 13, color: C.dark, lineHeight: 1.2, marginTop: 2 }}>
-            {s.player_name.split(' ')[0]}
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: i === 0 ? C.green : C.gray5, lineHeight: 1 }}>
-            {fmtPrimary ? fmtPrimary(s) : (parseInt(s[primaryKey]) || 0)}
-          </div>
-          <div style={{ fontSize: 11, color: C.gray3 }}>{primaryLabel}</div>
-          {secondaryKey && (
-            <div style={{ fontSize: 12, color: C.gray4 }}>
-              {fmtSecondary ? fmtSecondary(s) : fmt2(s[secondaryKey])} {secondaryLabel}
-            </div>
-          )}
-        </motion.div>
-      ))}
-    </motion.div>
-  )
-}
-
-function SortTh({ col, label, sortCol, sortDir, onSort, align = 'center', style: s, sticky, left, minW }) {
-  const active = sortCol === col
-  return (
-    <th
-      onClick={() => onSort(col)}
-      style={{
-        padding: '10px 8px',
-        fontSize: 12,
-        fontWeight: 700,
-        color: active ? C.green : C.gray4,
-        cursor: 'pointer',
-        whiteSpace: 'nowrap',
-        userSelect: 'none',
-        background: C.gray1,
-        textAlign: align,
-        borderBottom: `2.5px solid ${active ? C.green : 'transparent'}`,
-        ...(sticky ? {
-          position: 'sticky',
-          left: left ?? 0,
-          zIndex: 2,
-          boxShadow: left ? '2px 0 6px rgba(0,0,0,.08)' : undefined,
-          minWidth: minW ?? 'auto',
-        } : {}),
-        ...s,
-      }}
-    >
-      {label}{active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
-    </th>
-  )
-}
-
-function RankTh() {
-  return (
-    <th style={{
-      width: 36, padding: '10px 6px',
-      fontSize: 12, fontWeight: 700, color: C.gray4,
-      background: C.gray1, textAlign: 'center',
-      borderBottom: `2.5px solid transparent`,
-      position: 'sticky', left: 0, zIndex: 2,
-    }}>
-      #
-    </th>
-  )
-}
-
-function TableWrap({ children, minWidth = 560 }) {
-  return (
-    <div style={{
-      overflowX: 'auto',
-      WebkitOverflowScrolling: 'touch',
-      borderRadius: 12,
-      boxShadow: '0 2px 14px rgba(0,0,0,.06)',
-    }}>
-      <table style={{ minWidth, width: '100%', borderCollapse: 'collapse' }}>
-        {children}
-      </table>
+    <div style={{ textAlign: 'center', padding: '48px 20px', background: C.white, borderRadius: 18, border: `1px solid ${C.gray2}` }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+      <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, color: C.dark }}>No {tab} stats yet</div>
+      <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray3, marginTop: 6 }}>Admin can add stats in the admin panel.</div>
     </div>
   )
 }
 
-function rbg(i, isFirst) {
-  if (isFirst) return '#f0fdf4'
-  return i % 2 === 0 ? C.white : '#fafafa'
-}
+// ── Main Stats page ────────────────────────────────────────
+const TABS = [
+  { id: 'batting',  label: 'Batting',   icon: BarChart2 },
+  { id: 'bowling',  label: 'Bowling',   icon: Target },
+  { id: 'fielding', label: 'Fielding',  icon: Shield },
+  { id: 'matchlog', label: 'Match Log', icon: TrendingUp },
+]
 
-function td(bg) {
-  return { padding: '9px 8px', fontSize: 13, color: C.dark, textAlign: 'center', background: bg, verticalAlign: 'middle' }
-}
-function tdSticky(bg, left) {
-  return {
-    ...td(bg),
-    position: 'sticky', left, zIndex: 1,
-    boxShadow: left ? '2px 0 6px rgba(0,0,0,.07)' : undefined,
-  }
-}
-
-/* ─── BATTING ─────────────────────────────────────────── */
-function BattingContent({ stats, sortCol, sortDir, onSort }) {
-  const sp = { sortCol, sortDir, onSort }
-  return (
-    <>
-      <MedalCards
-        items={stats}
-        primaryKey="bat_runs"
-        primaryLabel="Runs"
-        secondaryKey="bat_average"
-        secondaryLabel="avg"
-      />
-      <TableWrap minWidth={620}>
-        <thead>
-          <tr>
-            <RankTh />
-            <SortTh col="player_name" label="Player" align="left" sticky left={36} minW={130} {...sp} />
-            <SortTh col="bat_matches"    label="M"    {...sp} />
-            <SortTh col="bat_innings"    label="Inn"  {...sp} />
-            <SortTh col="bat_runs"       label="Runs" {...sp} />
-            <SortTh col="bat_highest"    label="HS"   {...sp} />
-            <SortTh col="bat_average"    label="Avg"  {...sp} />
-            <SortTh col="bat_strike_rate" label="SR"  {...sp} />
-            <SortTh col="bat_fifties"    label="50s"  {...sp} />
-            <SortTh col="bat_hundreds"   label="100s" {...sp} />
-            <SortTh col="bat_sixes"      label="6s"   {...sp} />
-          </tr>
-        </thead>
-        <tbody>
-          {stats.map((s, i) => {
-            const bg = rbg(i, i === 0 && sortCol === 'bat_runs' && sortDir === 'desc')
-            return (
-              <tr key={s.id}>
-                <td style={{ ...tdSticky(bg, 0), color: C.gray3, fontSize: 11, width: 36 }}>{i + 1}</td>
-                <td style={{ ...tdSticky(bg, 36), textAlign: 'left', fontWeight: 600, paddingLeft: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <InitAvatar name={s.player_name} size={26} />
-                    {s.player_name}
-                  </div>
-                </td>
-                <td style={td(bg)}>{fmtNum(s.bat_matches)}</td>
-                <td style={td(bg)}>{fmtNum(s.bat_innings)}</td>
-                <td style={{ ...td(bg), fontWeight: 700, color: C.green }}>{fmtNum(s.bat_runs)}</td>
-                <td style={td(bg)}>{fmtHS(s.bat_highest, s.bat_highest_not_out)}</td>
-                <td style={td(bg)}>{fmt2(s.bat_average)}</td>
-                <td style={td(bg)}>{fmt2(s.bat_strike_rate)}</td>
-                <td style={td(bg)}>{fmtNum(s.bat_fifties)}</td>
-                <td style={td(bg)}>{fmtNum(s.bat_hundreds)}</td>
-                <td style={td(bg)}>{fmtNum(s.bat_sixes)}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </TableWrap>
-    </>
-  )
-}
-
-/* ─── BOWLING ─────────────────────────────────────────── */
-function BowlingContent({ stats, sortCol, sortDir, onSort }) {
-  const sp = { sortCol, sortDir, onSort }
-  return (
-    <>
-      <MedalCards
-        items={stats}
-        primaryKey="bowl_wickets"
-        primaryLabel="Wickets"
-        secondaryKey="bowl_economy"
-        secondaryLabel="econ"
-      />
-      <TableWrap minWidth={660}>
-        <thead>
-          <tr>
-            <RankTh />
-            <SortTh col="player_name"      label="Player" align="left" sticky left={36} minW={130} {...sp} />
-            <SortTh col="bowl_matches"     label="M"      {...sp} />
-            <SortTh col="bowl_overs"       label="Overs"  {...sp} />
-            <SortTh col="bowl_wickets"     label="Wkts"   {...sp} />
-            <SortTh col="bowl_runs"        label="Runs"   {...sp} />
-            <SortTh col="bowl_best_wickets" label="Best"  {...sp} />
-            <SortTh col="bowl_average"     label="Avg"    {...sp} />
-            <SortTh col="bowl_economy"     label="Econ"   {...sp} />
-            <SortTh col="bowl_strike_rate" label="SR"     {...sp} />
-            <SortTh col="bowl_five_fers"   label="5W"     {...sp} />
-          </tr>
-        </thead>
-        <tbody>
-          {stats.map((s, i) => {
-            const bg = rbg(i, i === 0 && sortCol === 'bowl_wickets' && sortDir === 'desc')
-            return (
-              <tr key={s.id}>
-                <td style={{ ...tdSticky(bg, 0), color: C.gray3, fontSize: 11, width: 36 }}>{i + 1}</td>
-                <td style={{ ...tdSticky(bg, 36), textAlign: 'left', fontWeight: 600, paddingLeft: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <InitAvatar name={s.player_name} size={26} />
-                    {s.player_name}
-                  </div>
-                </td>
-                <td style={td(bg)}>{fmtNum(s.bowl_matches)}</td>
-                <td style={td(bg)}>{parseFloat(s.bowl_overs) || '—'}</td>
-                <td style={{ ...td(bg), fontWeight: 700, color: C.green }}>{fmtNum(s.bowl_wickets)}</td>
-                <td style={td(bg)}>{fmtNum(s.bowl_runs)}</td>
-                <td style={td(bg)}>{fmtBest(s.bowl_best_wickets, s.bowl_best_runs)}</td>
-                <td style={td(bg)}>{fmt2(s.bowl_average)}</td>
-                <td style={td(bg)}>{fmt2(s.bowl_economy)}</td>
-                <td style={td(bg)}>{fmt2(s.bowl_strike_rate)}</td>
-                <td style={td(bg)}>{fmtNum(s.bowl_five_fers)}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </TableWrap>
-    </>
-  )
-}
-
-/* ─── FIELDING ────────────────────────────────────────── */
-function FieldingContent({ stats, sortCol, sortDir, onSort }) {
-  const sp = { sortCol, sortDir, onSort }
-  return (
-    <TableWrap minWidth={420}>
-      <thead>
-        <tr>
-          <RankTh />
-          <SortTh col="player_name"   label="Player"    align="left" sticky left={36} minW={130} {...sp} />
-          <SortTh col="field_catches"  label="Catches"  {...sp} />
-          <SortTh col="field_run_outs" label="Run Outs" {...sp} />
-          <SortTh col="field_stumpings" label="Stmpgs" {...sp} />
-          <SortTh col="_total"         label="Total"    {...sp} />
-        </tr>
-      </thead>
-      <tbody>
-        {stats.map((s, i) => {
-          const bg = rbg(i, i === 0 && sortCol === '_total' && sortDir === 'desc')
-          return (
-            <tr key={s.id}>
-              <td style={{ ...tdSticky(bg, 0), color: C.gray3, fontSize: 11, width: 36 }}>{i + 1}</td>
-              <td style={{ ...tdSticky(bg, 36), textAlign: 'left', fontWeight: 600, paddingLeft: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <InitAvatar name={s.player_name} size={26} />
-                  {s.player_name}
-                </div>
-              </td>
-              <td style={td(bg)}>{fmtNum(s.field_catches)}</td>
-              <td style={td(bg)}>{fmtNum(s.field_run_outs)}</td>
-              <td style={td(bg)}>{fmtNum(s.field_stumpings)}</td>
-              <td style={{ ...td(bg), fontWeight: 700, color: C.green }}>{s._total || '—'}</td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </TableWrap>
-  )
-}
-
-/* ─── ROOT ────────────────────────────────────────────── */
 export default function Stats() {
   const nav = useNavigate()
   const [season, setSeason]   = useState('2026')
   const [tab, setTab]         = useState('batting')
   const [stats, setStats]     = useState([])
   const [loading, setLoading] = useState(true)
-  const [sortCol, setSortCol] = useState('bat_runs')
-  const [sortDir, setSortDir] = useState('desc')
-
-  useEffect(() => { loadStats() }, [season])
 
   useEffect(() => {
-    if (tab === 'batting')  { setSortCol('bat_runs');     setSortDir('desc') }
-    if (tab === 'bowling')  { setSortCol('bowl_wickets'); setSortDir('desc') }
-    if (tab === 'fielding') { setSortCol('_total');       setSortDir('desc') }
-  }, [tab])
+    async function loadStats() {
+      setLoading(true)
+      const { data } = await supabase.from('player_stats').select('*').eq('season', season)
+      setStats(data || [])
+      setLoading(false)
+    }
+    loadStats()
+  }, [season])
 
-  async function loadStats() {
-    setLoading(true)
-    const { data } = await supabase.from('player_stats').select('*').eq('season', season)
-    setStats(data || [])
-    setLoading(false)
-  }
-
-  function handleSort(col) {
-    if (col === sortCol) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    else { setSortCol(col); setSortDir('desc') }
-  }
-
-  const enriched = stats.map((s) => ({
-    ...s,
-    _total: (s.field_catches || 0) + (s.field_run_outs || 0) + (s.field_stumpings || 0),
-  }))
-
-  const sorted = [...enriched].sort((a, b) => {
-    const av = typeof a[sortCol] === 'string' ? a[sortCol].toLowerCase() : parseFloat(a[sortCol]) || 0
-    const bv = typeof b[sortCol] === 'string' ? b[sortCol].toLowerCase() : parseFloat(b[sortCol]) || 0
-    if (av < bv) return sortDir === 'asc' ? -1 : 1
-    if (av > bv) return sortDir === 'asc' ? 1 : -1
-    return 0
-  })
-
-  const lastUpdated = enriched.reduce(
-    (l, s) => (!l || (s.updated_at && s.updated_at > l) ? s.updated_at : l),
-    null
-  )
-  const updatedBy = [...enriched].sort((a, b) =>
-    (b.updated_at || '') > (a.updated_at || '') ? 1 : -1
-  )[0]?.updated_by
-
-  const sp = { sortCol, sortDir, onSort: handleSort }
+  const lastUpdated = stats.reduce((l, s) => (!l || (s.updated_at && s.updated_at > l) ? s.updated_at : l), null)
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
-      {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`, padding: '24px 20px' }}>
-        <motion.div
-          variants={staggerList}
-          initial="hidden"
-          animate="visible"
-          style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}
-        >
+      {/* Hero */}
+      <div style={{
+        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+        padding: '28px 20px 0', position: 'relative',
+      }}>
+        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
           <motion.button
-            variants={fadeUp}
             onClick={() => nav('/')}
-            style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 10 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.14 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 14 }}
           >
-            ← Home
+            <ArrowLeft size={14} strokeWidth={2} /> Home
           </motion.button>
-          <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 22, fontWeight: 800, margin: 0 }}>🏏 Player Statistics</motion.h1>
-          <motion.div variants={fadeUp} style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, flexWrap: 'wrap' }}>
-            <span style={{ color: 'rgba(255,255,255,.7)', fontSize: 13 }}>Tamil United CC · {season} Season</span>
-            <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: '2px 9px', borderRadius: 99 }}>
-              ⚡ Live Season
-            </span>
-          </motion.div>
-          <motion.select
-            variants={fadeUp}
-            value={season}
-            onChange={(e) => setSeason(e.target.value)}
-            style={{
-              marginTop: 14,
-              background: 'rgba(255,255,255,.15)', color: C.white,
-              border: '1.5px solid rgba(255,255,255,.3)', borderRadius: 8,
-              padding: '7px 14px', fontFamily: FONT, fontSize: 13,
-              cursor: 'pointer', outline: 'none',
-            }}
-          >
-            {SEASONS.map((s) => (
-              <option key={s} value={s} style={{ color: C.dark, background: C.white }}>{s} Season</option>
-            ))}
-          </motion.select>
-        </motion.div>
-      </div>
 
-      {/* Sub-tabs */}
-      <div style={{ background: C.white, borderBottom: `1px solid ${C.gray2}` }}>
-        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: '0 12px', display: 'flex' }}>
-          {[
-            { id: 'batting',  label: '🏏 Batting'  },
-            { id: 'bowling',  label: '🎯 Bowling'  },
-            { id: 'fielding', label: '🤸 Fielding' },
-            { id: 'matchlog', label: '📋 Match Log' },
-          ].map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              style={{
-                padding: '12px 18px', background: 'none', border: 'none',
-                borderBottom: `2.5px solid ${tab === t.id ? C.green : 'transparent'}`,
-                color: tab === t.id ? C.green : C.gray4,
-                cursor: 'pointer', fontFamily: FONT, fontSize: 13,
-                fontWeight: tab === t.id ? 700 : 400, whiteSpace: 'nowrap',
-                transition: 'color .15s',
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: EASE_OUT }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.2)', flexShrink: 0 }}>
+                  <img src="/logo.png" alt="DTU CC" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                </div>
+                <div>
+                  <h1 style={{ color: C.white, fontSize: 22, fontWeight: 900, margin: 0, letterSpacing: -0.3 }}>Player Statistics</h1>
+                  <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 12, marginTop: 2 }}>Tamil United CC · {season} Season</div>
+                </div>
+              </div>
+              <select value={season} onChange={e => setSeason(e.target.value)}
+                style={{ background: 'rgba(255,255,255,.15)', color: C.white, border: '1.5px solid rgba(255,255,255,.25)', borderRadius: 8, padding: '7px 12px', fontFamily: FONT, fontSize: 13, cursor: 'pointer', outline: 'none' }}
+              >
+                {SEASONS.map(s => <option key={s} value={s} style={{ color: C.dark, background: C.white }}>{s} Season</option>)}
+              </select>
+            </div>
+
+            {lastUpdated && (
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginBottom: 12 }}>
+                Last updated: {new Date(lastUpdated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Tab bar */}
+          <div style={{ display: 'flex', gap: 2, overflowX: 'auto', paddingBottom: 0 }}>
+            {TABS.map(({ id, label, icon: Icon }) => {
+              const active = tab === id
+              return (
+                <button key={id} onClick={() => setTab(id)} style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '10px 14px', background: 'none', border: 'none',
+                  borderBottom: `2.5px solid ${active ? C.gold : 'transparent'}`,
+                  color: active ? C.gold : 'rgba(255,255,255,.55)',
+                  cursor: 'pointer', fontFamily: FONT, fontSize: 13,
+                  fontWeight: active ? 700 : 400, whiteSpace: 'nowrap',
+                  transition: 'color 150ms ease', flexShrink: 0,
+                }}>
+                  <Icon size={13} strokeWidth={active ? 2.5 : 2} />
+                  {label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '16px 16px 40px', width: '100%' }}>
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {Array.from({ length: 7 }).map((_, i) => <Skeleton key={i} height={44} borderRadius={10} />)}
-          </div>
-        ) : stats.length === 0 && tab !== 'matchlog' ? (
-          <div style={{ textAlign: 'center', padding: '56px 20px' }}>
-            <div style={{ fontSize: 52, marginBottom: 14 }}>📊</div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: C.dark, marginBottom: 8 }}>
-              No statistics yet for {season}
-            </div>
-            <div style={{ color: C.gray3, fontSize: 14, lineHeight: 1.6 }}>
-              Admin can add stats from the admin panel.
-            </div>
-          </div>
-        ) : (
-          <>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tab}
-                variants={tabFade}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                {tab === 'batting'  && <BattingContent  stats={sorted} {...sp} />}
-                {tab === 'bowling'  && <BowlingContent  stats={sorted} {...sp} />}
-                {tab === 'fielding' && <FieldingContent stats={sorted} {...sp} />}
-                {tab === 'matchlog' && <MatchLogContent season={season} />}
-              </motion.div>
-            </AnimatePresence>
-
-            {lastUpdated && (
-              <div style={{ textAlign: 'center', color: C.gray3, fontSize: 12, marginTop: 20 }}>
-                Last updated:{' '}
-                {new Date(lastUpdated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                {updatedBy ? ` · by ${updatedBy}` : ''}
-              </div>
-            )}
-          </>
-        )}
+      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '20px 16px 48px', width: '100%' }}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab + season}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: EASE_OUT }}
+          >
+            {tab === 'batting'  && <BattingDashboard  stats={stats}  loading={loading} />}
+            {tab === 'bowling'  && <BowlingDashboard  stats={stats}  loading={loading} />}
+            {tab === 'fielding' && <FieldingDashboard stats={stats}  loading={loading} />}
+            {tab === 'matchlog' && <MatchLogDashboard season={season} />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <Footer />
