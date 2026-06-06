@@ -10,6 +10,12 @@ import {
   BarChart2, Target, Shield, ArrowLeft,
   TrendingUp, Award, Zap, ChevronDown, ChevronUp, Users
 } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Cell, RadarChart, PolarGrid, PolarAngleAxis, Radar,
+  ScatterChart, Scatter, ZAxis, LineChart, Line,
+  LabelList, ReferenceLine,
+} from 'recharts'
 
 // ── Easing & variants ─────────────────────────────────────
 const EASE_OUT = [0.23, 1, 0.32, 1]
@@ -24,6 +30,307 @@ const TAB_THEMES = {
   bowling:  { color: '#be123c', light: '#f43f5e', bg: '#fff1f2', grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' },
   fielding: { color: '#6d28d9', light: '#8b5cf6', bg: '#f5f3ff', grad: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)' },
   matchlog: { color: '#1d4ed8', light: '#3b82f6', bg: '#eff6ff', grad: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' },
+}
+
+// ── Custom tooltip ────────────────────────────────────────
+function ChartTooltip({ active, payload, label, unit = '', color }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 12, padding: '10px 14px',
+      boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`,
+      fontFamily: FONT, minWidth: 120,
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, marginBottom: 4 }}>{label}</div>
+      {payload.map((p, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill || p.color || color }} />
+          <span style={{ fontSize: 13, fontWeight: 800, color: p.fill || p.color || color }}>
+            {typeof p.value === 'number' && !Number.isInteger(p.value) ? p.value.toFixed(2) : p.value}
+          </span>
+          {unit && <span style={{ fontSize: 11, color: C.gray3 }}>{unit}</span>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Runs bar chart ────────────────────────────────────────
+function RunsBarChart({ data, color }) {
+  const top = [...data]
+    .filter(s => s.bat_runs > 0)
+    .sort((a, b) => b.bat_runs - a.bat_runs)
+    .slice(0, 8)
+    .map(s => ({ name: s.player_name.split(' ')[0], runs: s.bat_runs, avg: parseFloat(s.bat_average) || 0 }))
+
+  if (!top.length) return null
+
+  const BAR_COLORS = [
+    '#1a5c38','#22744a','#2e8b5c','#3aa870','#059669','#0d9488','#0891b2','#0369a1',
+  ]
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#1a5c38,#22744a)', borderRadius: 99 }} />
+        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Runs This Season</span>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={top} layout="vertical" margin={{ left: 0, right: 28, top: 0, bottom: 0 }} barSize={18}>
+          <defs>
+            {BAR_COLORS.map((c, i) => (
+              <linearGradient key={i} id={`runGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={c} stopOpacity={1} />
+                <stop offset="100%" stopColor={c} stopOpacity={0.7} />
+              </linearGradient>
+            ))}
+          </defs>
+          <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
+          <XAxis type="number" tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <Tooltip content={<ChartTooltip unit="runs" color={color} />} cursor={{ fill: `${color}08` }} />
+          <Bar dataKey="runs" radius={[0, 8, 8, 0]}>
+            {top.map((_, i) => <Cell key={i} fill={`url(#runGrad${i})`} />)}
+            <LabelList dataKey="runs" position="right" style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, fill: C.dark }} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ── Avg vs SR scatter ─────────────────────────────────────
+function AvgSRChart({ data, color }) {
+  const pts = data
+    .filter(s => s.bat_innings >= 2 && s.bat_runs > 0)
+    .map(s => ({
+      name: s.player_name.split(' ')[0],
+      avg: parseFloat(s.bat_average) || 0,
+      sr: parseFloat(s.bat_strike_rate) || 0,
+      runs: s.bat_runs,
+    }))
+  if (pts.length < 2) return null
+
+  const avgMean = pts.reduce((s, p) => s + p.avg, 0) / pts.length
+  const srMean  = pts.reduce((s, p) => s + p.sr,  0) / pts.length
+
+  const CustomDot = (props) => {
+    const { cx, cy, payload } = props
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={Math.max(6, Math.min(14, payload.runs / 12))} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={1.5} />
+        <text x={cx} y={cy - Math.max(8, Math.min(16, payload.runs / 12)) - 3} textAnchor="middle" fill={C.dark} fontSize={10} fontFamily={FONT} fontWeight={700}>
+          {payload.name}
+        </text>
+      </g>
+    )
+  }
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 8px', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#0369a1,#0ea5e9)', borderRadius: 99 }} />
+        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Average vs Strike Rate</span>
+      </div>
+      <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, marginBottom: 12, paddingLeft: 12 }}>Bubble size = runs scored</div>
+      <ResponsiveContainer width="100%" height={200}>
+        <ScatterChart margin={{ left: -10, right: 16, top: 16, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={`${C.gray2}80`} />
+          <XAxis dataKey="avg" name="Avg" type="number" tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} label={{ value: 'Average', position: 'insideBottom', offset: -2, fontFamily: FONT, fontSize: 10, fill: C.gray3 }} />
+          <YAxis dataKey="sr"  name="SR"  type="number" tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} label={{ value: 'Strike Rate', angle: -90, position: 'insideLeft', fontFamily: FONT, fontSize: 10, fill: C.gray3 }} />
+          <ZAxis dataKey="runs" range={[40, 300]} />
+          <ReferenceLine x={avgMean} stroke={`${color}40`} strokeDasharray="4 4" />
+          <ReferenceLine y={srMean}  stroke={`${color}40`} strokeDasharray="4 4" />
+          <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
+            if (!active || !payload?.length) return null
+            const d = payload[0]?.payload
+            return (
+              <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: C.dark, marginBottom: 6 }}>{d?.name}</div>
+                <div style={{ fontSize: 11, color: C.gray3 }}>Avg: <b style={{ color }}>{d?.avg?.toFixed(1)}</b></div>
+                <div style={{ fontSize: 11, color: C.gray3 }}>SR: <b style={{ color }}>{d?.sr?.toFixed(1)}</b></div>
+                <div style={{ fontSize: 11, color: C.gray3 }}>Runs: <b style={{ color: C.dark }}>{d?.runs}</b></div>
+              </div>
+            )
+          }} />
+          <Scatter data={pts} shape={<CustomDot />} />
+        </ScatterChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ── Wickets bar chart ─────────────────────────────────────
+function WicketsBarChart({ data, color }) {
+  const top = [...data]
+    .filter(s => s.bowl_wickets > 0)
+    .sort((a, b) => b.bowl_wickets - a.bowl_wickets)
+    .slice(0, 8)
+    .map(s => ({ name: s.player_name.split(' ')[0], wkts: s.bowl_wickets, econ: parseFloat(s.bowl_economy) || 0 }))
+
+  if (!top.length) return null
+
+  const BAR_COLORS = ['#be123c','#e11d48','#f43f5e','#fb7185','#be123c','#e11d48','#f43f5e','#fb7185']
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#be123c,#f43f5e)', borderRadius: 99 }} />
+        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Wickets This Season</span>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={top} layout="vertical" margin={{ left: 0, right: 28, top: 0, bottom: 0 }} barSize={18}>
+          <defs>
+            {BAR_COLORS.map((c, i) => (
+              <linearGradient key={i} id={`wktGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={c} stopOpacity={1} />
+                <stop offset="100%" stopColor={c} stopOpacity={0.65} />
+              </linearGradient>
+            ))}
+          </defs>
+          <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
+          <XAxis type="number" allowDecimals={false} tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <Tooltip content={<ChartTooltip unit="wkts" color={color} />} cursor={{ fill: `${color}08` }} />
+          <Bar dataKey="wkts" radius={[0, 8, 8, 0]}>
+            {top.map((_, i) => <Cell key={i} fill={`url(#wktGrad${i})`} />)}
+            <LabelList dataKey="wkts" position="right" style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, fill: C.dark }} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ── Economy rate chart ────────────────────────────────────
+function EconomyChart({ data, color }) {
+  const bowlers = [...data]
+    .filter(s => parseFloat(s.bowl_overs) >= 2 && s.bowl_economy > 0)
+    .sort((a, b) => parseFloat(a.bowl_economy) - parseFloat(b.bowl_economy))
+    .slice(0, 8)
+    .map(s => ({ name: s.player_name.split(' ')[0], econ: parseFloat(s.bowl_economy) || 0, wkts: s.bowl_wickets }))
+
+  if (bowlers.length < 2) return null
+
+  const getColor = (econ) => {
+    if (econ < 6)  return '#15803d'
+    if (econ < 8)  return '#b45309'
+    if (econ < 10) return '#be123c'
+    return '#7c3aed'
+  }
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#0891b2,#06b6d4)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Economy Rates</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {[['< 6','#15803d'],['6–8','#b45309'],['8+','#be123c']].map(([lbl, col]) => (
+            <div key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: col }} />
+              <span style={{ fontFamily: FONT, fontSize: 9, color: C.gray3, fontWeight: 600 }}>{lbl}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={bowlers} layout="vertical" margin={{ left: 0, right: 44, top: 0, bottom: 0 }} barSize={16}>
+          <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
+          <XAxis type="number" domain={[0, 'auto']} tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <ReferenceLine x={6} stroke="#15803d50" strokeDasharray="4 3" />
+          <ReferenceLine x={8} stroke="#b4530950" strokeDasharray="4 3" />
+          <Tooltip content={({ active, payload, label }) => {
+            if (!active || !payload?.length) return null
+            const econ = payload[0]?.value
+            return (
+              <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: C.dark, marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: getColor(econ) }}>Economy: {econ?.toFixed(2)}</div>
+              </div>
+            )
+          }} cursor={{ fill: '#00000006' }} />
+          <Bar dataKey="econ" radius={[0, 8, 8, 0]}>
+            {bowlers.map((b, i) => <Cell key={i} fill={getColor(b.econ)} />)}
+            <LabelList dataKey="econ" position="right" formatter={v => v.toFixed(2)} style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, fill: C.dark }} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ── Fielding stacked chart ────────────────────────────────
+function FieldingChart({ data }) {
+  const fielders = [...data]
+    .map(s => ({
+      name: s.player_name.split(' ')[0],
+      catches: s.field_catches || 0,
+      runOuts: s.field_run_outs || 0,
+      stumpings: s.field_stumpings || 0,
+    }))
+    .filter(s => s.catches + s.runOuts + s.stumpings > 0)
+    .sort((a, b) => (b.catches + b.runOuts + b.stumpings) - (a.catches + a.runOuts + a.stumpings))
+    .slice(0, 8)
+
+  if (!fielders.length) return null
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#6d28d9,#8b5cf6)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Fielding Breakdown</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {[['Catches','#6d28d9'],['Run Outs','#be123c'],['Stumpings','#b45309']].map(([lbl, col]) => (
+            <div key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: col }} />
+              <span style={{ fontFamily: FONT, fontSize: 9, color: C.gray3, fontWeight: 600 }}>{lbl}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={fielders} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }} barSize={16} barGap={0}>
+          <defs>
+            <linearGradient id="catchGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#6d28d9" /><stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+            <linearGradient id="roGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#be123c" /><stop offset="100%" stopColor="#f43f5e" />
+            </linearGradient>
+            <linearGradient id="stmpGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#b45309" /><stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+          </defs>
+          <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
+          <XAxis type="number" allowDecimals={false} tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <Tooltip content={({ active, payload, label }) => {
+            if (!active || !payload?.length) return null
+            return (
+              <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: C.dark, marginBottom: 6 }}>{label}</div>
+                {payload.map((p, i) => p.value > 0 && (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: p.fill }} />
+                    <span style={{ fontSize: 11, color: C.gray4 }}>{p.name}: </span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: p.fill }}>{p.value}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          }} cursor={{ fill: '#00000006' }} />
+          <Bar dataKey="catches"   name="Catches"   stackId="a" fill="url(#catchGrad)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="runOuts"   name="Run Outs"  stackId="a" fill="url(#roGrad)"    radius={[0, 0, 0, 0]} />
+          <Bar dataKey="stumpings" name="Stumpings" stackId="a" fill="url(#stmpGrad)"  radius={[0, 8, 8, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
 }
 
 // Formatters
@@ -244,6 +551,9 @@ function BattingDashboard({ stats, loading }) {
         <StatCard icon={BarChart2}  label="Top Strike Rate" value={topSR ? fmt2(topSR.bat_strike_rate) : '—'} sub={topSR?.player_name?.split(' ')[0] || '—'} gradient="linear-gradient(135deg, #0369a1, #0ea5e9)" loading={false} />
       </motion.div>
 
+      <RunsBarChart data={sorted} color={theme.color} />
+      <AvgSRChart   data={sorted} color={theme.color} />
+
       <SectionHeading theme={theme}>🏆 Top Run Scorers</SectionHeading>
       <Podium items={sorted} valueKey="bat_runs" label="Runs" tabTheme={theme} />
 
@@ -359,6 +669,9 @@ function BowlingDashboard({ stats, loading }) {
         <StatCard icon={Award}     label="5-Wicket Hauls"  value={fiveWkts}     sub="season total"                               gradient="linear-gradient(135deg, #b45309, #f59e0b)" loading={false} />
       </motion.div>
 
+      <WicketsBarChart data={sorted} color={theme.color} />
+      <EconomyChart    data={sorted} color={theme.color} />
+
       <SectionHeading theme={theme}>🎯 Top Wicket Takers</SectionHeading>
       <Podium items={sorted} valueKey="bowl_wickets" label="Wkts" tabTheme={theme} />
 
@@ -455,6 +768,8 @@ function FieldingDashboard({ stats, loading }) {
         <StatCard icon={Shield} label="Catches"  value={totalCatch} sub={`${fielders.length} fielders`} gradient="linear-gradient(135deg, #6d28d9, #8b5cf6)" loading={false} />
         <StatCard icon={Zap}    label="Run Outs" value={totalRO}    sub="direct hits" gradient="linear-gradient(135deg, #be123c, #f43f5e)" loading={false} />
       </motion.div>
+
+      <FieldingChart data={stats} />
 
       <SectionHeading theme={theme}>🧤 Fielding Contributions</SectionHeading>
       <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, overflow: 'hidden' }}>
