@@ -24,6 +24,7 @@ const TOP_LINKS = [
   { path: '/league',   label: 'League',   Icon: Trophy },
   { path: '/fixtures', label: 'Fixtures', Icon: CalendarDays },
   { path: '/results',  label: 'Results',  Icon: ClipboardList },
+  { path: '/players',  label: 'Players',  Icon: Users },
   { path: '/stats',    label: 'Stats',    Icon: BarChart2 },
 ]
 
