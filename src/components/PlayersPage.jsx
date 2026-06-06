@@ -73,7 +73,7 @@ function PlayerPhoto({ photoUrl, name, size = 96, fill = false }) {
       <img
         src={photoUrl}
         alt={name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 35%' }}
         onError={() => setErr(true)}
       />
     </div>
@@ -114,7 +114,7 @@ function PlayerCard({ player, index, onClick }) {
       }}
     >
       {/* ── Hero photo area ── */}
-      <div style={{ position: 'relative', background: meta.grad, paddingTop: '72%', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', background: meta.grad, paddingTop: '60%', overflow: 'hidden' }}>
         {/* Background texture circles */}
         <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: 0, left: -10, width: 70, height: 70, borderRadius: '50%', background: 'rgba(0,0,0,.1)', pointerEvents: 'none' }} />
@@ -147,7 +147,7 @@ function PlayerCard({ player, index, onClick }) {
         {/* Player photo — positioned at bottom-center of hero */}
         <div style={{
           position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)',
-          width: '62%', aspectRatio: '1',
+          width: '55%', aspectRatio: '1',
           borderRadius: '50%', overflow: 'hidden',
           border: '3px solid rgba(255,255,255,.9)',
           boxShadow: '0 8px 24px rgba(0,0,0,.25)',
