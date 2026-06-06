@@ -235,14 +235,13 @@ function NextFixtureCard() {
         {days.length > 0 && (
           <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
             {days.map((dateStr, i) => {
-              const date      = new Date(dateStr + 'T12:00:00')
-              const dayLabel  = date.toLocaleDateString('en-GB', { weekday: 'short' })
-              const isMatch   = dateStr === matchYMD
-              const wmo       = getWmo(weather.daily.weathercode[i])
-              const maxT      = Math.round(weather.daily.temperature_2m_max[i])
-              const minT      = Math.round(weather.daily.temperature_2m_min[i])
-              const rain      = weather.daily.precipitation_probability_max[i] || 0
-              const wind      = Math.round(weather.daily.windspeed_10m_max[i] || 0)
+              const date     = new Date(dateStr + 'T12:00:00')
+              const dayLabel = date.toLocaleDateString('en-GB', { weekday: 'short' })
+              const isMatch  = dateStr === matchYMD
+              const wmo      = getWmo(weather.daily.weathercode[i])
+              const maxT     = Math.round(weather.daily.temperature_2m_max[i])
+              const minT     = Math.round(weather.daily.temperature_2m_min[i])
+              const rain     = weather.daily.precipitation_probability_max[i] || 0
 
               return (
                 <div key={dateStr} style={{
@@ -257,13 +256,12 @@ function NextFixtureCard() {
                     ? '1.5px solid rgba(251,191,36,.6)'
                     : '1px solid rgba(255,255,255,.08)',
                   borderRadius: 12,
-                  padding: '7px 4px 6px',
-                  position: 'relative',
+                  padding: isMatch ? '5px 4px 6px' : '7px 4px 6px',
                   boxShadow: isMatch ? '0 0 14px rgba(251,191,36,.2)' : 'none',
-                  transition: 'transform 150ms',
                 }}>
+                  {/* MATCH badge — inside card so it's never clipped */}
                   {isMatch && (
-                    <div style={{ position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)', background: '#fbbf24', borderRadius: 99, padding: '1px 6px', fontFamily: FONT, fontSize: 7, fontWeight: 900, color: '#1e1b4b', whiteSpace: 'nowrap', letterSpacing: 0.3 }}>
+                    <div style={{ background: '#fbbf24', borderRadius: 6, padding: '2px 0', marginBottom: 4, fontFamily: FONT, fontSize: 7, fontWeight: 900, color: '#1e1b4b', letterSpacing: 0.5 }}>
                       MATCH
                     </div>
                   )}
