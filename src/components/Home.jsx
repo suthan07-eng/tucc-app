@@ -66,11 +66,18 @@ function SeasonSnapshot() {
       </div>
 
       {/* Stats grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {stats.map(({ label, value, color, bg }) => (
-          <div key={label} style={{ background: bg, borderRadius: 14, padding: '14px 10px', textAlign: 'center', border: `1px solid ${color}18` }}>
-            <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-            <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: `${color}aa`, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
+          <div key={label} style={{
+            background: bg, borderRadius: 18,
+            padding: '18px 10px 14px', textAlign: 'center',
+            border: `1.5px solid ${color}20`,
+            boxShadow: `0 4px 16px ${color}12`,
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', bottom: -10, right: -10, width: 44, height: 44, borderRadius: '50%', background: `${color}10`, pointerEvents: 'none' }} />
+            <div style={{ fontFamily: FONT, fontSize: 28, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+            <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 800, color: `${color}99`, marginTop: 7, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
           </div>
         ))}
       </div>
@@ -443,52 +450,94 @@ export default function Home() {
       </div>
 
       <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '0 16px 40px', width: '100%' }}>
-        {/* Stats row */}
+
+        {/* ── Availability Cards — gradient ── */}
         <motion.div
           variants={staggerList}
           initial="hidden"
           animate="visible"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: -32, position: 'relative', zIndex: 2 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: -36, position: 'relative', zIndex: 2 }}
         >
           {[
-            { label: 'Available',   count: countAvailable,   color: C.ok,    bg: C.okBg,  dot: '#bbf7d0' },
-            { label: 'Unavailable', count: countUnavailable, color: C.red,   bg: C.redBg, dot: '#fecaca' },
-            { label: 'Pending',     count: countPending,     color: C.gray4, bg: C.gray1, dot: C.gray2 },
-          ].map(({ label, count, color, bg, dot }) => (
+            {
+              label: 'Available', count: countAvailable, changed: availChanged,
+              grad: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
+              shadow: '0 8px 24px rgba(21,128,61,.35)',
+              icon: '✅',
+            },
+            {
+              label: 'Unavailable', count: countUnavailable, changed: unavailChanged,
+              grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)',
+              shadow: '0 8px 24px rgba(190,18,60,.3)',
+              icon: '❌',
+            },
+            {
+              label: 'Pending', count: countPending, changed: pendingChanged,
+              grad: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)',
+              shadow: '0 8px 24px rgba(71,85,105,.25)',
+              icon: '⏳',
+            },
+          ].map(({ label, count, changed, grad, shadow, icon }) => (
             <motion.div key={label} variants={staggerItem}>
-            <Card style={{ padding: '16px 10px', textAlign: 'center', borderTop: `3px solid ${dot}` }}>
-              {loading ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-                  <Skeleton height={28} width={40} />
-                  <Skeleton height={12} width={60} />
-                </div>
-              ) : (
-                <>
-                  <div
-                    className={`count-flip${(label === 'Available' && availChanged) || (label === 'Unavailable' && unavailChanged) || (label === 'Pending' && pendingChanged) ? ' changed' : ''}`}
-                    style={{ fontSize: 34, fontWeight: 900, color, lineHeight: 1 }}
-                  >{count}</div>
-                  <div style={{ fontSize: 10, color: C.gray3, fontWeight: 600, marginTop: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
-                </>
-              )}
-            </Card>
+              <div style={{
+                background: grad,
+                borderRadius: 18,
+                padding: '18px 10px 16px',
+                textAlign: 'center',
+                boxShadow: shadow,
+                position: 'relative', overflow: 'hidden',
+              }}>
+                {/* Shine */}
+                <div style={{ position: 'absolute', top: -18, right: -18, width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
+                {loading ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
+                    <Skeleton height={32} width={40} style={{ background: 'rgba(255,255,255,.3)' }} />
+                    <Skeleton height={10} width={52} style={{ background: 'rgba(255,255,255,.2)' }} />
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 11, marginBottom: 6 }}>{icon}</div>
+                    <div
+                      className={`count-flip${changed ? ' changed' : ''}`}
+                      style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}
+                    >{count}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,.75)', fontWeight: 700, marginTop: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
+                  </>
+                )}
+              </div>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* CTA */}
-        <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-          <Button size="full" onClick={() => nav('/availability')}>
+        {/* ── CTA Buttons ── */}
+        <div style={{ marginTop: 14, display: 'flex', gap: 10 }}>
+          <motion.button
+            onClick={() => nav('/availability')}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              flex: 1,
+              background: 'linear-gradient(135deg, #1a5c38, #22744a)',
+              color: '#fff', border: 'none', borderRadius: 16,
+              padding: '16px 20px', fontFamily: FONT, fontSize: 15, fontWeight: 800,
+              cursor: 'pointer', boxShadow: '0 6px 20px rgba(26,92,56,.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >
             🏏 Submit My Availability
-          </Button>
-          <Button
-            variant="ghost"
-            size="md"
+          </motion.button>
+          <motion.button
             onClick={() => nav('/register')}
-            style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              flexShrink: 0,
+              background: '#fff', color: C.green,
+              border: `2px solid ${C.green}`, borderRadius: 16,
+              padding: '16px 18px', fontFamily: FONT, fontSize: 14, fontWeight: 800,
+              cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
           >
             + Register
-          </Button>
+          </motion.button>
         </div>
 
         {/* ── Season Snapshot + Top Performers ── */}
@@ -503,11 +552,31 @@ export default function Home() {
         )}
 
         {/* Player chips */}
-        <Card style={{ marginTop: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.gray5 }}>Players</div>
-            {!loading && <span style={{ fontSize: 12, color: C.gray3 }}>{players.length} registered</span>}
+        <Card style={{ marginTop: 16, overflow: 'hidden', padding: 0 }}>
+          <div style={{
+            padding: '14px 16px 12px',
+            background: `linear-gradient(135deg, ${C.greenDark}08, ${C.greenLight}10)`,
+            borderBottom: `1px solid ${C.gray2}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #1a5c38, #22744a)', borderRadius: 99 }} />
+              <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Squad</span>
+              {!loading && (
+                <span style={{ background: C.greenBg, color: C.green, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
+                  {players.length} players
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 8, fontSize: 11, fontWeight: 600, color: C.gray3 }}>
+              {!loading && <>
+                <span style={{ color: '#15803d' }}>✓ {countAvailable}</span>
+                <span style={{ color: C.red }}>✕ {countUnavailable}</span>
+                <span style={{ color: C.gray4 }}>? {countPending}</span>
+              </>}
+            </div>
           </div>
+          <div style={{ padding: '14px 16px 16px' }}>
           {loading ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {Array.from({ length: 10 }).map((_, i) => (
@@ -560,6 +629,7 @@ export default function Home() {
               })}
             </motion.div>
           )}
+          </div>
         </Card>
 
         {/* Greeting / message from captain */}
