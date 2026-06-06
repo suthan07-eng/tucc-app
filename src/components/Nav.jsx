@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, BarChart2, ShieldCheck, ClipboardList,
-  Menu, X, Home, UserPlus, Calendar, ChevronRight,
+  Menu, X, Home, UserPlus, Calendar, ChevronRight, CalendarDays,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 
@@ -12,16 +12,18 @@ const EASE = [0.23, 1, 0.32, 1]
 const MENU_LINKS = [
   { path: '/',             label: 'Home',         Icon: Home,          color: '#22744a', bg: '#edf7f1' },
   { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: '#fffbeb' },
-  { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: '#eff6ff' },
+  { path: '/fixtures',     label: 'Fixtures',     Icon: CalendarDays,  color: '#1d4ed8', bg: '#eff6ff' },
+  { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: '#e0f2fe' },
   { path: '/stats',        label: 'Statistics',   Icon: BarChart2,     color: '#6d28d9', bg: '#f5f3ff' },
   { path: '/availability', label: 'Availability', Icon: Calendar,      color: '#0891b2', bg: '#ecfeff' },
   { path: '/register',     label: 'Register',     Icon: UserPlus,      color: '#be123c', bg: '#fff1f2' },
 ]
 
 const TOP_LINKS = [
-  { path: '/league',  label: 'League',  Icon: Trophy },
-  { path: '/results', label: 'Results', Icon: ClipboardList },
-  { path: '/stats',   label: 'Stats',   Icon: BarChart2 },
+  { path: '/league',   label: 'League',   Icon: Trophy },
+  { path: '/fixtures', label: 'Fixtures', Icon: CalendarDays },
+  { path: '/results',  label: 'Results',  Icon: ClipboardList },
+  { path: '/stats',    label: 'Stats',    Icon: BarChart2 },
 ]
 
 export default function Nav() {
