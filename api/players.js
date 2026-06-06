@@ -9,7 +9,7 @@ const PHOTO_BASE = 'https://admin.btcluk.com/players/'
 
 // Hardcoded fallback — all 29 players scraped from BTCL on 2026-06-06
 const BTCL_FALLBACK = [
-  { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home', statName: null, photoPos: 'center 58%' },
+  { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home', statName: null, photoPos: 'center 72%' },
   { PlayerID: 1378, Forename: 'Gobinath',       Surname: 'Navaratnam',         AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '90041.jpg',                                          player_type: 'Home' },
   { PlayerID: 1383, Forename: 'Raj',            Surname: 'Sorna',               AgeGroup: 'Pro', BatStyle: '',           BowlStyle: '',                          Photo: '3615Raj.jpg',                                        player_type: 'Home' },
   { PlayerID: 1385, Forename: 'Roshan',         Surname: 'Thishanthan',         AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: 'IMG-20240409-WA0034-removebg-preview.png',            player_type: 'Home' },
