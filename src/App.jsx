@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import LandingPage from './components/LandingPage'
 import Home from './components/Home'
 import Register from './components/Register'
 import Availability from './components/Availability'
@@ -11,33 +13,50 @@ import PlayersPage from './components/PlayersPage'
 import AdminLogin from './components/admin/AdminLogin'
 import AdminDashboard from './components/admin/AdminDashboard'
 
-function ProtectedRoute({ children }) {
+// Protects all player-facing routes — redirects to /login if not signed in
+function RequireAuth({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return null // wait for session to resolve
+  return user ? children : <Navigate to="/login" replace />
+}
+
+// Admin-only protection (separate from player auth)
+function RequireAdmin({ children }) {
   const isAdmin = sessionStorage.getItem('tucc_admin')
   return isAdmin ? children : <Navigate to="/admin/login" replace />
 }
 
-export default function App() {
+function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/availability" element={<Availability />} />
-      <Route path="/success" element={<Success />} />
-      <Route path="/league" element={<League />} />
-      <Route path="/stats" element={<Stats />} />
-      <Route path="/results" element={<ResultsPage />} />
-      <Route path="/fixtures" element={<FixturesPage />} />
-      <Route path="/players" element={<PlayersPage />} />
+      {/* Public — landing / login */}
+      <Route path="/login" element={<LandingPage />} />
+
+      {/* Protected player routes */}
+      <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+      <Route path="/register" element={<RequireAuth><Register /></RequireAuth>} />
+      <Route path="/availability" element={<RequireAuth><Availability /></RequireAuth>} />
+      <Route path="/success" element={<RequireAuth><Success /></RequireAuth>} />
+      <Route path="/league" element={<RequireAuth><League /></RequireAuth>} />
+      <Route path="/stats" element={<RequireAuth><Stats /></RequireAuth>} />
+      <Route path="/results" element={<RequireAuth><ResultsPage /></RequireAuth>} />
+      <Route path="/fixtures" element={<RequireAuth><FixturesPage /></RequireAuth>} />
+      <Route path="/players" element={<RequireAuth><PlayersPage /></RequireAuth>} />
+
+      {/* Admin */}
       <Route path="/admin/login" element={<AdminLogin />} />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }

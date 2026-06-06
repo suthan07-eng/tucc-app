@@ -11,6 +11,7 @@ import Button from './ui/Button'
 import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
+import PlayerDashboard from './PlayerDashboard'
 
 import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap, MapPin, Clock, Home as HomeIcon, Plane, CalendarDays } from 'lucide-react'
 
@@ -742,6 +743,11 @@ export default function Home() {
 
       <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '0 16px 40px', width: '100%' }}>
 
+        {/* ── Player Dashboard ── */}
+        <div style={{ marginTop: 16 }}>
+          <PlayerDashboard players={players} />
+        </div>
+
         {/* ── Availability Cards — gradient ── */}
         <motion.div
           variants={staggerList}
@@ -816,19 +822,6 @@ export default function Home() {
           >
             🏏 Submit My Availability
           </motion.button>
-          <motion.button
-            onClick={() => nav('/register')}
-            whileTap={{ scale: 0.97 }}
-            style={{
-              flexShrink: 0,
-              background: '#fff', color: C.green,
-              border: `2px solid ${C.green}`, borderRadius: 16,
-              padding: '16px 18px', fontFamily: FONT, fontSize: 14, fontWeight: 800,
-              cursor: 'pointer', whiteSpace: 'nowrap',
-            }}
-          >
-            + Register
-          </motion.button>
         </div>
 
         {/* ── Season Snapshot + Top Performers ── */}
@@ -877,10 +870,7 @@ export default function Home() {
             </div>
           ) : players.length === 0 ? (
             <div style={{ color: C.gray3, fontSize: 14, textAlign: 'center', padding: '12px 0' }}>
-              No players yet.{' '}
-              <button onClick={() => nav('/register')} style={{ color: C.green, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
-                Register first →
-              </button>
+              No players yet.
             </div>
           ) : (
             <motion.div
