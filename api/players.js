@@ -9,7 +9,7 @@ const PHOTO_BASE = 'https://admin.btcluk.com/players/'
 
 // Hardcoded fallback — all 29 players scraped from BTCL on 2026-06-06
 const BTCL_FALLBACK = [
-  { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home' },
+  { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home', statName: null },
   { PlayerID: 1378, Forename: 'Gobinath',       Surname: 'Navaratnam',         AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '90041.jpg',                                          player_type: 'Home' },
   { PlayerID: 1383, Forename: 'Raj',            Surname: 'Sorna',               AgeGroup: 'Pro', BatStyle: '',           BowlStyle: '',                          Photo: '3615Raj.jpg',                                        player_type: 'Home' },
   { PlayerID: 1385, Forename: 'Roshan',         Surname: 'Thishanthan',         AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: 'IMG-20240409-WA0034-removebg-preview.png',            player_type: 'Home' },
@@ -29,7 +29,7 @@ const BTCL_FALLBACK = [
   { PlayerID: 5099, Forename: 'Eashwaran',      Surname: 'Aravinthan',          AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Slow left-arm orthodox',   Photo: 'image0 (3).jpeg',                                    player_type: 'Home' },
   { PlayerID: 5299, Forename: 'Hrithisshan',    Surname: 'Kanendran',           AgeGroup: 'Pro', BatStyle: 'Left Hand',  BowlStyle: 'Right-arm medium',         Photo: '976Under 15.png',                                    player_type: 'Home' },
   { PlayerID: 5375, Forename: 'Abdul Khaliq',   Surname: 'Hakeem',              AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '6984886Under 18.png',                                 player_type: 'Home' },
-  { PlayerID: 6296, Forename: 'Shenal',         Surname: 'Daniel Anthony',      AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: 'bc581ed9-b973-48e3-9e12-52912924f432.jpeg',           player_type: 'Home' },
+  { PlayerID: 6296, Forename: 'Shenal',         Surname: 'Daniel Anthony',      AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: 'bc581ed9-b973-48e3-9e12-52912924f432.jpeg',           player_type: 'Home', statName: 'Shenal Daniel' },
   { PlayerID: 6631, Forename: 'Thevakumar',     Surname: 'Kanagarathinam Anton',AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '6631.jpeg',                                          player_type: 'Home' },
   { PlayerID: 7348, Forename: 'Malindu',        Surname: 'Maduranga',           AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Off break (right-arm)',    Photo: '7348.jpeg',                                          player_type: 'Home' },
   { PlayerID: 7349, Forename: 'Prayash',        Surname: 'Singh',               AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Off break (right-arm)',    Photo: '7349.jpeg',                                          player_type: 'Home' },
@@ -47,9 +47,20 @@ function loadStats() {
   } catch { return { batting: [], bowling: [], fielding: [] } }
 }
 
+// Words too common to be a reliable match signal (appear in many Tamil/Muslim names)
+const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj'])
+
 // Fuzzy name match — tries forename+surname and surname+forename
-function matchStat(arr, forename, surname) {
+// Pass statName=null  → always return null (no stats for this player)
+// Pass statName=string → exact lookup by that name only
+// Pass statName=undefined → fuzzy auto-match
+function matchStat(arr, forename, surname, statName) {
   if (!arr || !arr.length) return null
+  // Explicit override: null = no stats, string = exact name in stats
+  if (statName === null) return null
+  if (typeof statName === 'string') {
+    return arr.find(p => p.name.toLowerCase().trim() === statName.toLowerCase().trim()) || null
+  }
   const full1 = `${forename} ${surname}`.toLowerCase().replace(/\s+/g, ' ').trim()
   const full2 = `${surname} ${forename}`.toLowerCase().replace(/\s+/g, ' ').trim()
   // 1. Exact full-name match (both orderings)
@@ -58,11 +69,11 @@ function matchStat(arr, forename, surname) {
     return n === full1 || n === full2
   })
   if (hit) return hit
-  // 2. Stricter partial — require at least one meaningful word from EACH of
-  //    forename AND surname to appear in the stat name.
-  //    This prevents short/common words (e.g. "Raj") matching unrelated names.
-  const fnWords = forename.toLowerCase().split(' ').filter(w => w.length > 2)
-  const snWords = surname.toLowerCase().split(' ').filter(w => w.length > 2)
+  // 2. Stricter partial — require at least one UNIQUE (non-common) meaningful word
+  //    from EACH of forename AND surname to appear in the stat name.
+  //    Filters out common words like "Mohamed", "Daniel" that cause false positives.
+  const fnWords = forename.toLowerCase().split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
+  const snWords = surname.toLowerCase().split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
   if (fnWords.length > 0 && snWords.length > 0) {
     hit = arr.find(p => {
       const n = p.name.toLowerCase()
@@ -94,9 +105,9 @@ export default async function handler(req, res) {
     const btclPlayers = await r.json()
 
     const players = btclPlayers.map(p => {
-      const batStat  = matchStat(stats.batting,  p.Forename, p.Surname)
-      const bowlStat = matchStat(stats.bowling,  p.Forename, p.Surname)
-      const fieldStat = matchStat(stats.fielding, p.Forename, p.Surname)
+      const batStat   = matchStat(stats.batting,  p.Forename, p.Surname, p.statName)
+      const bowlStat  = matchStat(stats.bowling,  p.Forename, p.Surname, p.statName)
+      const fieldStat = matchStat(stats.fielding, p.Forename, p.Surname, p.statName)
 
       return {
         id:         p.PlayerID,
@@ -122,9 +133,9 @@ export default async function handler(req, res) {
     console.error('Players API error:', err.message)
     // Use hardcoded BTCL data + local stats as fallback
     const players = BTCL_FALLBACK.map(p => {
-      const batStat   = matchStat(stats.batting,  p.Forename, p.Surname)
-      const bowlStat  = matchStat(stats.bowling,  p.Forename, p.Surname)
-      const fieldStat = matchStat(stats.fielding, p.Forename, p.Surname)
+      const batStat   = matchStat(stats.batting,  p.Forename, p.Surname, p.statName)
+      const bowlStat  = matchStat(stats.bowling,  p.Forename, p.Surname, p.statName)
+      const fieldStat = matchStat(stats.fielding, p.Forename, p.Surname, p.statName)
       return {
         id:         p.PlayerID,
         forename:   p.Forename,
