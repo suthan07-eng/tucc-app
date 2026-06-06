@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Clock, ChevronDown, ExternalLink, ArrowLeft, RotateCw } from 'lucide-react'
+import {
+  Trophy, Clock, ExternalLink, ArrowLeft, RotateCw,
+  TrendingUp, TrendingDown, Minus,
+} from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
@@ -13,23 +16,19 @@ const isOurs   = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes(
 const involved = (r) => isOurs(r.team1) || isOurs(r.team2)
 const weWon    = (r) => isOurs(r.winner)
 
-// Definitive logo lookup — keyed by play-cricket badge_image ID
-// Verified by direct scraping of play-cricket.com
 const TEAM_LOGOS = {
-  'Dollishill Tamil United CC - Knights':             'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
-  'Lewisham CC - A':                                  'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',
-  'Northerns CC - A':                                 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
-  'Northerns CC - B':                                 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
-  'Kent United CC - 1st XI':                          'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg',
-  'Redbridge Lankians Sports & Social Club CC - 1st XI': 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg',
-  'Stanly CC - A':                                    'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg',
-  'West 3 CC - 1st XI':                              'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG',
+  'Dollishill Tamil United CC - Knights':               'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
+  'Lewisham CC - A':                                    'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',
+  'Northerns CC - A':                                   'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  'Northerns CC - B':                                   'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  'Kent United CC - 1st XI':                            'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg',
+  'Redbridge Lankians Sports & Social Club CC - 1st XI':'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg',
+  'Stanly CC - A':                                      'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg',
+  'West 3 CC - 1st XI':                                'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG',
 }
 
 function getLogoForTeam(name) {
-  // Exact match first
   if (TEAM_LOGOS[name]) return TEAM_LOGOS[name]
-  // Partial match
   const key = Object.keys(TEAM_LOGOS).find(k =>
     name.toLowerCase().includes(k.toLowerCase().split(' ')[0]) ||
     k.toLowerCase().includes(name.toLowerCase().split(' ')[0])
@@ -47,21 +46,29 @@ function groupByDate(results) {
   return Object.entries(map)
 }
 
-function TeamLogo({ logo: logoProp, name, size = 44 }) {
+const shorten = n => n
+  .replace('Sports & Social Club', '').replace('- 1st XI', '')
+  .replace('- Knights', '').replace(/\s*-\s*[AB]$/, '').trim()
+
+// ── Team Logo ──────────────────────────────────────────────
+function TeamLogo({ logo: logoProp, name, size = 52 }) {
   const [error, setError] = useState(false)
-  // Always prefer the verified lookup over the scraped logo
   const logo = getLogoForTeam(name) || logoProp
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+
+  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d']
+  let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
+  const bg = PALETTE[Math.abs(h) % PALETTE.length]
 
   if (!logo || error) {
     return (
       <div style={{
-        width: size, height: size, borderRadius: '50%',
-        background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`,
+        width: size, height: size, borderRadius: size * 0.28,
+        background: `linear-gradient(135deg, ${bg}, ${bg}cc)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, fontFamily: FONT, fontWeight: 800,
+        flexShrink: 0, fontFamily: FONT, fontWeight: 900,
         fontSize: Math.round(size * 0.3), color: '#fff',
-        border: `2px solid ${C.gray2}`,
+        boxShadow: `0 4px 16px ${bg}40`,
       }}>
         {initials}
       </div>
@@ -70,165 +77,243 @@ function TeamLogo({ logo: logoProp, name, size = 44 }) {
 
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%',
+      width: size, height: size, borderRadius: size * 0.28,
       background: '#fff', overflow: 'hidden', flexShrink: 0,
-      border: `2px solid ${C.gray2}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(0,0,0,.1)',
+      boxShadow: '0 4px 16px rgba(0,0,0,.12)',
+      border: '2px solid rgba(255,255,255,.6)',
     }}>
-      <img
-        src={logo} alt={name}
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      <img src={logo} alt={name}
+        style={{ width: '90%', height: '90%', objectFit: 'contain' }}
         onError={() => setError(true)}
       />
     </div>
   )
 }
 
+// ── Points pill ────────────────────────────────────────────
 function PtsBadge({ pts }) {
   const n = parseInt(pts)
-  const color  = n >= 15 ? C.ok    : n >= 10 ? '#b45309' : C.gray3
-  const bg     = n >= 15 ? C.okBg  : n >= 10 ? '#fef9ec' : C.gray1
-  const border = n >= 15 ? '#bbf7d0' : n >= 10 ? '#fde68a' : C.gray2
+  const configs = [
+    [15, { bg: 'linear-gradient(135deg,#15803d,#22c55e)', color: '#fff', shadow: '#15803d40' }],
+    [10, { bg: 'linear-gradient(135deg,#b45309,#f59e0b)', color: '#fff', shadow: '#b4530940' }],
+    [0,  { bg: C.gray1, color: C.gray4, shadow: 'none' }],
+  ]
+  const { bg, color, shadow } = configs.find(([min]) => n >= min)[1]
   return (
-    <span style={{
-      fontFamily: FONT, fontSize: 11, fontWeight: 800,
-      color, background: bg, border: `1px solid ${border}`,
-      borderRadius: 6, padding: '3px 8px',
-      flexShrink: 0, textAlign: 'center',
-      fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
+    <div style={{
+      background: bg, color, fontFamily: FONT, fontSize: 12, fontWeight: 800,
+      borderRadius: 10, padding: '5px 10px', textAlign: 'center',
+      boxShadow: shadow !== 'none' ? `0 3px 10px ${shadow}` : 'none',
+      flexShrink: 0, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
+      minWidth: 52,
     }}>
       {pts} pts
-    </span>
+    </div>
   )
 }
 
+// ── Result Card ────────────────────────────────────────────
 function ResultCard({ result, index }) {
   const us  = involved(result)
   const won = us && weWon(result)
 
-  const bannerBg     = us ? (won ? C.ok  : C.red)     : C.gray5
-  const cardBg       = us ? (won ? C.okBg : '#fef2f2') : C.white
-  const cardBorder   = us ? (won ? '#bbf7d0' : '#fecaca') : C.gray2
-  const cardShadow   = us
-    ? `0 4px 20px ${won ? 'rgba(21,128,61,.14)' : 'rgba(200,48,42,.12)'}`
-    : `0 2px 8px ${C.shadow}`
+  // Card theme
+  const theme = us
+    ? won
+      ? {
+          headerGrad:  'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
+          cardBg:      '#f0fdf4',
+          cardBorder:  '#bbf7d0',
+          shadow:      '0 8px 32px rgba(21,128,61,.18)',
+          glow:        'rgba(21,128,61,.12)',
+          accent:      '#15803d',
+          scoreBg:     'rgba(21,128,61,.08)',
+          label:       'Victory 🏆',
+          labelColor:  '#fff',
+        }
+      : {
+          headerGrad:  'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)',
+          cardBg:      '#fff1f2',
+          cardBorder:  '#fecaca',
+          shadow:      '0 8px 32px rgba(190,18,60,.15)',
+          glow:        'rgba(190,18,60,.08)',
+          accent:      '#be123c',
+          scoreBg:     'rgba(190,18,60,.06)',
+          label:       'Defeat',
+          labelColor:  '#fff',
+        }
+    : {
+        headerGrad:  'linear-gradient(135deg, #334155 0%, #64748b 100%)',
+        cardBg:      C.white,
+        cardBorder:  C.gray2,
+        shadow:      `0 4px 20px ${C.shadow}`,
+        glow:        'transparent',
+        accent:      C.gray5,
+        scoreBg:     C.gray1,
+        label:       null,
+        labelColor:  '#fff',
+      }
 
-  const shorten = n => n
-    .replace('Sports & Social Club', '').replace('- 1st XI', '')
-    .replace('- Knights', '').replace(/\s*-\s*[AB]$/, '').trim()
+  const t1Ours = isOurs(result.team1)
+  const t2Ours = isOurs(result.team2)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, ease: EASE_OUT, delay: index * 0.05 }}
+      transition={{ duration: 0.32, ease: EASE_OUT, delay: index * 0.06 }}
       style={{
-        background: cardBg, borderRadius: 18,
-        border: `1px solid ${cardBorder}`,
-        overflow: 'hidden', boxShadow: cardShadow,
+        background: theme.cardBg,
+        borderRadius: 22,
+        border: `1.5px solid ${theme.cardBorder}`,
+        overflow: 'hidden',
+        boxShadow: theme.shadow,
       }}
     >
-      {/* Banner */}
+      {/* ── Header band ── */}
       <div style={{
-        padding: '10px 16px', background: bannerBg,
+        background: theme.headerGrad,
+        padding: '13px 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {us && won && <Trophy size={13} color="#fff" strokeWidth={2.5} />}
-          <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: '#fff', letterSpacing: 0.2 }}>
-            {us
-              ? (won ? '🏏 Tamil United won' : '🏏 Tamil United lost')
-              : shorten(result.winner).substring(0, 28)
-            }
-            {' '}— by {result.margin}
-          </span>
+        {/* Shine */}
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          {us && won && <Trophy size={14} color="#fff" strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', letterSpacing: 0.2 }}>
+              {us
+                ? (won ? '🏏 Tamil United won' : '🏏 Tamil United lost')
+                : `${shorten(result.winner || '')} won`
+              }
+            </div>
+            <div style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,.7)', marginTop: 1 }}>
+              by {result.margin}
+            </div>
+          </div>
         </div>
+
         {result.scorecardUrl && (
           <a
             href={result.scorecardUrl}
             target="_blank" rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
             style={{
-              display: 'flex', alignItems: 'center', gap: 4,
-              fontSize: 11, fontWeight: 600,
-              color: 'rgba(255,255,255,.85)', textDecoration: 'none',
-              flexShrink: 0, fontFamily: FONT,
-              background: 'rgba(255,255,255,.15)', borderRadius: 6,
-              padding: '3px 8px',
+              display: 'flex', alignItems: 'center', gap: 5,
+              fontSize: 12, fontWeight: 700,
+              color: '#fff', textDecoration: 'none', flexShrink: 0,
+              background: 'rgba(255,255,255,.2)',
+              border: '1px solid rgba(255,255,255,.3)',
+              borderRadius: 10, padding: '6px 12px',
+              fontFamily: FONT, backdropFilter: 'blur(4px)',
+              whiteSpace: 'nowrap',
             }}
           >
-            Scorecard <ExternalLink size={10} strokeWidth={2} />
+            Scorecard <ExternalLink size={11} strokeWidth={2} />
           </a>
         )}
       </div>
 
-      {/* Score rows */}
-      <div style={{ padding: '16px' }}>
-        {/* Team 1 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <TeamLogo logo={result.logo1} name={result.team1} size={44} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: FONT, fontSize: 14,
-              fontWeight: isOurs(result.team1) ? 700 : 500,
-              color: isOurs(result.team1) ? C.green : C.dark,
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {isOurs(result.team1) ? '🏏 ' : ''}{shorten(result.team1)}
-            </div>
-            {result.score1 && (
-              <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: C.dark, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
-                {result.score1.replace('Allout', 'All out')}
-              </div>
-            )}
-          </div>
-          {result.pts1 && <PtsBadge pts={result.pts1} />}
-        </div>
+      {/* ── Match body ── */}
+      <div style={{ padding: '18px 16px' }}>
 
-        {/* VS */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '12px 0' }}>
-          <div style={{ flex: 1, height: 1, background: C.gray2 }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: C.gray3, letterSpacing: 1.5 }}>VS</span>
-          <div style={{ flex: 1, height: 1, background: C.gray2 }} />
+        {/* Team 1 */}
+        <TeamRow
+          logo={result.logo1} name={result.team1}
+          score={result.score1} pts={result.pts1}
+          isOurs={t1Ours} isWinner={isOurs(result.winner) ? t1Ours : result.winner === result.team1}
+          theme={theme}
+        />
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0' }}>
+          <div style={{ flex: 1, height: 1.5, background: `linear-gradient(90deg, transparent, ${theme.cardBorder}, transparent)` }} />
+          <div style={{
+            fontSize: 11, fontWeight: 900, letterSpacing: 2,
+            color: theme.accent, fontFamily: FONT,
+            background: theme.scoreBg, borderRadius: 20,
+            padding: '4px 12px',
+          }}>VS</div>
+          <div style={{ flex: 1, height: 1.5, background: `linear-gradient(90deg, transparent, ${theme.cardBorder}, transparent)` }} />
         </div>
 
         {/* Team 2 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <TeamLogo logo={result.logo2} name={result.team2} size={44} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: FONT, fontSize: 14,
-              fontWeight: isOurs(result.team2) ? 700 : 500,
-              color: isOurs(result.team2) ? C.green : C.dark,
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {isOurs(result.team2) ? '🏏 ' : ''}{shorten(result.team2)}
-            </div>
-            {result.score2 && (
-              <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: C.dark, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
-                {result.score2.replace('Allout', 'All out')}
-              </div>
-            )}
-          </div>
-          {result.pts2 && <PtsBadge pts={result.pts2} />}
-        </div>
+        <TeamRow
+          logo={result.logo2} name={result.team2}
+          score={result.score2} pts={result.pts2}
+          isOurs={t2Ours} isWinner={isOurs(result.winner) ? t2Ours : result.winner === result.team2}
+          theme={theme}
+        />
       </div>
     </motion.div>
   )
 }
 
+function TeamRow({ logo, name, score, pts, isOurs, isWinner, theme }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '10px 12px', borderRadius: 14,
+      background: isOurs ? theme.scoreBg : 'transparent',
+      border: isOurs ? `1px solid ${theme.cardBorder}` : '1px solid transparent',
+      transition: 'background 200ms',
+    }}>
+      <TeamLogo logo={logo} name={name} size={50} />
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{
+            fontFamily: FONT, fontSize: 14,
+            fontWeight: isOurs ? 800 : 600,
+            color: isOurs ? theme.accent : C.dark,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {isOurs ? '🏏 ' : ''}{shorten(name)}
+          </div>
+          {isWinner && (
+            <div style={{
+              background: theme.headerGrad,
+              color: '#fff', fontSize: 9, fontWeight: 800,
+              borderRadius: 6, padding: '2px 7px', letterSpacing: 0.5,
+              textTransform: 'uppercase', flexShrink: 0,
+            }}>
+              Won
+            </div>
+          )}
+        </div>
+        {score && (
+          <div style={{
+            fontFamily: FONT, fontSize: 18, fontWeight: 900,
+            color: isOurs ? theme.accent : C.dark,
+            marginTop: 3, fontVariantNumeric: 'tabular-nums', letterSpacing: -0.3,
+          }}>
+            {score.replace('Allout', 'All out')}
+          </div>
+        )}
+      </div>
+
+      {pts && <PtsBadge pts={pts} />}
+    </div>
+  )
+}
+
+// ── Skeleton ───────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div style={{ borderRadius: 18, overflow: 'hidden', border: `1px solid ${C.gray2}`, background: C.white }}>
-      <div style={{ height: 42, background: C.gray2, backgroundImage: `linear-gradient(90deg, ${C.gray2} 25%, ${C.gray1} 50%, ${C.gray2} 75%)`, backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
-      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {[0, 1].map(i => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: C.gray1, flexShrink: 0 }} />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ height: 14, width: '55%', borderRadius: 6, background: C.gray1 }} />
-              <div style={{ height: 16, width: '35%', borderRadius: 6, background: C.gray1 }} />
+    <div style={{ borderRadius: 22, overflow: 'hidden', border: `1px solid ${C.gray2}`, background: C.white }}>
+      <div style={{ height: 62, background: C.gray2, backgroundImage: `linear-gradient(90deg,${C.gray2} 25%,${C.gray1} 50%,${C.gray2} 75%)`, backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {[0,1].map(i => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 50, height: 50, borderRadius: 14, background: C.gray1, flexShrink: 0 }} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 13, width: '50%', borderRadius: 6, background: C.gray1 }} />
+              <div style={{ height: 20, width: '35%', borderRadius: 6, background: C.gray2 }} />
             </div>
+            <div style={{ width: 52, height: 32, borderRadius: 10, background: C.gray1 }} />
           </div>
         ))}
       </div>
@@ -236,21 +321,63 @@ function SkeletonCard() {
   )
 }
 
+// ── Season stat pill ───────────────────────────────────────
+function SeasonPill({ label, value, grad, shadow }) {
+  return (
+    <div style={{
+      background: grad, borderRadius: 16,
+      padding: '14px 16px', textAlign: 'center', minWidth: 68,
+      boxShadow: shadow, flex: 1,
+      position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position: 'absolute', top: -12, right: -12, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
+      <div style={{ fontFamily: FONT, fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,.75)', marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
+    </div>
+  )
+}
+
+// ── Date header ────────────────────────────────────────────
+function DateHeader({ date, count, index }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.24, ease: EASE_OUT, delay: index * 0.04 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}
+    >
+      <div style={{
+        background: `linear-gradient(135deg, ${C.greenDark}, #22744a)`,
+        borderRadius: 12, padding: '6px 14px', flexShrink: 0,
+        boxShadow: '0 3px 12px rgba(26,92,56,.3)',
+      }}>
+        <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: C.gold, letterSpacing: 0.3 }}>{date}</div>
+      </div>
+      <div style={{ flex: 1, height: 1.5, background: `linear-gradient(90deg, ${C.gray2}, transparent)` }} />
+      <div style={{
+        fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.gray3,
+        background: C.gray1, borderRadius: 20, padding: '3px 10px',
+      }}>
+        {count} match{count !== 1 ? 'es' : ''}
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Main page ──────────────────────────────────────────────
 export default function ResultsPage() {
   const nav = useNavigate()
-  const [results, setResults]     = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [error, setError]         = useState(false)
-  const [updatedAt, setUpdatedAt] = useState(null)
-  const [source, setSource]       = useState(null)
+  const [results, setResults]       = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState(false)
+  const [updatedAt, setUpdatedAt]   = useState(null)
+  const [source, setSource]         = useState(null)
   const [refreshing, setRefreshing] = useState(false)
-  // Season stats from league table (accurate full-season record)
-  const [teamStats, setTeamStats] = useState(null)
+  const [teamStats, setTeamStats]   = useState(null)
 
   const load = (bust = false) => {
     setRefreshing(true)
-    const url = bust ? `/api/results?t=${Date.now()}` : '/api/results'
-    fetch(url)
+    fetch(bust ? `/api/results?t=${Date.now()}` : '/api/results')
       .then(r => r.json())
       .then(d => {
         setResults(d.results || [])
@@ -262,12 +389,11 @@ export default function ResultsPage() {
       .catch(() => { setError(true); setLoading(false); setRefreshing(false) })
   }
 
-  // Fetch accurate season stats from the league table
   useEffect(() => {
     fetch('/api/league-table')
       .then(r => r.json())
       .then(d => {
-        const ourRow = (d.teams || []).find(t => isOurs(t.team))
+        const ourRow = (d.rows || d.teams || []).find(t => isOurs(t.team))
         if (ourRow) setTeamStats(ourRow)
       })
       .catch(() => {})
@@ -277,206 +403,173 @@ export default function ResultsPage() {
 
   const grouped = groupByDate(results)
 
+  // Season summary stats
+  const wins   = results.filter(r => involved(r) && weWon(r)).length
+  const losses = results.filter(r => involved(r) && !weWon(r)).length
+
   return (
     <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
-      {/* Hero header */}
+      {/* ── Hero ── */}
       <div style={{
-        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
-        padding: '28px 20px 32px', position: 'relative',
+        background: `radial-gradient(ellipse at 80% -10%, #22744a60 0%, transparent 55%), linear-gradient(160deg, ${C.greenDark} 0%, #0f2a1a 100%)`,
+        padding: '28px 20px 36px', position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
+        {/* Decorative cricket ball */}
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(233,160,32,.06)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -30, left: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.03)', pointerEvents: 'none' }} />
+
+        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', position: 'relative' }}>
           <motion.button
             onClick={() => nav('/')}
-            whileTap={{ scale: 0.96 }}
-            transition={{ duration: 0.14, ease: EASE_OUT }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              color: 'rgba(255,255,255,.6)', background: 'none', border: 'none',
-              cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 14,
-            }}
+            whileTap={{ scale: 0.95 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 20 }}
           >
-            <ArrowLeft size={14} strokeWidth={2} />
-            Home
+            <ArrowLeft size={14} strokeWidth={2} /> Home
           </motion.button>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: EASE_OUT }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: '50%', background: '#fff', overflow: 'hidden',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,0,0,.2)', flexShrink: 0,
-              }}>
-                <img src="/logo.png" alt="DTU CC" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: EASE_OUT }}>
+            {/* Title row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(0,0,0,.25)', flexShrink: 0 }}>
+                <img src="/logo.png" alt="TUCC" style={{ width: 47, height: 47, objectFit: 'contain' }} />
               </div>
               <div>
-                <h1 style={{ color: C.white, fontSize: 22, fontWeight: 900, margin: 0, letterSpacing: -0.3 }}>
+                <h1 style={{ color: C.white, fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>
                   Last 10 Results
                 </h1>
-                <div style={{ color: 'rgba(255,255,255,.55)', fontSize: 12, marginTop: 2 }}>
-                  BTCL Premier League 2026
+                <div style={{ color: 'rgba(255,255,255,.45)', fontSize: 12, marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>BTCL Premier League 2026</span>
+                  {source === 'live' && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80', display: 'inline-block', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
+                      <span style={{ color: '#86efac', fontWeight: 600, fontSize: 11 }}>Live</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
-          </motion.div>
 
-          {/* Tamil United season stats — pulled from live league table */}
-          {teamStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, ease: EASE_OUT, delay: 0.1 }}
-            >
-              <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-                {[
-                  { label: 'Played', value: teamStats.p, color: 'rgba(255,255,255,.9)' },
-                  { label: 'Won',    value: teamStats.w, color: '#86efac' },
-                  { label: 'Lost',   value: teamStats.l, color: '#fca5a5' },
-                  { label: 'Points', value: teamStats.pts, color: C.gold },
-                  { label: 'NRR',    value: (parseFloat(teamStats.nrr) > 0 ? '+' : '') + teamStats.nrr, color: parseFloat(teamStats.nrr) >= 0 ? '#86efac' : '#fca5a5' },
-                ].map(({ label, value, color }) => (
-                  <div key={label} style={{
-                    background: 'rgba(255,255,255,.1)', borderRadius: 10,
-                    padding: '8px 14px', textAlign: 'center', minWidth: 52,
-                  }}>
-                    <div style={{ color, fontSize: 18, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-                    <div style={{ color: 'rgba(255,255,255,.5)', fontSize: 10, fontWeight: 600, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
-                  </div>
-                ))}
+            {/* Season stats pills */}
+            {teamStats ? (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 2 }}>
+                <SeasonPill label="Played"   value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,#2563eb,#3b82f6)" shadow="0 6px 20px rgba(37,99,235,.35)" />
+                <SeasonPill label="Won"      value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#22c55e)" shadow="0 6px 20px rgba(21,128,61,.35)" />
+                <SeasonPill label="Lost"     value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,#be123c,#f43f5e)" shadow="0 6px 20px rgba(190,18,60,.3)" />
+                <SeasonPill label="Points"   value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,#b45309,#f59e0b)" shadow="0 6px 20px rgba(180,83,9,.35)" />
+                <SeasonPill label="NRR"      value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#22c55e)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.3)" />
               </div>
-              <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,.35)', fontStyle: 'italic' }}>
-                🏏 Tamil United CC · 2026 season record
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[1,2,3,4,5].map(i => <div key={i} style={{ flex: 1, height: 62, borderRadius: 16, background: 'rgba(255,255,255,.1)', animation: 'shimmer 1.4s infinite linear', backgroundSize: '200% 100%' }} />)}
               </div>
-            </motion.div>
-          )}
+            )}
+          </motion.div>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '20px 16px 48px', width: '100%' }}>
+      {/* ── Content ── */}
+      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '24px 16px 56px', width: '100%' }}>
 
-        {/* Status bar */}
+        {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {source === 'live' && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: C.ok, fontWeight: 600 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.ok, animation: 'pendingPulse 1.8s ease-in-out infinite', display: 'inline-block' }} />
-                Live data
-              </span>
-            )}
-            {updatedAt && (
-              <span style={{ fontSize: 11, color: C.gray3 }}>
-                · Updated {new Date(updatedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
+          <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.gray4 }}>
+            {!loading && `${results.length} results loaded`}
           </div>
-          <button
+          <motion.button
             onClick={() => load(true)}
             disabled={refreshing}
+            whileTap={{ scale: 0.94 }}
             style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              background: 'none', border: `1px solid ${C.gray2}`, borderRadius: 8,
-              padding: '5px 10px', cursor: refreshing ? 'default' : 'pointer',
-              fontFamily: FONT, fontSize: 11, fontWeight: 600, color: C.gray4,
-              opacity: refreshing ? 0.5 : 1, transition: 'opacity 150ms ease',
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: C.white, border: `1.5px solid ${C.gray2}`, borderRadius: 10,
+              padding: '8px 14px', cursor: refreshing ? 'default' : 'pointer',
+              fontFamily: FONT, fontSize: 12, fontWeight: 700, color: C.gray4,
+              opacity: refreshing ? 0.5 : 1,
+              boxShadow: `0 2px 8px ${C.shadow}`,
             }}
           >
-            <RotateCw size={12} strokeWidth={2} style={{ animation: refreshing ? 'tucc-spin 0.65s linear infinite' : 'none' }} />
+            <RotateCw size={13} strokeWidth={2.2} style={{ animation: refreshing ? 'tucc-spin 0.65s linear infinite' : 'none' }} />
             Refresh
-          </button>
+          </motion.button>
         </div>
 
         {/* Error */}
         {error && (
-          <div style={{
-            background: '#fef2f2', border: `1px solid #fecaca`, borderRadius: 14,
-            padding: '16px 20px', marginBottom: 20, textAlign: 'center',
-            color: C.red, fontSize: 14, fontWeight: 500,
-          }}>
-            Couldn't load results. <button onClick={() => { setError(false); setLoading(true); load(true) }} style={{ color: C.green, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontFamily: FONT, fontSize: 14 }}>Try again →</button>
+          <div style={{ background: '#fff1f2', border: '1.5px solid #fecaca', borderRadius: 16, padding: '18px 20px', marginBottom: 20, textAlign: 'center', color: C.red, fontSize: 14, fontWeight: 500 }}>
+            Couldn't load results.{' '}
+            <button onClick={() => { setError(false); setLoading(true); load(true) }} style={{ color: C.green, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, fontFamily: FONT, fontSize: 14 }}>
+              Try again →
+            </button>
           </div>
         )}
 
         {/* Skeleton */}
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {[0, 1, 2].map(i => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {[0,1,2].map(i => (
               <div key={i}>
-                <div style={{ height: 12, width: 100, background: C.gray2, borderRadius: 6, marginBottom: 10 }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ height: 38, width: 160, background: C.gray2, borderRadius: 12, marginBottom: 14, backgroundImage: `linear-gradient(90deg,${C.gray2} 25%,${C.gray1} 50%,${C.gray2} 75%)`, backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {Array.from({ length: i === 0 ? 3 : 1 }).map((_, j) => <SkeletonCard key={j} />)}
                 </div>
               </div>
             ))}
           </div>
         ) : results.length === 0 ? (
-          <div style={{
-            textAlign: 'center', padding: '60px 20px',
-            background: C.white, borderRadius: 18, border: `1px solid ${C.gray2}`,
-          }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🏏</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: C.dark }}>No results yet</div>
+          <div style={{ textAlign: 'center', padding: '64px 20px', background: C.white, borderRadius: 22, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}` }}>
+            <div style={{ fontSize: 52, marginBottom: 14 }}>🏏</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: C.dark }}>No results yet</div>
             <div style={{ fontSize: 13, color: C.gray3, marginTop: 6 }}>Check back after the next match day.</div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {grouped.map(([date, dateResults], gi) => (
+          <AnimatePresence>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+              {grouped.map(([date, dateResults], gi) => (
+                <div key={date}>
+                  <DateHeader date={date} count={dateResults.length} index={gi} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {dateResults.map((result, i) => (
+                      <ResultCard key={i} result={result} index={i + gi * 2} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Footer CTA */}
               <motion.div
-                key={date}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.25, delay: gi * 0.06 }}
-              >
-                {/* Date header */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12,
-                }}>
-                  <div style={{
-                    background: C.greenDark, borderRadius: 8, padding: '5px 12px',
-                    fontFamily: FONT, fontSize: 11, fontWeight: 700,
-                    color: C.gold, letterSpacing: 0.4,
-                    flexShrink: 0,
-                  }}>
-                    {date}
-                  </div>
-                  <div style={{ flex: 1, height: 1, background: C.gray2 }} />
-                  <span style={{ fontSize: 11, color: C.gray3, flexShrink: 0 }}>
-                    {dateResults.length} match{dateResults.length !== 1 ? 'es' : ''}
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {dateResults.map((result, i) => (
-                    <ResultCard key={i} result={result} index={i} />
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Footer link */}
-            <div style={{
-              textAlign: 'center', paddingTop: 8,
-              borderTop: `1px solid ${C.gray2}`, marginTop: 8,
-            }}>
-              <a
-                href="https://dtucc.play-cricket.com/website/division/137680?type=last_10_results"
-                target="_blank" rel="noopener noreferrer"
+                transition={{ delay: 0.5 }}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 5,
-                  fontSize: 13, color: C.green, fontWeight: 600,
-                  fontFamily: FONT, textDecoration: 'none',
+                  background: `linear-gradient(135deg, ${C.greenDark}, #163d28)`,
+                  borderRadius: 20, padding: '20px 24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  gap: 12, boxShadow: '0 6px 24px rgba(26,92,56,.3)',
                 }}
               >
-                View full results on play-cricket
-                <ExternalLink size={13} strokeWidth={2} />
-              </a>
+                <div>
+                  <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.white }}>Full match scorecards</div>
+                  <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>View on play-cricket.com</div>
+                </div>
+                <a
+                  href="https://dtucc.play-cricket.com/website/division/137680?type=last_10_results"
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: C.gold, color: C.dark,
+                    borderRadius: 12, padding: '10px 18px',
+                    fontFamily: FONT, fontSize: 13, fontWeight: 800,
+                    textDecoration: 'none', flexShrink: 0,
+                    boxShadow: `0 4px 16px ${C.gold}50`,
+                  }}
+                >
+                  Open <ExternalLink size={13} strokeWidth={2.5} />
+                </a>
+              </motion.div>
             </div>
-          </div>
+          </AnimatePresence>
         )}
       </div>
 
