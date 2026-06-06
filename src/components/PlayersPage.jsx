@@ -36,21 +36,28 @@ const ROLE_META = {
 const HAND_SHORT = s => (s || '').replace('Right Hand', 'RHB').replace('Left Hand', 'LHB').replace('Right-arm', 'RA').replace('Left-arm', 'LA').replace('Slow left-arm orthodox', 'LA spin').replace('Off break (right-arm)', 'RA off-spin').replace(' fast', ' fast')
 
 // ── Player Photo ──────────────────────────────────────────────
-function PlayerPhoto({ photoUrl, name, size = 96 }) {
+// fill=true → stretches to 100% of parent (use when parent is the circle)
+// fill=false → renders its own fixed-size circle
+function PlayerPhoto({ photoUrl, name, size = 96, fill = false }) {
   const [err, setErr] = useState(false)
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   const PALETTE  = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9','#c2410c','#0f766e']
   let h = 0; for (const c of (name || '')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
 
+  const fillBase = { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+  const fixedBase = { width: size, height: size, borderRadius: '50%', flexShrink: 0 }
+
   if (!photoUrl || err) {
     return (
       <div style={{
-        width: size, height: size, borderRadius: '50%', flexShrink: 0,
-        background: `linear-gradient(135deg, ${bg}, ${bg}bb)`,
+        ...(fill ? fillBase : fixedBase),
+        background: `linear-gradient(135deg, ${bg}, ${bg}cc)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: FONT, fontWeight: 900, fontSize: Math.round(size * 0.3), color: '#fff',
-        boxShadow: `0 6px 20px ${bg}55`,
+        fontFamily: FONT, fontWeight: 900,
+        fontSize: fill ? '28%' : Math.round(size * 0.3),
+        color: '#fff',
+        ...(fill ? {} : { boxShadow: `0 6px 20px ${bg}55` }),
       }}>
         {initials}
       </div>
@@ -58,15 +65,15 @@ function PlayerPhoto({ photoUrl, name, size = 96 }) {
   }
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+      ...(fill ? fillBase : fixedBase),
+      overflow: 'hidden',
       background: '#e2e8f0',
-      boxShadow: '0 6px 20px rgba(0,0,0,.18)',
-      border: '3px solid rgba(255,255,255,.9)',
+      ...(fill ? {} : { borderRadius: '50%', boxShadow: '0 6px 20px rgba(0,0,0,.18)', border: '3px solid rgba(255,255,255,.9)', flexShrink: 0 }),
     }}>
       <img
         src={photoUrl}
         alt={name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
         onError={() => setErr(true)}
       />
     </div>
@@ -147,7 +154,7 @@ function PlayerCard({ player, index, onClick }) {
           background: '#e2e8f0',
           zIndex: 1,
         }}>
-          <PlayerPhoto photoUrl={player.photoUrl} name={player.name} size={999} />
+          <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill />
         </div>
       </div>
 
@@ -266,7 +273,7 @@ function PlayerModal({ player, onClose }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
             <div style={{ width: 88, height: 88, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,.85)', boxShadow: '0 8px 24px rgba(0,0,0,.25)', flexShrink: 0, background: '#e2e8f0' }}>
-              <PlayerPhoto photoUrl={player.photoUrl} name={player.name} size={999} />
+              <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: -0.3 }}>
