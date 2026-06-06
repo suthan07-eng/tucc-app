@@ -309,6 +309,7 @@ function SkeletonCard() {
 export default function FixturesPage() {
   const nav = useNavigate()
   const [fixtures, setFixtures]     = useState([])
+  const [played, setPlayed]         = useState({ total: 0, home: 0, away: 0 })
   const [loading, setLoading]       = useState(true)
   const [error, setError]           = useState(false)
   const [source, setSource]         = useState(null)
@@ -316,15 +317,25 @@ export default function FixturesPage() {
 
   const load = (bust = false) => {
     setRefreshing(true)
-    fetch(bust ? `/api/fixtures?t=${Date.now()}` : '/api/fixtures')
-      .then(r => r.json())
-      .then(d => {
-        setFixtures(d.fixtures || [])
-        setSource(d.source)
-        setLoading(false)
-        setRefreshing(false)
+    const qs = bust ? `?t=${Date.now()}` : ''
+    Promise.all([
+      fetch(`/api/fixtures${qs}`).then(r => r.json()),
+      fetch(`/api/results${qs}`).then(r => r.json()).catch(() => ({ results: [] })),
+    ]).then(([fix, res]) => {
+      const fixtureList = fix.fixtures || []
+      setFixtures(fixtureList)
+      setSource(fix.source)
+      // Count played TUCC matches from results
+      const results = res.results || []
+      const tuccResults = results.filter(r => isOurs(r.team1) || isOurs(r.team2))
+      setPlayed({
+        total: tuccResults.length,
+        home:  tuccResults.filter(r => isOurs(r.team1)).length,
+        away:  tuccResults.filter(r => isOurs(r.team2)).length,
       })
-      .catch(() => { setError(true); setLoading(false); setRefreshing(false) })
+      setLoading(false)
+      setRefreshing(false)
+    }).catch(() => { setError(true); setLoading(false); setRefreshing(false) })
   }
 
   useEffect(() => { load() }, [])
@@ -352,7 +363,10 @@ export default function FixturesPage() {
   // Remaining fixtures (all except the next one shown in hero)
   const remaining = nextTucc ? fixtures.filter(f => f !== nextTucc) : fixtures
 
-  const tuccCount = fixtures.filter(f => isOurs(f.team1) || isOurs(f.team2)).length
+  const tuccUpcoming = fixtures.filter(f => isOurs(f.team1) || isOurs(f.team2)).length
+  const seasonTotal  = played.total + tuccUpcoming
+  const homeTotal    = played.home  + fixtures.filter(f => isOurs(f.team1)).length
+  const awayTotal    = played.away  + fixtures.filter(f => isOurs(f.team2)).length
 
   return (
     <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
@@ -386,7 +400,7 @@ export default function FixturesPage() {
                   <span>BTCL Premier League 2026</span>
                   {!loading && (
                     <span style={{ background: 'rgba(59,130,246,.25)', border: '1px solid rgba(59,130,246,.4)', borderRadius: 20, padding: '2px 8px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#93c5fd' }}>
-                      {fixtures.length} matches
+                      {fixtures.length} upcoming
                     </span>
                   )}
                   {source === 'live' && (
@@ -403,10 +417,10 @@ export default function FixturesPage() {
             {!loading && fixtures.length > 0 && (
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
-                  { label: 'Total', value: fixtures.length, grad: 'linear-gradient(135deg,#475569,#64748b)', shadow: '0 4px 14px rgba(71,85,105,.3)' },
-                  { label: 'Our Matches', value: tuccCount, grad: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', shadow: '0 4px 14px rgba(29,78,216,.4)' },
-                  { label: 'Home', value: fixtures.filter(f => isOurs(f.team1)).length, grad: 'linear-gradient(135deg,#15803d,#22c55e)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
-                  { label: 'Away', value: fixtures.filter(f => isOurs(f.team2)).length, grad: 'linear-gradient(135deg,#b45309,#f59e0b)', shadow: '0 4px 14px rgba(180,83,9,.35)' },
+                  { label: 'Season Total', value: seasonTotal,         grad: 'linear-gradient(135deg,#475569,#64748b)', shadow: '0 4px 14px rgba(71,85,105,.3)' },
+                  { label: 'Played',       value: played.total,        grad: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', shadow: '0 4px 14px rgba(29,78,216,.4)' },
+                  { label: 'Home',         value: homeTotal,           grad: 'linear-gradient(135deg,#15803d,#22c55e)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
+                  { label: 'Away',         value: awayTotal,           grad: 'linear-gradient(135deg,#b45309,#f59e0b)', shadow: '0 4px 14px rgba(180,83,9,.35)' },
                 ].map(({ label, value, grad, shadow }) => (
                   <div key={label} style={{ flex: 1, background: grad, borderRadius: 14, padding: '10px 8px', textAlign: 'center', boxShadow: shadow, position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', top: -8, right: -8, width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
@@ -426,7 +440,7 @@ export default function FixturesPage() {
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.gray4 }}>
-            {!loading && `${fixtures.length} upcoming fixtures`}
+            {!loading && `${fixtures.length} upcoming · ${played.total} played`}
           </div>
           <motion.button
             onClick={() => load(true)}
