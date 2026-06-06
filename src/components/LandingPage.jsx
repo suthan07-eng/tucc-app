@@ -177,9 +177,20 @@ export default function LandingPage() {
         nav('/', { replace: true })
       } else {
         if (!fullName.trim()) { setErr('Please enter your full name.'); setBusy(false); return }
-        await signUp(email, password, { full_name: fullName, phone })
-        setInfo('✅ Check your email to confirm your account, then log in!')
-        setMode('login')
+        const data = await signUp(email, password, { full_name: fullName, phone })
+        // If Supabase returns a session immediately (email confirm disabled), go straight in
+        if (data?.session) {
+          nav('/', { replace: true })
+        } else {
+          // Fallback: auto sign-in (works when email confirm is disabled in Supabase dashboard)
+          try {
+            await signIn(email, password)
+            nav('/', { replace: true })
+          } catch {
+            setInfo('✅ Account created! You can now log in.')
+            setMode('login')
+          }
+        }
       }
     } catch (e) {
       setErr(e.message || 'Something went wrong.')
