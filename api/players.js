@@ -52,19 +52,27 @@ function matchStat(arr, forename, surname) {
   if (!arr || !arr.length) return null
   const full1 = `${forename} ${surname}`.toLowerCase().replace(/\s+/g, ' ').trim()
   const full2 = `${surname} ${forename}`.toLowerCase().replace(/\s+/g, ' ').trim()
-  // Exact
+  // 1. Exact full-name match (both orderings)
   let hit = arr.find(p => {
     const n = p.name.toLowerCase().trim()
     return n === full1 || n === full2
   })
   if (hit) return hit
-  // Partial — all words of forename appear in stat name
-  const words = forename.toLowerCase().split(' ').filter(Boolean)
-  hit = arr.find(p => {
-    const n = p.name.toLowerCase()
-    return words.every(w => n.includes(w))
-  })
-  return hit || null
+  // 2. Stricter partial — require at least one meaningful word from EACH of
+  //    forename AND surname to appear in the stat name.
+  //    This prevents short/common words (e.g. "Raj") matching unrelated names.
+  const fnWords = forename.toLowerCase().split(' ').filter(w => w.length > 2)
+  const snWords = surname.toLowerCase().split(' ').filter(w => w.length > 2)
+  if (fnWords.length > 0 && snWords.length > 0) {
+    hit = arr.find(p => {
+      const n = p.name.toLowerCase()
+      const fnOk = fnWords.some(w => n.includes(w))
+      const snOk = snWords.some(w => n.includes(w))
+      return fnOk && snOk
+    })
+    if (hit) return hit
+  }
+  return null
 }
 
 export default async function handler(req, res) {
