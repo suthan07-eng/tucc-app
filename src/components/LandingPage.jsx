@@ -177,20 +177,17 @@ export default function LandingPage() {
         nav('/', { replace: true })
       } else {
         if (!fullName.trim()) { setErr('Please enter your full name.'); setBusy(false); return }
-        const data = await signUp(email, password, { full_name: fullName, phone })
-        // If Supabase returns a session immediately (email confirm disabled), go straight in
-        if (data?.session) {
-          nav('/', { replace: true })
-        } else {
-          // Fallback: auto sign-in (works when email confirm is disabled in Supabase dashboard)
-          try {
-            await signIn(email, password)
-            nav('/', { replace: true })
-          } catch {
-            setInfo('✅ Account created! You can now log in.')
-            setMode('login')
-          }
-        }
+        // Use server-side endpoint that creates user with email pre-confirmed (no email sent)
+        const r = await fetch('/api/auth-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, full_name: fullName, phone }),
+        })
+        const data = await r.json()
+        if (!r.ok) throw new Error(data.error || 'Signup failed')
+        // Account created & confirmed — sign straight in
+        await signIn(email, password)
+        nav('/', { replace: true })
       }
     } catch (e) {
       setErr(e.message || 'Something went wrong.')
