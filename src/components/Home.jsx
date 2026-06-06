@@ -12,7 +12,161 @@ import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
 
-import { ClipboardList, ChevronRight } from 'lucide-react'
+import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap } from 'lucide-react'
+
+// ── Season Snapshot ────────────────────────────────────────
+function SeasonSnapshot() {
+  const nav = useNavigate()
+  const [row, setRow] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/league-table')
+      .then(r => r.json())
+      .then(d => {
+        const found = (d.rows || []).find(r =>
+          r.team?.toLowerCase().includes('tamil') ||
+          r.team?.toLowerCase().includes('dtu') ||
+          r.team?.toLowerCase().includes('united')
+        )
+        setRow(found || null)
+      })
+      .catch(() => {})
+  }, [])
+
+  const stats = row
+    ? [
+        { label: 'Played',  value: row.p   ?? '—', color: '#2563eb', bg: '#eff6ff' },
+        { label: 'Won',     value: row.w   ?? '—', color: '#15803d', bg: '#edfaf3' },
+        { label: 'Lost',    value: row.l   ?? '—', color: '#be123c', bg: '#fff1f2' },
+        { label: 'Points',  value: row.pts ?? '—', color: '#b45309', bg: '#fffbeb' },
+        { label: 'NRR',     value: row.nrr ?? '—', color: '#6d28d9', bg: '#f5f3ff' },
+        { label: 'Position',value: row.pos  ? `#${row.pos}` : '—', color: '#0891b2', bg: '#ecfeff' },
+      ]
+    : [
+        { label: 'Played',  value: '5',    color: '#2563eb', bg: '#eff6ff' },
+        { label: 'Won',     value: '0',    color: '#15803d', bg: '#edfaf3' },
+        { label: 'Lost',    value: '5',    color: '#be123c', bg: '#fff1f2' },
+        { label: 'Points',  value: '33',   color: '#b45309', bg: '#fffbeb' },
+        { label: 'NRR',     value: '-2.85',color: '#6d28d9', bg: '#f5f3ff' },
+        { label: 'Position',value: '#8',   color: '#0891b2', bg: '#ecfeff' },
+      ]
+
+  return (
+    <motion.div variants={staggerItem} style={{ marginTop: 20 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #1a5c38, #22744a)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>2026 Season</span>
+          <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, fontWeight: 500 }}>BTCL</span>
+        </div>
+        <button onClick={() => nav('/league')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.green, display: 'flex', alignItems: 'center', gap: 3 }}>
+          Full table <ChevronRight size={12} />
+        </button>
+      </div>
+
+      {/* Stats grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {stats.map(({ label, value, color, bg }) => (
+          <div key={label} style={{ background: bg, borderRadius: 14, padding: '14px 10px', textAlign: 'center', border: `1px solid ${color}18` }}>
+            <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+            <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: `${color}aa`, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Top Performers ─────────────────────────────────────────
+function TopPerformers() {
+  const nav = useNavigate()
+  const [topBat, setTopBat]   = useState(null)
+  const [topBowl, setTopBowl] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/player-stats')
+      .then(r => r.json())
+      .then(d => {
+        const bat  = (d.batting  || []).sort((a, b) => (b.runs    || 0) - (a.runs    || 0))[0]
+        const bowl = (d.bowling  || []).sort((a, b) => (b.wickets || 0) - (a.wickets || 0))[0]
+        setTopBat(bat || null)
+        setTopBowl(bowl || null)
+      })
+      .catch(() => {})
+  }, [])
+
+  if (!topBat && !topBowl) return null
+
+  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9']
+  function avatarBg(name = '') {
+    let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
+    return PALETTE[Math.abs(h) % PALETTE.length]
+  }
+  function initials(name = '') {
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  }
+
+  const performers = [
+    topBat  && { name: topBat.name,  stat: topBat.runs,    statLabel: 'Runs',    icon: TrendingUp, grad: 'linear-gradient(135deg, #1a5c38, #22744a)', accent: '#1a5c38' },
+    topBowl && { name: topBowl.name, stat: topBowl.wickets, statLabel: 'Wickets', icon: Target,     grad: 'linear-gradient(135deg, #be123c, #f43f5e)', accent: '#be123c' },
+  ].filter(Boolean)
+
+  return (
+    <motion.div variants={staggerItem} style={{ marginTop: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #b45309, #f59e0b)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Top Performers</span>
+        </div>
+        <button onClick={() => nav('/stats')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.green, display: 'flex', alignItems: 'center', gap: 3 }}>
+          Full stats <ChevronRight size={12} />
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {performers.map(({ name, stat, statLabel, icon: Icon, grad, accent }) => {
+          const bg = avatarBg(name)
+          const ini = initials(name)
+          return (
+            <motion.div
+              key={name}
+              onClick={() => nav('/stats')}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                background: grad,
+                borderRadius: 18, padding: '18px 16px',
+                cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                boxShadow: `0 6px 24px ${accent}30`,
+              }}
+            >
+              {/* Deco circle */}
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
+
+              {/* Icon badge */}
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <Icon size={16} color="#fff" strokeWidth={2.5} />
+              </div>
+
+              {/* Avatar + name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: FONT, fontWeight: 800, fontSize: 12, flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,.2)' }}>
+                  {ini}
+                </div>
+                <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.9)', lineHeight: 1.2 }}>
+                  {name.split(' ')[0]}
+                </div>
+              </div>
+
+              <div style={{ fontFamily: FONT, fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{stat}</div>
+              <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.7)', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.7 }}>{statLabel}</div>
+            </motion.div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
 
 function ResultsTeaser() {
   const nav = useNavigate()
@@ -336,6 +490,12 @@ export default function Home() {
             + Register
           </Button>
         </div>
+
+        {/* ── Season Snapshot + Top Performers ── */}
+        <motion.div variants={staggerList} initial="hidden" animate="visible">
+          <SeasonSnapshot />
+          <TopPerformers />
+        </motion.div>
 
         {/* ── Selected XI ── */}
         {!loading && match?.is_team_published && teamSelection.length > 0 && (
