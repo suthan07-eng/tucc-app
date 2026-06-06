@@ -12,7 +12,166 @@ import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
 
-import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap } from 'lucide-react'
+import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap, MapPin, Clock, Home as HomeIcon, Plane, CalendarDays } from 'lucide-react'
+
+// ── Next Fixture Card ──────────────────────────────────────
+const OUR_NAMES_FIX = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
+const isOursFix = (name = '') => OUR_NAMES_FIX.some(t => name.toLowerCase().includes(t.toLowerCase()))
+const shortenFix = n =>
+  n.replace('Dollishill Tamil United CC - Knights', 'Tamil United CC')
+   .replace('Sports & Social Club', '').replace('- 1st XI', '')
+   .replace(/\s*-\s*[AB]$/, '').trim()
+
+function parseFixDate(str) {
+  if (!str) return null
+  const m = str.match(/(\d{1,2})\s+(\w+)\s+(\d{4})/)
+  if (!m) return null
+  return new Date(`${m[2]} ${m[1]}, ${m[3]}`)
+}
+
+function useFixCountdown(targetMs) {
+  const [diff, setDiff] = useState(null)
+  useEffect(() => {
+    if (!targetMs) return
+    const tick = () => { const d = targetMs - Date.now(); setDiff(d > 0 ? d : 0) }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [targetMs])
+  if (!diff || diff <= 0) return null
+  const s = Math.floor(diff / 1000)
+  return { days: Math.floor(s / 86400), hours: Math.floor((s % 86400) / 3600), mins: Math.floor((s % 3600) / 60), secs: s % 60 }
+}
+
+function FixLogoSmall({ logo, name, size = 52 }) {
+  const [err, setErr] = useState(false)
+  const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d']
+  let h = 0; for (const c of (name||'')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
+  const bg = PALETTE[Math.abs(h) % PALETTE.length]
+  if (!logo || err) return (
+    <div style={{ width: size, height: size, borderRadius: size * 0.22, background: `linear-gradient(135deg,${bg},${bg}bb)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 900, fontSize: Math.round(size * 0.28), color: '#fff', flexShrink: 0, boxShadow: `0 4px 14px ${bg}44` }}>
+      {initials}
+    </div>
+  )
+  return (
+    <div style={{ width: size, height: size, borderRadius: size * 0.22, background: '#fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 14px rgba(0,0,0,.12)', border: '2px solid rgba(255,255,255,.7)' }}>
+      <img src={logo} alt={name} style={{ width: '88%', height: '88%', objectFit: 'contain' }} onError={() => setErr(true)} />
+    </div>
+  )
+}
+
+function NextFixtureCard() {
+  const nav = useNavigate()
+  const [fixture, setFixture] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/fixtures')
+      .then(r => r.json())
+      .then(d => {
+        const today = new Date(); today.setHours(0, 0, 0, 0)
+        const next = (d.fixtures || []).find(f => {
+          if (!isOursFix(f.team1) && !isOursFix(f.team2)) return false
+          const dt = parseFixDate(f.date)
+          return dt && dt >= today
+        })
+        setFixture(next || null)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const targetMs = (() => {
+    if (!fixture) return null
+    const d = parseFixDate(fixture.date)
+    if (!d) return null
+    const [h, m] = (fixture.time || '13:00').split(':').map(Number)
+    d.setHours(h, m, 0, 0)
+    return d.getTime()
+  })()
+  const countdown = useFixCountdown(targetMs)
+  const isHome = fixture && isOursFix(fixture.team1)
+
+  if (loading) return (
+    <motion.div variants={staggerItem} style={{ marginTop: 16, height: 180, borderRadius: 20, background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', opacity: 0.25, animation: 'shimmer 1.4s infinite linear', backgroundSize: '200% 100%' }} />
+  )
+  if (!fixture) return null
+
+  const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(fixture.venue)}`
+
+  return (
+    <motion.div
+      variants={staggerItem}
+      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', boxShadow: '0 10px 36px rgba(29,78,216,.35)', position: 'relative', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%)' }}
+    >
+      {/* deco circles */}
+      <div style={{ position: 'absolute', top: -28, right: -28, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,.07)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: -18, left: -18, width: 70, height: 70, borderRadius: '50%', background: 'rgba(255,255,255,.05)', pointerEvents: 'none' }} />
+
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#86efac', boxShadow: '0 0 8px #86efac', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
+          <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.8)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Next Match</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 8, padding: '3px 8px' }}>
+            {isHome ? <HomeIcon size={10} color="#fff" strokeWidth={2.5} /> : <Plane size={10} color="#fff" strokeWidth={2.5} />}
+            <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: '#fff' }}>{isHome ? 'Home' : 'Away'}</span>
+          </div>
+          <button onClick={() => nav('/fixtures')} style={{ background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 8, padding: '3px 10px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
+            All fixtures →
+          </button>
+        </div>
+      </div>
+
+      {/* Teams */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px 0', gap: 8 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <FixLogoSmall logo={fixture.logo1} name={fixture.team1} size={54} />
+          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.25 }}>{shortenFix(fixture.team1)}</div>
+        </div>
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,.4)', letterSpacing: 2 }}>VS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.15)', borderRadius: 8, padding: '4px 8px' }}>
+            <Clock size={10} color="rgba(255,255,255,.8)" strokeWidth={2} />
+            <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: '#fff' }}>{fixture.time}</span>
+          </div>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <FixLogoSmall logo={fixture.logo2} name={fixture.team2} size={54} />
+          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.25 }}>{shortenFix(fixture.team2)}</div>
+        </div>
+      </div>
+
+      {/* Date + countdown */}
+      <div style={{ textAlign: 'center', padding: '10px 16px 0', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.6)' }}>{fixture.date}</div>
+      {countdown && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '10px 16px 0' }}>
+          {[['days', countdown.days], ['hrs', countdown.hours], ['min', countdown.mins], ['sec', countdown.secs]].map(([label, val], i) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {i > 0 && <div style={{ width: 1, height: 22, background: 'rgba(255,255,255,.2)' }} />}
+              <div style={{ textAlign: 'center', minWidth: 38 }}>
+                <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{String(val).padStart(2, '0')}</div>
+                <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: 0.7, marginTop: 2 }}>{label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Venue */}
+      <div style={{ margin: '12px 16px 16px', background: 'rgba(0,0,0,.18)', borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <MapPin size={13} color="rgba(255,255,255,.55)" strokeWidth={2} style={{ flexShrink: 0 }} />
+        <div style={{ flex: 1, fontFamily: FONT, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fixture.venue}</div>
+        <a href={mapUrl} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 7, padding: '4px 8px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
+          Map <CalendarDays size={9} strokeWidth={2.5} />
+        </a>
+      </div>
+    </motion.div>
+  )
+}
 
 // ── Season Snapshot ────────────────────────────────────────
 function SeasonSnapshot() {
@@ -542,6 +701,7 @@ export default function Home() {
 
         {/* ── Season Snapshot + Top Performers ── */}
         <motion.div variants={staggerList} initial="hidden" animate="visible">
+          <NextFixtureCard />
           <SeasonSnapshot />
           <TopPerformers />
         </motion.div>
