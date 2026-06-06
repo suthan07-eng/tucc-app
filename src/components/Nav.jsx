@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, BarChart2, ShieldCheck, ClipboardList,
-  Menu, X, Home, UserPlus, Calendar, ChevronRight, CalendarDays,
+  Menu, X, Home, UserPlus, Calendar, ChevronRight, CalendarDays, Users,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 
@@ -14,6 +14,7 @@ const MENU_LINKS = [
   { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: '#fffbeb' },
   { path: '/fixtures',     label: 'Fixtures',     Icon: CalendarDays,  color: '#1d4ed8', bg: '#eff6ff' },
   { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: '#e0f2fe' },
+  { path: '/players',      label: 'Players',      Icon: Users,         color: '#7c3aed', bg: '#ede9fe' },
   { path: '/stats',        label: 'Statistics',   Icon: BarChart2,     color: '#6d28d9', bg: '#f5f3ff' },
   { path: '/availability', label: 'Availability', Icon: Calendar,      color: '#0891b2', bg: '#ecfeff' },
   { path: '/register',     label: 'Register',     Icon: UserPlus,      color: '#be123c', bg: '#fff1f2' },
