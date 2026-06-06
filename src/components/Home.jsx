@@ -14,6 +14,42 @@ import LeagueTable from './LeagueTable'
 
 import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap, MapPin, Clock, Home as HomeIcon, Plane, CalendarDays } from 'lucide-react'
 
+// ── Weather helpers ────────────────────────────────────────
+const WMO_MAP = [
+  { max: 0,  icon: '☀️',  label: 'Clear',        hi: '#fde68a', lo: '#f59e0b' },
+  { max: 1,  icon: '🌤️', label: 'Mostly Clear',  hi: '#fde68a', lo: '#f59e0b' },
+  { max: 2,  icon: '⛅',  label: 'Part Cloudy',  hi: '#e2e8f0', lo: '#94a3b8' },
+  { max: 3,  icon: '☁️',  label: 'Overcast',     hi: '#cbd5e1', lo: '#64748b' },
+  { max: 48, icon: '🌫️', label: 'Foggy',        hi: '#e2e8f0', lo: '#94a3b8' },
+  { max: 57, icon: '🌦️', label: 'Drizzle',      hi: '#bfdbfe', lo: '#3b82f6' },
+  { max: 67, icon: '🌧️', label: 'Rain',         hi: '#93c5fd', lo: '#1d4ed8' },
+  { max: 77, icon: '❄️',  label: 'Snow',         hi: '#e0f2fe', lo: '#0369a1' },
+  { max: 82, icon: '🌦️', label: 'Showers',      hi: '#bfdbfe', lo: '#3b82f6' },
+  { max: 86, icon: '🌨️', label: 'Snow shower',  hi: '#e0f2fe', lo: '#0369a1' },
+  { max: 99, icon: '⛈️',  label: 'Thunderstorm', hi: '#ddd6fe', lo: '#7c3aed' },
+]
+function getWmo(code) {
+  return WMO_MAP.find(w => code <= w.max) || WMO_MAP[WMO_MAP.length - 1]
+}
+function toYMD(d) {
+  if (!d) return null
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0')
+  return `${y}-${m}-${dd}`
+}
+function useMatchWeather(venue) {
+  const [weather, setWeather] = useState(null)
+  const [wLoad, setWLoad]     = useState(false)
+  useEffect(() => {
+    if (!venue) return
+    setWLoad(true)
+    fetch(`/api/weather?venue=${encodeURIComponent(venue)}`)
+      .then(r => r.json())
+      .then(d => { setWeather(d); setWLoad(false) })
+      .catch(() => setWLoad(false))
+  }, [venue])
+  return { weather, wLoad }
+}
+
 // ── Next Fixture Card ──────────────────────────────────────
 const OUR_NAMES_FIX = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
 const isOursFix = (name = '') => OUR_NAMES_FIX.some(t => name.toLowerCase().includes(t.toLowerCase()))
@@ -90,71 +126,76 @@ function NextFixtureCard() {
     d.setHours(h, m, 0, 0)
     return d.getTime()
   })()
-  const countdown = useFixCountdown(targetMs)
-  const isHome = fixture && isOursFix(fixture.team1)
+  const countdown   = useFixCountdown(targetMs)
+  const isHome      = fixture && isOursFix(fixture.team1)
+  const matchYMD    = fixture ? toYMD(parseFixDate(fixture.date)) : null
+  const { weather, wLoad } = useMatchWeather(fixture?.venue)
 
   if (loading) return (
-    <motion.div variants={staggerItem} style={{ marginTop: 16, height: 180, borderRadius: 20, background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', opacity: 0.25, animation: 'shimmer 1.4s infinite linear', backgroundSize: '200% 100%' }} />
+    <motion.div variants={staggerItem} style={{ marginTop: 16, height: 200, borderRadius: 20, background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', opacity: 0.25 }} />
   )
   if (!fixture) return null
 
   const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(fixture.venue)}`
+  const days   = weather?.daily?.time || []
 
   return (
     <motion.div
       variants={staggerItem}
-      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', boxShadow: '0 10px 36px rgba(29,78,216,.35)', position: 'relative', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%)' }}
+      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', boxShadow: '0 10px 40px rgba(29,78,216,.4)', position: 'relative', background: 'linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 45%, #2563eb 100%)' }}
     >
-      {/* deco circles */}
-      <div style={{ position: 'absolute', top: -28, right: -28, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,.07)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: -18, left: -18, width: 70, height: 70, borderRadius: '50%', background: 'rgba(255,255,255,.05)', pointerEvents: 'none' }} />
+      {/* Decorative blobs */}
+      <div style={{ position: 'absolute', top: -36, right: -36, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,.06)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: 60, left: -24, width: 90, height: 90, borderRadius: '50%', background: 'rgba(255,255,255,.04)', pointerEvents: 'none' }} />
 
       {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#86efac', boxShadow: '0 0 8px #86efac', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
-          <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.8)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Next Match</span>
+          <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.85)', textTransform: 'uppercase', letterSpacing: 1 }}>Next Match</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 8, padding: '3px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 8, padding: '4px 9px' }}>
             {isHome ? <HomeIcon size={10} color="#fff" strokeWidth={2.5} /> : <Plane size={10} color="#fff" strokeWidth={2.5} />}
             <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: '#fff' }}>{isHome ? 'Home' : 'Away'}</span>
           </div>
-          <button onClick={() => nav('/fixtures')} style={{ background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 8, padding: '3px 10px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
+          <button onClick={() => nav('/fixtures')} style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.22)', borderRadius: 8, padding: '4px 11px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
             All fixtures →
           </button>
         </div>
       </div>
 
       {/* Teams */}
-      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px 0', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px 0', gap: 8 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <FixLogoSmall logo={fixture.logo1} name={fixture.team1} size={54} />
-          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.25 }}>{shortenFix(fixture.team1)}</div>
+          <FixLogoSmall logo={fixture.logo1} name={fixture.team1} size={56} />
+          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.3 }}>{shortenFix(fixture.team1)}</div>
         </div>
-        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,.4)', letterSpacing: 2 }}>VS</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.15)', borderRadius: 8, padding: '4px 8px' }}>
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,.35)', letterSpacing: 3 }}>VS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.15)', borderRadius: 9, padding: '5px 10px' }}>
             <Clock size={10} color="rgba(255,255,255,.8)" strokeWidth={2} />
-            <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: '#fff' }}>{fixture.time}</span>
+            <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: '#fff' }}>{fixture.time}</span>
           </div>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <FixLogoSmall logo={fixture.logo2} name={fixture.team2} size={54} />
-          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.25 }}>{shortenFix(fixture.team2)}</div>
+          <FixLogoSmall logo={fixture.logo2} name={fixture.team2} size={56} />
+          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.3 }}>{shortenFix(fixture.team2)}</div>
         </div>
       </div>
 
-      {/* Date + countdown */}
-      <div style={{ textAlign: 'center', padding: '10px 16px 0', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.6)' }}>{fixture.date}</div>
+      {/* Date */}
+      <div style={{ textAlign: 'center', padding: '10px 16px 0', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.55)', letterSpacing: 0.3 }}>{fixture.date}</div>
+
+      {/* Countdown */}
       {countdown && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '10px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '10px 16px 0' }}>
           {[['days', countdown.days], ['hrs', countdown.hours], ['min', countdown.mins], ['sec', countdown.secs]].map(([label, val], i) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {i > 0 && <div style={{ width: 1, height: 22, background: 'rgba(255,255,255,.2)' }} />}
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {i > 0 && <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,.18)' }} />}
               <div style={{ textAlign: 'center', minWidth: 38 }}>
-                <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{String(val).padStart(2, '0')}</div>
-                <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: 0.7, marginTop: 2 }}>{label}</div>
+                <div style={{ fontFamily: FONT, fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{String(val).padStart(2, '0')}</div>
+                <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.45)', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 3 }}>{label}</div>
               </div>
             </div>
           ))}
@@ -162,12 +203,105 @@ function NextFixtureCard() {
       )}
 
       {/* Venue */}
-      <div style={{ margin: '12px 16px 16px', background: 'rgba(0,0,0,.18)', borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <MapPin size={13} color="rgba(255,255,255,.55)" strokeWidth={2} style={{ flexShrink: 0 }} />
-        <div style={{ flex: 1, fontFamily: FONT, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fixture.venue}</div>
-        <a href={mapUrl} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 7, padding: '4px 8px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
-          Map <CalendarDays size={9} strokeWidth={2.5} />
+      <div style={{ margin: '14px 16px 0', background: 'rgba(0,0,0,.2)', borderRadius: 13, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <MapPin size={13} color="rgba(255,255,255,.5)" strokeWidth={2} style={{ flexShrink: 0 }} />
+        <div style={{ flex: 1, fontFamily: FONT, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.65)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fixture.venue}</div>
+        <a href={mapUrl} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 8, padding: '4px 9px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
+          Map <MapPin size={9} strokeWidth={2.5} />
         </a>
+      </div>
+
+      {/* ── 7-Day Weather Forecast ── */}
+      <div style={{ margin: '12px 16px 16px', background: 'rgba(0,0,0,.22)', borderRadius: 16, padding: '12px 12px 10px', backdropFilter: 'blur(4px)' }}>
+        {/* Section title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style={{ fontSize: 13 }}>🌤️</span>
+          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,.65)', textTransform: 'uppercase', letterSpacing: 1 }}>7-Day Forecast</span>
+          <span style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,.3)', marginLeft: 'auto' }}>
+            {weather?.location?.name || (fixture.venue?.split(',')[0] || '')}
+          </span>
+        </div>
+
+        {/* Loading skeleton */}
+        {wLoad && !weather && (
+          <div style={{ display: 'flex', gap: 6 }}>
+            {Array.from({length: 7}).map((_, i) => (
+              <div key={i} style={{ flex: 1, height: 72, borderRadius: 10, background: 'rgba(255,255,255,.08)', animation: 'pendingPulse 1.4s ease-in-out infinite', animationDelay: `${i*0.08}s` }} />
+            ))}
+          </div>
+        )}
+
+        {/* Forecast row */}
+        {days.length > 0 && (
+          <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
+            {days.map((dateStr, i) => {
+              const date      = new Date(dateStr + 'T12:00:00')
+              const dayLabel  = date.toLocaleDateString('en-GB', { weekday: 'short' })
+              const isMatch   = dateStr === matchYMD
+              const wmo       = getWmo(weather.daily.weathercode[i])
+              const maxT      = Math.round(weather.daily.temperature_2m_max[i])
+              const minT      = Math.round(weather.daily.temperature_2m_min[i])
+              const rain      = weather.daily.precipitation_probability_max[i] || 0
+              const wind      = Math.round(weather.daily.windspeed_10m_max[i] || 0)
+
+              return (
+                <div key={dateStr} style={{
+                  flexShrink: 0,
+                  flex: '1 0 0',
+                  minWidth: 44,
+                  textAlign: 'center',
+                  background: isMatch
+                    ? 'linear-gradient(160deg, rgba(251,191,36,.22) 0%, rgba(255,255,255,.18) 100%)'
+                    : 'rgba(255,255,255,.07)',
+                  border: isMatch
+                    ? '1.5px solid rgba(251,191,36,.6)'
+                    : '1px solid rgba(255,255,255,.08)',
+                  borderRadius: 12,
+                  padding: '7px 4px 6px',
+                  position: 'relative',
+                  boxShadow: isMatch ? '0 0 14px rgba(251,191,36,.2)' : 'none',
+                  transition: 'transform 150ms',
+                }}>
+                  {isMatch && (
+                    <div style={{ position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)', background: '#fbbf24', borderRadius: 99, padding: '1px 6px', fontFamily: FONT, fontSize: 7, fontWeight: 900, color: '#1e1b4b', whiteSpace: 'nowrap', letterSpacing: 0.3 }}>
+                      MATCH
+                    </div>
+                  )}
+                  <div style={{ fontFamily: FONT, fontSize: 8, fontWeight: 800, color: isMatch ? 'rgba(251,191,36,.9)' : 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{dayLabel}</div>
+                  <div style={{ fontSize: 20, lineHeight: 1, margin: '4px 0 2px' }}>{wmo.icon}</div>
+                  <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 900, color: '#fff' }}>{maxT}°</div>
+                  <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,.38)' }}>{minT}°</div>
+                  {rain > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, marginTop: 3 }}>
+                      <span style={{ fontSize: 7 }}>💧</span>
+                      <span style={{ fontFamily: FONT, fontSize: 8, fontWeight: 700, color: '#93c5fd' }}>{rain}%</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Wind note on match day */}
+        {days.length > 0 && matchYMD && (() => {
+          const mi = days.indexOf(matchYMD)
+          if (mi < 0) return null
+          const wind = Math.round(weather.daily.windspeed_10m_max[mi] || 0)
+          const rain = weather.daily.precipitation_probability_max[mi] || 0
+          const wmo  = getWmo(weather.daily.weathercode[mi])
+          return (
+            <div style={{ marginTop: 10, padding: '7px 10px', background: 'rgba(251,191,36,.1)', border: '1px solid rgba(251,191,36,.25)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 16 }}>{wmo.icon}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: 'rgba(251,191,36,.9)' }}>Match Day — {wmo.label}</div>
+                <div style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,.5)', marginTop: 1 }}>
+                  Wind {wind} km/h · {rain > 0 ? `${rain}% chance of rain` : 'No rain expected'} · {Math.round(weather.daily.temperature_2m_max[mi])}°C high
+                </div>
+              </div>
+            </div>
+          )
+        })()}
       </div>
     </motion.div>
   )
