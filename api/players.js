@@ -69,7 +69,8 @@ function matchStat(arr, forename, surname) {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=300')
+  // 5-min CDN cache + serve stale for 60s while revalidating → squad changes appear within ~5 min
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
 
   const stats = loadStats()
 

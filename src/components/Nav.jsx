@@ -66,25 +66,25 @@ export default function Nav() {
             transition={{ duration: 0.14, ease: EASE }}
             aria-label="Go to home"
             style={{
-              display: 'flex', alignItems: 'center', gap: 10,
+              display: 'flex', alignItems: 'center', gap: 8,
               background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
-              minHeight: 44,
+              minHeight: 44, flexShrink: 0,
             }}
           >
             <div style={{
-              width: 44, height: 44, borderRadius: '50%',
+              width: 40, height: 40, borderRadius: '50%',
               background: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, overflow: 'hidden',
               boxShadow: '0 2px 10px rgba(0,0,0,.3)',
             }}>
-              <img src="/logo.png" alt="TUCC" width={40} height={40} style={{ objectFit: 'contain' }} />
+              <img src="/logo.png" alt="TUCC" width={36} height={36} style={{ objectFit: 'contain' }} />
             </div>
             <div className="tucc-nav-brand-text">
-              <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 14, letterSpacing: -0.2, lineHeight: 1.2 }}>
+              <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 13, letterSpacing: -0.2, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                 Tamil United CC
               </div>
-              <div style={{ color: 'rgba(255,255,255,.38)', fontFamily: FONT, fontSize: 10, marginTop: 1 }}>
+              <div style={{ color: 'rgba(255,255,255,.38)', fontFamily: FONT, fontSize: 10, marginTop: 1, whiteSpace: 'nowrap' }}>
                 formerly known as DTU CC
               </div>
             </div>
@@ -321,7 +321,17 @@ export default function Nav() {
 
       {/* ── Responsive CSS ── */}
       <style>{`
-        @media (max-width: 620px) {
+        /* Hide subtitle & shrink brand at medium widths so nav links fit */
+        @media (max-width: 860px) {
+          .tucc-nav-brand-text div:last-child { display: none !important; }
+          .tucc-nav-brand-text div:first-child { font-size: 12px !important; }
+        }
+        /* Compact nav item padding at medium widths */
+        @media (max-width: 820px) {
+          .nav-desktop-links button { padding: 6px 9px !important; font-size: 12px !important; gap: 4px !important; }
+        }
+        /* Switch to hamburger on small screens */
+        @media (max-width: 640px) {
           .nav-desktop-links { display: none !important; }
           .nav-hamburger { display: flex !important; }
           .tucc-nav-brand-text div:last-child { display: none; }
