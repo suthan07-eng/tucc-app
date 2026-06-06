@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '../supabase'
+import { supabase } from '../supabase' // kept for match log tab only
 import { C, FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
@@ -577,22 +577,34 @@ const TABS = [
 
 export default function Stats() {
   const nav = useNavigate()
-  const [season, setSeason]   = useState('2026')
-  const [tab, setTab]         = useState('batting')
-  const [stats, setStats]     = useState([])
-  const [loading, setLoading] = useState(true)
+  const [season, setSeason]     = useState('2026')
+  const [tab, setTab]           = useState('batting')
+  const [batting, setBatting]   = useState([])
+  const [bowling, setBowling]   = useState([])
+  const [fielding, setFielding] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [source, setSource]     = useState(null)
+  const [updatedAt, setUpdatedAt] = useState(null)
 
   useEffect(() => {
-    async function loadStats() {
-      setLoading(true)
-      const { data } = await supabase.from('player_stats').select('*').eq('season', season)
-      setStats(data || [])
-      setLoading(false)
-    }
-    loadStats()
+    setLoading(true)
+    fetch(`/api/player-stats?season=${season}`)
+      .then(r => r.json())
+      .then(d => {
+        setBatting(d.batting  || [])
+        setBowling(d.bowling  || [])
+        setFielding(d.fielding || [])
+        setSource(d.source)
+        setUpdatedAt(d.updatedAt)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
   }, [season])
 
-  const lastUpdated = stats.reduce((l, s) => (!l || (s.updated_at && s.updated_at > l) ? s.updated_at : l), null)
+  // Map to the field names the dashboard components expect
+  const batStats  = batting.map((p, i) => ({ id: i, player_name: p.name, bat_matches: p.matches, bat_innings: p.innings, bat_runs: p.runs, bat_balls: p.balls, bat_fours: p.fours, bat_sixes: p.sixes, bat_not_out: p.not_outs > 0, bat_average: p.average, bat_strike_rate: p.strike_rate, bat_highest: p.highest, bat_highest_not_out: p.highest_no, bat_fifties: p.fifties, bat_hundreds: p.hundreds }))
+  const bowlStats = bowling.map((p, i) => ({ id: i, player_name: p.name, bowl_matches: p.matches, bowl_overs: p.overs, bowl_balls: p.balls, bowl_runs: p.runs, bowl_wickets: p.wickets, bowl_maidens: p.maidens, bowl_economy: p.economy, bowl_average: p.average, bowl_strike_rate: p.strike_rate, bowl_five_fers: p.five_fers, bowl_best_wickets: p.best_wickets, bowl_best_runs: p.best_runs }))
+  const fieldStats = fielding.map((p, i) => ({ id: i, player_name: p.name, field_catches: p.catches, field_run_outs: p.run_outs, field_stumpings: p.stumpings }))
 
   return (
     <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
@@ -631,9 +643,24 @@ export default function Stats() {
               </select>
             </div>
 
-            {lastUpdated && (
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginBottom: 12 }}>
-                Last updated: {new Date(lastUpdated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {/* Data source badge */}
+            {source && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: source === 'live' ? 'rgba(21,128,61,.35)' : 'rgba(233,160,32,.2)',
+                  border: `1px solid ${source === 'live' ? 'rgba(21,128,61,.5)' : 'rgba(233,160,32,.4)'}`,
+                  borderRadius: 20, padding: '4px 10px',
+                }}>
+                  <div style={{
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: source === 'live' ? '#4ade80' : C.gold,
+                    boxShadow: source === 'live' ? '0 0 6px #4ade80' : 'none',
+                  }} />
+                  <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, color: source === 'live' ? '#86efac' : C.gold }}>
+                    {source === 'live' ? 'Live · play-cricket.com' : `Excel import · Updated ${updatedAt ? new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}`}
+                  </span>
+                </div>
               </div>
             )}
           </motion.div>
@@ -671,9 +698,9 @@ export default function Stats() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: EASE_OUT }}
           >
-            {tab === 'batting'  && <BattingDashboard  stats={stats}  loading={loading} />}
-            {tab === 'bowling'  && <BowlingDashboard  stats={stats}  loading={loading} />}
-            {tab === 'fielding' && <FieldingDashboard stats={stats}  loading={loading} />}
+            {tab === 'batting'  && <BattingDashboard  stats={batStats}   loading={loading} />}
+            {tab === 'bowling'  && <BowlingDashboard  stats={bowlStats}  loading={loading} />}
+            {tab === 'fielding' && <FieldingDashboard stats={fieldStats} loading={loading} />}
             {tab === 'matchlog' && <MatchLogDashboard season={season} />}
           </motion.div>
         </AnimatePresence>
