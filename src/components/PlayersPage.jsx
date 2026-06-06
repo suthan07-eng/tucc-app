@@ -38,7 +38,8 @@ const HAND_SHORT = s => (s || '').replace('Right Hand', 'RHB').replace('Left Han
 // ── Player Photo ──────────────────────────────────────────────
 // fill=true → stretches to 100% of parent (use when parent is the circle)
 // fill=false → renders its own fixed-size circle
-function PlayerPhoto({ photoUrl, name, size = 96, fill = false }) {
+// photoPos → CSS object-position override (e.g. 'center 20%')
+function PlayerPhoto({ photoUrl, name, size = 96, fill = false, photoPos = 'center 35%' }) {
   const [err, setErr] = useState(false)
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   const PALETTE  = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9','#c2410c','#0f766e']
@@ -73,7 +74,7 @@ function PlayerPhoto({ photoUrl, name, size = 96, fill = false }) {
       <img
         src={photoUrl}
         alt={name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 35%' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photoPos }}
         onError={() => setErr(true)}
       />
     </div>
@@ -154,7 +155,7 @@ function PlayerCard({ player, index, onClick }) {
           background: '#e2e8f0',
           zIndex: 1,
         }}>
-          <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill />
+          <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill photoPos={player.photoPos || 'center 35%'} />
         </div>
       </div>
 
@@ -273,7 +274,7 @@ function PlayerModal({ player, onClose }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
             <div style={{ width: 88, height: 88, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,.85)', boxShadow: '0 8px 24px rgba(0,0,0,.25)', flexShrink: 0, background: '#e2e8f0' }}>
-              <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill />
+              <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill photoPos={player.photoPos || 'center 35%'} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: -0.3 }}>
