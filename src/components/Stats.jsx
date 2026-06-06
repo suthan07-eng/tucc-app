@@ -87,7 +87,7 @@ function RunsBarChart({ data, color }) {
           </defs>
           <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
           <XAxis type="number" tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={80} />
           <Tooltip content={<ChartTooltip unit="runs" color={color} />} cursor={{ fill: `${color}08` }} />
           <Bar dataKey="runs" radius={[0, 8, 8, 0]}>
             {top.map((_, i) => <Cell key={i} fill={`url(#runGrad${i})`} />)}
@@ -190,7 +190,7 @@ function WicketsBarChart({ data, color }) {
           </defs>
           <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={80} />
           <Tooltip content={<ChartTooltip unit="wkts" color={color} />} cursor={{ fill: `${color}08` }} />
           <Bar dataKey="wkts" radius={[0, 8, 8, 0]}>
             {top.map((_, i) => <Cell key={i} fill={`url(#wktGrad${i})`} />)}
@@ -239,7 +239,7 @@ function EconomyChart({ data, color }) {
         <BarChart data={bowlers} layout="vertical" margin={{ left: 0, right: 44, top: 0, bottom: 0 }} barSize={16}>
           <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
           <XAxis type="number" domain={[0, 'auto']} tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={80} />
           <ReferenceLine x={6} stroke="#15803d50" strokeDasharray="4 3" />
           <ReferenceLine x={8} stroke="#b4530950" strokeDasharray="4 3" />
           <Tooltip content={({ active, payload, label }) => {
@@ -308,7 +308,7 @@ function FieldingChart({ data }) {
           </defs>
           <CartesianGrid horizontal={false} stroke={`${C.gray2}80`} strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} tick={{ fontFamily: FONT, fontSize: 10, fill: C.gray3 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={62} />
+          <YAxis type="category" dataKey="name" tick={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, fill: C.dark }} axisLine={false} tickLine={false} width={80} />
           <Tooltip content={({ active, payload, label }) => {
             if (!active || !payload?.length) return null
             return (

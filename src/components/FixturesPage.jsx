@@ -363,10 +363,13 @@ export default function FixturesPage() {
   // Remaining fixtures (all except the next one shown in hero)
   const remaining = nextTucc ? fixtures.filter(f => f !== nextTucc) : fixtures
 
-  const tuccUpcoming = fixtures.filter(f => isOurs(f.team1) || isOurs(f.team2)).length
-  const seasonTotal  = played.total + tuccUpcoming
-  const homeTotal    = played.home  + fixtures.filter(f => isOurs(f.team1)).length
-  const awayTotal    = played.away  + fixtures.filter(f => isOurs(f.team2)).length
+  // Full season totals — results API caps at last 10, so we use known season values
+  const SEASON_TOTAL = 14
+  const PLAYED_HOME  = 3
+  const PLAYED_AWAY  = 2
+  const PLAYED_TOTAL = PLAYED_HOME + PLAYED_AWAY
+  const upcomingHome = fixtures.filter(f => isOurs(f.team1)).length
+  const upcomingAway = fixtures.filter(f => isOurs(f.team2)).length
 
   return (
     <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
@@ -417,10 +420,10 @@ export default function FixturesPage() {
             {!loading && fixtures.length > 0 && (
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
-                  { label: 'Season Total', value: seasonTotal,         grad: 'linear-gradient(135deg,#475569,#64748b)', shadow: '0 4px 14px rgba(71,85,105,.3)' },
-                  { label: 'Played',       value: played.total,        grad: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', shadow: '0 4px 14px rgba(29,78,216,.4)' },
-                  { label: 'Home',         value: homeTotal,           grad: 'linear-gradient(135deg,#15803d,#22c55e)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
-                  { label: 'Away',         value: awayTotal,           grad: 'linear-gradient(135deg,#b45309,#f59e0b)', shadow: '0 4px 14px rgba(180,83,9,.35)' },
+                  { label: 'Season',   value: SEASON_TOTAL,  grad: 'linear-gradient(135deg,#475569,#64748b)', shadow: '0 4px 14px rgba(71,85,105,.3)' },
+                  { label: 'Played',   value: PLAYED_TOTAL,  grad: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', shadow: '0 4px 14px rgba(29,78,216,.4)' },
+                  { label: 'Home',     value: PLAYED_HOME,   grad: 'linear-gradient(135deg,#15803d,#22c55e)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
+                  { label: 'Away',     value: PLAYED_AWAY,   grad: 'linear-gradient(135deg,#b45309,#f59e0b)', shadow: '0 4px 14px rgba(180,83,9,.35)' },
                 ].map(({ label, value, grad, shadow }) => (
                   <div key={label} style={{ flex: 1, background: grad, borderRadius: 14, padding: '10px 8px', textAlign: 'center', boxShadow: shadow, position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', top: -8, right: -8, width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
@@ -440,7 +443,7 @@ export default function FixturesPage() {
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.gray4 }}>
-            {!loading && `${fixtures.length} upcoming · ${played.total} played`}
+            {!loading && `${fixtures.length} upcoming · ${PLAYED_TOTAL} played`}
           </div>
           <motion.button
             onClick={() => load(true)}
