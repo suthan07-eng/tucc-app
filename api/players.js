@@ -120,9 +120,14 @@ export default async function handler(req, res) {
         playerType: p.player_type,
         photoUrl:   p.Photo ? `${PHOTO_BASE}${encodeURIComponent(p.Photo)}` : null,
         stats: {
+          matches: batStat?.matches ?? bowlStat?.matches ?? fieldStat?.matches ?? null,
           runs:    batStat?.runs    ?? null,
+          innings: batStat?.innings ?? null,
+          highest: batStat?.highest ?? null,
+          average: batStat?.average ?? null,
           wickets: bowlStat?.wickets ?? null,
           economy: bowlStat?.economy ?? null,
+          bestWkt: bowlStat?.best_wickets ?? null,
           catches: fieldStat?.catches ?? null,
         },
       }
@@ -147,9 +152,14 @@ export default async function handler(req, res) {
         playerType: p.player_type,
         photoUrl:   p.Photo ? `${PHOTO_BASE}${encodeURIComponent(p.Photo)}` : null,
         stats: {
+          matches: batStat?.matches ?? bowlStat?.matches ?? fieldStat?.matches ?? null,
           runs:    batStat?.runs    ?? null,
+          innings: batStat?.innings ?? null,
+          highest: batStat?.highest ?? null,
+          average: batStat?.average ?? null,
           wickets: bowlStat?.wickets ?? null,
           economy: bowlStat?.economy ?? null,
+          bestWkt: bowlStat?.best_wickets ?? null,
           catches: fieldStat?.catches ?? null,
         },
       }

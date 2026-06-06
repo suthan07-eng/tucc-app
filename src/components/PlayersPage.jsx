@@ -73,127 +73,139 @@ function PlayerPhoto({ photoUrl, name, size = 96 }) {
   )
 }
 
-// ── Stat Mini Bar ─────────────────────────────────────────────
-function StatBar({ value, max, color }) {
-  const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0
-  return (
-    <div style={{ flex: 1, height: 4, borderRadius: 99, background: '#e2e8f0', overflow: 'hidden' }}>
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
-        style={{ height: '100%', borderRadius: 99, background: color }}
-      />
-    </div>
-  )
-}
-
 // ── Player Card ───────────────────────────────────────────────
-function PlayerCard({ player, index, maxRuns, maxWkts, maxCatch, onClick }) {
-  const role = detectRole(player)
-  const meta = ROLE_META[role] || ROLE_META.Player
+function PlayerCard({ player, index, onClick }) {
+  const role    = detectRole(player)
+  const meta    = ROLE_META[role] || ROLE_META.Player
   const RoleIcon = meta.icon
-  const runs    = player.stats?.runs    ?? null
-  const wickets = player.stats?.wickets ?? null
-  const catches = player.stats?.catches ?? null
+  const { matches, runs, wickets, catches } = player.stats || {}
+  const hasStats = matches != null || runs != null || wickets != null || catches != null
+
+  const statPills = [
+    { label: 'GP',   value: matches, color: '#6366f1', bg: '#eef2ff', borderColor: '#c7d2fe' },
+    { label: 'Runs', value: runs,    color: '#15803d', bg: '#dcfce7', borderColor: '#bbf7d0' },
+    { label: 'Wkts', value: wickets, color: '#be123c', bg: '#ffe4e6', borderColor: '#fecdd3' },
+    { label: 'Catch',value: catches, color: '#7c3aed', bg: '#ede9fe', borderColor: '#ddd6fe' },
+  ].filter(s => s.value != null)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: EASE, delay: index * 0.04 }}
-      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.35, ease: EASE, delay: Math.min(index * 0.05, 0.4) }}
+      whileTap={{ scale: 0.97 }}
       onClick={() => onClick(player)}
       style={{
         background: '#fff',
-        borderRadius: 22,
+        borderRadius: 24,
         overflow: 'hidden',
-        border: `1.5px solid ${C.gray2}`,
-        boxShadow: `0 4px 20px ${C.shadow}`,
+        border: '1px solid rgba(0,0,0,.06)',
+        boxShadow: '0 2px 12px rgba(0,0,0,.07), 0 8px 28px rgba(0,0,0,.06)',
         cursor: 'pointer',
         position: 'relative',
+        display: 'flex', flexDirection: 'column',
       }}
     >
-      {/* Color top stripe */}
-      <div style={{ height: 5, background: meta.grad }} />
+      {/* ── Hero photo area ── */}
+      <div style={{ position: 'relative', background: meta.grad, paddingTop: '72%', overflow: 'hidden' }}>
+        {/* Background texture circles */}
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: -10, width: 70, height: 70, borderRadius: '50%', background: 'rgba(0,0,0,.1)', pointerEvents: 'none' }} />
 
-      <div style={{ padding: '18px 16px 16px' }}>
-        {/* Top row: photo + role badge */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <PlayerPhoto photoUrl={player.photoUrl} name={player.name} size={72} />
-            {/* Role badge on photo */}
-            <div style={{
-              position: 'absolute', bottom: -2, right: -2,
-              width: 22, height: 22, borderRadius: '50%',
-              background: meta.grad, border: '2px solid #fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: `0 2px 8px ${meta.color}55`,
-            }}>
-              <RoleIcon size={10} color="#fff" strokeWidth={2.5} />
-            </div>
+        {/* GP badge — top left */}
+        {matches != null && (
+          <div style={{
+            position: 'absolute', top: 9, left: 9, zIndex: 2,
+            background: 'rgba(0,0,0,.35)', backdropFilter: 'blur(6px)',
+            borderRadius: 10, padding: '4px 8px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+          }}>
+            <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{matches}</div>
+            <div style={{ fontFamily: FONT, fontSize: 7, fontWeight: 800, color: 'rgba(255,255,255,.65)', textTransform: 'uppercase', letterSpacing: 0.5 }}>GP</div>
           </div>
+        )}
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 900, color: C.dark, lineHeight: 1.2, marginBottom: 4 }}>
-              {player.forename}
-            </div>
-            <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.gray4, lineHeight: 1.2, marginBottom: 8 }}>
-              {player.surname}
-            </div>
-            {/* Role pill */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: meta.bg, borderRadius: 20, padding: '3px 10px', border: `1px solid ${meta.color}22` }}>
-              <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: meta.color, textTransform: 'uppercase', letterSpacing: 0.5 }}>{role}</span>
-            </div>
+        {/* Role badge — top right */}
+        <div style={{
+          position: 'absolute', top: 9, right: 9, zIndex: 2,
+          background: 'rgba(255,255,255,.22)', backdropFilter: 'blur(6px)',
+          border: '1px solid rgba(255,255,255,.35)',
+          borderRadius: 10, padding: '4px 8px',
+          display: 'flex', alignItems: 'center', gap: 3,
+        }}>
+          <RoleIcon size={9} color="#fff" strokeWidth={2.5} />
+          <span style={{ fontFamily: FONT, fontSize: 8, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 0.5 }}>{meta.label}</span>
+        </div>
+
+        {/* Player photo — positioned at bottom-center of hero */}
+        <div style={{
+          position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)',
+          width: '62%', aspectRatio: '1',
+          borderRadius: '50%', overflow: 'hidden',
+          border: '3px solid rgba(255,255,255,.9)',
+          boxShadow: '0 8px 24px rgba(0,0,0,.25)',
+          background: '#e2e8f0',
+          zIndex: 1,
+        }}>
+          <PlayerPhoto photoUrl={player.photoUrl} name={player.name} size={999} />
+        </div>
+      </div>
+
+      {/* ── Body ── */}
+      <div style={{ padding: '10px 12px 14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Name */}
+        <div style={{ textAlign: 'center', marginBottom: 10 }}>
+          <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 900, color: C.dark, lineHeight: 1.2 }}>
+            {player.forename}
           </div>
+          <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, color: C.gray4, lineHeight: 1.3 }}>
+            {player.surname}
+          </div>
+        </div>
 
-          {/* BTCL ID badge */}
+        {/* Role + BTCL chip row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: meta.grad, borderRadius: 20, padding: '3px 10px', boxShadow: `0 2px 8px ${meta.color}44` }}>
+            <span style={{ fontFamily: FONT, fontSize: 9, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 0.6 }}>{role}</span>
+          </div>
           {player.id && (
-            <div style={{ flexShrink: 0, textAlign: 'right' }}>
-              <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.5 }}>BTCL ID</div>
-              <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 900, color: C.dark }}>{player.id}</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', borderRadius: 20, padding: '3px 9px', border: '1px solid #e2e8f0' }}>
+              <span style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: C.gray4 }}>#{player.id}</span>
             </div>
           )}
         </div>
 
-        {/* Styles */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+        {/* Bat / Bowl style chips */}
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 }}>
           {player.batStyle && (
-            <div style={{ background: '#eff6ff', borderRadius: 8, padding: '4px 8px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#1d4ed8' }}>
+            <div style={{ background: '#eff6ff', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', border: '1px solid #bfdbfe' }}>
               🏏 {HAND_SHORT(player.batStyle)}
             </div>
           )}
           {player.bowlStyle && (
-            <div style={{ background: '#fff1f2', borderRadius: 8, padding: '4px 8px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#be123c' }}>
+            <div style={{ background: '#fff1f2', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', border: '1px solid #fecdd3' }}>
               🔴 {HAND_SHORT(player.bowlStyle)}
             </div>
           )}
         </div>
 
-        {/* Stats bars */}
-        {(runs !== null || wickets !== null || catches !== null) && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {runs !== null && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#15803d', width: 38, flexShrink: 0 }}>Runs</span>
-                <StatBar value={runs} max={maxRuns} color="#22c55e" />
-                <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: C.dark, width: 28, textAlign: 'right', flexShrink: 0 }}>{runs}</span>
+        {/* Stat pills */}
+        {hasStats && statPills.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(statPills.length, 4)}, 1fr)`, gap: 5, marginTop: 'auto' }}>
+            {statPills.map(({ label, value, color, bg, borderColor }) => (
+              <div key={label} style={{
+                background: bg, borderRadius: 10, padding: '6px 4px',
+                textAlign: 'center', border: `1px solid ${borderColor}`,
+              }}>
+                <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
+                <div style={{ fontFamily: FONT, fontSize: 7, fontWeight: 800, color: `${color}99`, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.4 }}>{label}</div>
               </div>
-            )}
-            {wickets !== null && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#be123c', width: 38, flexShrink: 0 }}>Wkts</span>
-                <StatBar value={wickets} max={maxWkts} color="#f43f5e" />
-                <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: C.dark, width: 28, textAlign: 'right', flexShrink: 0 }}>{wickets}</span>
-              </div>
-            )}
-            {catches !== null && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#7c3aed', width: 38, flexShrink: 0 }}>Catch</span>
-                <StatBar value={catches} max={maxCatch} color="#a78bfa" />
-                <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: C.dark, width: 28, textAlign: 'right', flexShrink: 0 }}>{catches}</span>
-              </div>
-            )}
+            ))}
+          </div>
+        )}
+        {!hasStats && (
+          <div style={{ textAlign: 'center', marginTop: 'auto', padding: '6px 0' }}>
+            <span style={{ fontFamily: FONT, fontSize: 10, color: C.gray3, fontWeight: 600 }}>No matches yet</span>
           </div>
         )}
       </div>
@@ -205,7 +217,21 @@ function PlayerCard({ player, index, maxRuns, maxWkts, maxCatch, onClick }) {
 function PlayerModal({ player, onClose }) {
   const role = detectRole(player)
   const meta = ROLE_META[role] || ROLE_META.Player
-  const { runs, wickets, economy, catches } = player.stats || {}
+  const RoleIcon = meta.icon
+  const { matches, runs, innings, highest, average, wickets, economy, bestWkt, catches } = player.stats || {}
+
+  const allStats = [
+    { label: 'Games',   value: matches, color: '#6366f1', bg: '#eef2ff', border: '#c7d2fe' },
+    { label: 'Runs',    value: runs,    color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
+    { label: 'Innings', value: innings, color: '#0369a1', bg: '#e0f2fe', border: '#bae6fd' },
+    { label: 'Highest', value: highest, color: '#b45309', bg: '#fef3c7', border: '#fde68a' },
+    { label: 'Average', value: average != null ? Number(average).toFixed(1) : null, color: '#0891b2', bg: '#cffafe', border: '#a5f3fc' },
+    { label: 'Wickets', value: wickets, color: '#be123c', bg: '#ffe4e6', border: '#fecdd3' },
+    { label: 'Economy', value: economy != null ? Number(economy).toFixed(2) : null, color: '#7c3aed', bg: '#ede9fe', border: '#ddd6fe' },
+    { label: 'Best',    value: bestWkt != null ? `${bestWkt}wkt` : null, color: '#9f1239', bg: '#fff1f2', border: '#fecdd3' },
+    { label: 'Catches', value: catches, color: '#6d28d9', bg: '#f5f3ff', border: '#ddd6fe' },
+  ].filter(s => s.value != null && s.value !== '' && s.value !== 0 || s.value === 0 && s.label === 'Runs')
+   .filter(s => s.value != null)
 
   return (
     <motion.div
@@ -213,47 +239,55 @@ function PlayerModal({ player, onClose }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 0 0' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
     >
       <motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
-        transition={{ type: 'spring', duration: 0.45, bounce: 0.1 }}
+        transition={{ type: 'spring', duration: 0.42, bounce: 0.08 }}
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: '28px 28px 0 0',
+          background: '#f8fafc', borderRadius: '32px 32px 0 0',
           width: '100%', maxWidth: MAX_WIDTH,
-          maxHeight: '88vh', overflowY: 'auto',
-          paddingBottom: 40,
+          maxHeight: '92vh', overflowY: 'auto',
+          paddingBottom: 48,
         }}
       >
         {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 4px' }}>
-          <div style={{ width: 40, height: 4, borderRadius: 99, background: C.gray2 }} />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 0' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 99, background: '#e2e8f0' }} />
         </div>
 
-        {/* Hero */}
-        <div style={{ background: meta.grad, padding: '24px 24px 32px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -20, left: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,.07)', pointerEvents: 'none' }} />
+        {/* ── Hero ── */}
+        <div style={{ position: 'relative', background: meta.grad, margin: '12px 16px 0', borderRadius: 24, overflow: 'hidden', padding: '24px 20px 20px' }}>
+          <div style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -20, left: -20, width: 90, height: 90, borderRadius: '50%', background: 'rgba(0,0,0,.1)', pointerEvents: 'none' }} />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <PlayerPhoto photoUrl={player.photoUrl} name={player.name} size={96} />
-            <div>
-              <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
+            <div style={{ width: 88, height: 88, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,.85)', boxShadow: '0 8px 24px rgba(0,0,0,.25)', flexShrink: 0, background: '#e2e8f0' }}>
+              <PlayerPhoto photoUrl={player.photoUrl} name={player.name} size={999} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: -0.3 }}>
                 {player.forename}
               </div>
-              <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,.75)', marginBottom: 10 }}>
+              <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.7)', marginBottom: 12 }}>
                 {player.surname}
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <div style={{ background: 'rgba(255,255,255,.22)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 20, padding: '4px 12px', fontFamily: FONT, fontSize: 11, fontWeight: 800, color: '#fff' }}>
-                  {role}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.22)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 20, padding: '5px 12px' }}>
+                  <RoleIcon size={11} color="#fff" strokeWidth={2.5} />
+                  <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: '#fff' }}>{role}</span>
                 </div>
                 {player.id && (
-                  <div style={{ background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontFamily: FONT, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>
+                  <div style={{ background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 20, padding: '5px 12px', fontFamily: FONT, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>
                     BTCL #{player.id}
+                  </div>
+                )}
+                {matches != null && (
+                  <div style={{ background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 20, padding: '5px 12px', fontFamily: FONT, fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                    {matches} game{matches !== 1 ? 's' : ''} played
                   </div>
                 )}
               </div>
@@ -261,37 +295,39 @@ function PlayerModal({ player, onClose }) {
           </div>
         </div>
 
-        <div style={{ padding: '24px 24px 0' }}>
-          {/* Playing styles */}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Playing Style</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {[
-                { label: 'Batting', value: player.batStyle, color: '#1d4ed8', bg: '#eff6ff', emoji: '🏏' },
-                { label: 'Bowling', value: player.bowlStyle, color: '#be123c', bg: '#fff1f2', emoji: '🔴' },
-              ].filter(s => s.value).map(({ label, value, color, bg, emoji }) => (
-                <div key={label} style={{ background: bg, borderRadius: 14, padding: '12px 14px', border: `1px solid ${color}18` }}>
-                  <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{emoji} {label}</div>
-                  <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: C.dark }}>{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div style={{ padding: '16px 16px 0' }}>
 
-          {/* Season Stats */}
-          {(runs !== null || wickets !== null || catches !== null) && (
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>2026 Season Stats</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                {[
-                  { label: 'Runs',    value: runs,    color: '#15803d', bg: '#dcfce7' },
-                  { label: 'Wickets', value: wickets, color: '#be123c', bg: '#ffe4e6' },
-                  { label: 'Economy', value: economy, color: '#0891b2', bg: '#cffafe' },
-                  { label: 'Catches', value: catches, color: '#7c3aed', bg: '#ede9fe' },
-                ].filter(s => s.value !== null && s.value !== undefined).map(({ label, value, color, bg }) => (
-                  <div key={label} style={{ background: bg, borderRadius: 14, padding: '14px 10px', textAlign: 'center', border: `1px solid ${color}18` }}>
-                    <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
-                    <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: `${color}99`, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+          {/* Playing styles */}
+          {(player.batStyle || player.bowlStyle) && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Playing Style</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {player.batStyle && (
+                  <div style={{ flex: 1, minWidth: 120, background: '#eff6ff', borderRadius: 16, padding: '12px 16px', border: '1px solid #bfdbfe' }}>
+                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>🏏 Batting</div>
+                    <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#1e3a8a' }}>{player.batStyle}</div>
+                  </div>
+                )}
+                {player.bowlStyle && (
+                  <div style={{ flex: 1, minWidth: 120, background: '#fff1f2', borderRadius: 16, padding: '12px 16px', border: '1px solid #fecdd3' }}>
+                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>🔴 Bowling</div>
+                    <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#881337' }}>{player.bowlStyle}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 2026 Season Stats grid */}
+          {allStats.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>2026 Season Stats</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {allStats.map(({ label, value, color, bg, border }) => (
+                  <div key={label} style={{ background: bg, borderRadius: 16, padding: '14px 10px', textAlign: 'center', border: `1.5px solid ${border}`, position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', bottom: -8, right: -8, width: 36, height: 36, borderRadius: '50%', background: `${color}12`, pointerEvents: 'none' }} />
+                    <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 800, color: `${color}aa`, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -307,9 +343,9 @@ function PlayerModal({ player, onClose }) {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 background: meta.grad, color: '#fff',
-                borderRadius: 16, padding: '14px 20px',
+                borderRadius: 18, padding: '15px 20px',
                 fontFamily: FONT, fontSize: 14, fontWeight: 800,
-                textDecoration: 'none', boxShadow: `0 6px 20px ${meta.color}35`,
+                textDecoration: 'none', boxShadow: `0 8px 24px ${meta.color}40`,
               }}
             >
               View BTCL Profile <ExternalLink size={15} strokeWidth={2.5} />
@@ -324,27 +360,16 @@ function PlayerModal({ player, onClose }) {
 // ── Skeleton card ─────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div style={{ background: '#fff', borderRadius: 22, overflow: 'hidden', border: `1px solid ${C.gray2}` }}>
-      <div style={{ height: 5, background: C.gray2 }} />
-      <div style={{ padding: '18px 16px' }}>
-        <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: C.gray1, flexShrink: 0 }} />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
-            <div style={{ height: 14, width: '60%', borderRadius: 6, background: C.gray1 }} />
-            <div style={{ height: 11, width: '40%', borderRadius: 6, background: C.gray1 }} />
-            <div style={{ height: 20, width: 72, borderRadius: 20, background: C.gray1 }} />
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-          <div style={{ height: 24, width: 70, borderRadius: 8, background: C.gray1 }} />
-          <div style={{ height: 24, width: 80, borderRadius: 8, background: C.gray1 }} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[0,1].map(i => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 38, height: 10, borderRadius: 4, background: C.gray1 }} />
-            <div style={{ flex: 1, height: 4, borderRadius: 99, background: C.gray1 }} />
-            <div style={{ width: 24, height: 10, borderRadius: 4, background: C.gray1 }} />
-          </div>)}
+    <div style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', border: `1px solid ${C.gray2}` }}>
+      {/* Photo area */}
+      <div style={{ paddingTop: '72%', background: C.gray1, position: 'relative' }}>
+        <div style={{ position: 'absolute', bottom: -24, left: '50%', transform: 'translateX(-50%)', width: '60%', aspectRatio: '1', borderRadius: '50%', background: C.gray2, border: '3px solid #fff' }} />
+      </div>
+      <div style={{ padding: '32px 14px 14px' }}>
+        <div style={{ height: 13, width: '60%', borderRadius: 6, background: C.gray1, margin: '0 auto 6px' }} />
+        <div style={{ height: 10, width: '40%', borderRadius: 6, background: C.gray1, margin: '0 auto 12px' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+          {[0,1,2].map(i => <div key={i} style={{ height: 40, borderRadius: 10, background: C.gray1 }} />)}
         </div>
       </div>
     </div>
@@ -370,10 +395,6 @@ export default function PlayersPage() {
       .then(d => { setPlayers(d.players || []); setSource(d.source); setLoading(false) })
       .catch(() => { setError(true); setLoading(false) })
   }, [])
-
-  const maxRuns  = Math.max(...players.map(p => p.stats?.runs    ?? 0), 1)
-  const maxWkts  = Math.max(...players.map(p => p.stats?.wickets ?? 0), 1)
-  const maxCatch = Math.max(...players.map(p => p.stats?.catches ?? 0), 1)
 
   const filtered = players.filter(p => {
     const role = detectRole(p)
@@ -530,9 +551,6 @@ export default function PlayersPage() {
                 key={p.id || p.name}
                 player={p}
                 index={i}
-                maxRuns={maxRuns}
-                maxWkts={maxWkts}
-                maxCatch={maxCatch}
                 onClick={setSelected}
               />
             ))}
