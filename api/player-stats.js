@@ -1,6 +1,13 @@
-// Player stats API — serves from local data file
-// When PLAY_CRICKET_API_KEY is set, will fetch live from play-cricket instead
-import stats2026 from '../src/data/stats-2026.json' assert { type: 'json' }
+import { readFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+function loadStats() {
+  const raw = readFileSync(join(__dirname, '../src/data/stats-2026.json'), 'utf8')
+  return JSON.parse(raw)
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -26,6 +33,7 @@ export default async function handler(req, res) {
   }
 
   // Serve from local stats file
+  const stats2026 = loadStats()
   return res.status(200).json({
     ...stats2026,
     source: 'excel',
