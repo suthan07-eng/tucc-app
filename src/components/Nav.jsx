@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, BarChart2, ShieldCheck, ClipboardList,
-  Menu, X, Home, UserPlus, Calendar, ChevronRight, CalendarDays, Users,
+  Menu, X, Home, UserPlus, Calendar, ChevronRight, CalendarDays, Users, LogOut,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
+import { useAuth } from '../context/AuthContext'
 
 const EASE = [0.23, 1, 0.32, 1]
 
@@ -33,6 +34,7 @@ export default function Nav() {
   const { pathname }  = useLocation()
   const isAdmin       = pathname.startsWith('/admin')
   const [open, setOpen] = useState(false)
+  const { signOut }   = useAuth()
 
   // Close menu on route change
   useEffect(() => { setOpen(false) }, [pathname])
@@ -106,25 +108,25 @@ export default function Nav() {
                 )
               })}
               <motion.button
-                onClick={() => nav('/admin/login')}
+                onClick={() => signOut()}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
-                  color: C.gold,
-                  background: 'rgba(233,160,32,.12)',
-                  border: '1.5px solid rgba(233,160,32,.45)',
+                  color: 'rgba(255,255,255,.7)',
+                  background: 'rgba(255,255,255,.08)',
+                  border: '1.5px solid rgba(255,255,255,.15)',
                   borderRadius: 10, padding: '8px 14px',
                   cursor: 'pointer',
                   fontFamily: FONT, fontWeight: 700, fontSize: 13,
                   marginLeft: 8, minHeight: 38,
                   transition: 'all 150ms ease',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(233,160,32,.22)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(233,160,32,.12)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.15)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.08)' }}
               >
-                <ShieldCheck size={14} strokeWidth={2.5} />
-                Admin
+                <LogOut size={14} strokeWidth={2.5} />
+                Logout
               </motion.button>
             </div>
           )}
@@ -294,24 +296,23 @@ export default function Nav() {
                 </div>
               </div>
 
-              {/* Admin link at bottom */}
+              {/* Logout at bottom */}
               <div style={{ padding: '0 16px 32px' }}>
                 <motion.button
-                  onClick={() => { nav('/admin/login'); setOpen(false) }}
+                  onClick={() => { signOut(); setOpen(false) }}
                   whileTap={{ scale: 0.97 }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
                     padding: '14px 16px', borderRadius: 14, width: '100%',
-                    background: 'linear-gradient(135deg, #0f3825, #1a5c38)',
-                    border: 'none', cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(15,56,37,.3)',
+                    background: 'rgba(200,48,42,.08)',
+                    border: '1px solid rgba(200,48,42,.2)', cursor: 'pointer',
                   }}
                 >
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(233,160,32,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ShieldCheck size={19} color={C.gold} strokeWidth={2.2} />
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(200,48,42,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <LogOut size={19} color="#c8302a" strokeWidth={2.2} />
                   </div>
-                  <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: C.gold, flex: 1, textAlign: 'left' }}>Admin Panel</span>
-                  <ChevronRight size={16} color={C.gold} strokeWidth={2} />
+                  <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: '#c8302a', flex: 1, textAlign: 'left' }}>Sign Out</span>
+                  <ChevronRight size={16} color="#c8302a" strokeWidth={2} />
                 </motion.button>
               </div>
             </motion.div>

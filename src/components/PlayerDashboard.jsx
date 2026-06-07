@@ -2,264 +2,159 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { C, FONT } from '../constants'
-import { LogOut, Shield, Zap, Target, Award } from 'lucide-react'
 
-// ── Avatar ───────────────────────────────────────────────────────────────────
-function DashAvatar({ photoUrl, name, photoPos, size = 72 }) {
+function DashAvatar({ photoUrl, name, photoPos, size = 64 }) {
   const initials = (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       overflow: 'hidden',
-      border: '3px solid rgba(255,255,255,0.3)',
-      boxShadow: '0 0 0 3px rgba(233,160,32,0.4), 0 8px 24px rgba(0,0,0,.3)',
-      background: 'rgba(255,255,255,0.1)',
+      border: '2.5px solid rgba(255,255,255,0.25)',
+      boxShadow: '0 0 0 2.5px rgba(233,160,32,0.5), 0 6px 20px rgba(0,0,0,.3)',
+      background: 'rgba(255,255,255,0.08)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      {photoUrl ? (
-        <img src={photoUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photoPos || 'center 35%' }} />
-      ) : (
-        <span style={{ fontSize: size * 0.35, fontWeight: 900, color: '#fff', fontFamily: FONT }}>{initials}</span>
-      )}
+      {photoUrl
+        ? <img src={photoUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photoPos || 'center 35%' }} />
+        : <span style={{ fontSize: size * 0.34, fontWeight: 900, color: '#fff', fontFamily: FONT }}>{initials}</span>
+      }
     </div>
   )
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, gradient, delay }) {
-  if (value === null || value === undefined) return null
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4 }}
-      style={{
-        flex: 1, minWidth: 0,
-        background: gradient,
-        borderRadius: 18,
-        padding: '14px 12px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: '0 4px 16px rgba(0,0,0,.12)',
-      }}
-    >
-      {/* Shine */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
-        background: 'linear-gradient(180deg, rgba(255,255,255,.15) 0%, transparent 100%)',
-        borderRadius: '18px 18px 0 0', pointerEvents: 'none',
-      }} />
-      <div style={{ fontSize: 18, marginBottom: 4 }}>
-        <Icon size={18} color="rgba(255,255,255,.7)" strokeWidth={2.5} />
-      </div>
-      <div style={{ fontSize: 26, fontWeight: 900, color: '#fff', fontFamily: FONT, lineHeight: 1, letterSpacing: '-0.5px' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 9, color: 'rgba(255,255,255,.65)', fontWeight: 800, marginTop: 5, textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
-        {label}
-      </div>
-    </motion.div>
-  )
-}
-
-// ── Main Dashboard ───────────────────────────────────────────────────────────
 export default function PlayerDashboard() {
   const { user, profile, signOut } = useAuth()
-  const [myPlayer, setMyPlayer] = useState(null)
-  const [btclLoaded, setBtclLoaded] = useState(false)
-  const [greeting, setGreeting] = useState('Welcome back')
+  const [myPlayer, setMyPlayer]   = useState(null)
+  const [loaded, setLoaded]       = useState(false)
+  const [greeting, setGreeting]   = useState('Welcome back')
 
   useEffect(() => {
     const h = new Date().getHours()
-    if (h < 12) setGreeting('Good morning')
-    else if (h < 17) setGreeting('Good afternoon')
-    else setGreeting('Good evening')
+    setGreeting(h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening')
   }, [])
 
   useEffect(() => {
     if (!user) return
     const displayName = profile?.display_name || user?.user_metadata?.full_name || ''
-    if (!displayName) { setBtclLoaded(true); return }
+    if (!displayName) { setLoaded(true); return }
+    const norm = s => s.toLowerCase().replace(/\s+/g, ' ').trim()
+    const dn = norm(displayName)
 
-    fetch('/api/players')
-      .then(r => r.json())
-      .then(data => {
-        const squad = data.players || []
-        const norm = s => s.toLowerCase().replace(/\s+/g, ' ').trim()
-        const dn = norm(displayName)
-        let matched = squad.find(p => norm(p.name) === dn)
-        if (!matched) {
-          const parts = dn.split(' ').filter(w => w.length > 2)
-          matched = squad.find(p => parts.length > 0 && parts.every(w => norm(p.name).includes(w)))
-        }
-        if (!matched) {
-          const parts = dn.split(' ').filter(w => w.length > 2)
-          matched = squad.find(p => {
-            const pn = norm(p.name)
-            return parts.filter(w => pn.includes(w)).length >= Math.ceil(parts.length * 0.6)
-          })
-        }
-        setMyPlayer(matched || null)
-        setBtclLoaded(true)
-      })
-      .catch(() => setBtclLoaded(true))
+    fetch('/api/players').then(r => r.json()).then(data => {
+      const squad = data.players || []
+      let hit = squad.find(p => norm(p.name) === dn)
+      if (!hit) {
+        const parts = dn.split(' ').filter(w => w.length > 2)
+        hit = squad.find(p => parts.length > 0 && parts.every(w => norm(p.name).includes(w)))
+      }
+      if (!hit) {
+        const parts = dn.split(' ').filter(w => w.length > 2)
+        hit = squad.find(p => parts.filter(w => norm(p.name).includes(w)).length >= Math.ceil(parts.length * 0.6))
+      }
+      setMyPlayer(hit || null)
+      setLoaded(true)
+    }).catch(() => setLoaded(true))
   }, [user, profile])
 
   if (!user) return null
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Player'
-  const firstName = displayName.split(' ')[0]
+  const [first, ...rest] = displayName.split(' ')
   const stats = myPlayer?.stats || null
-  const hasStats = stats && (stats.matches !== null || stats.runs !== null || stats.wickets !== null)
+  const hasStats = stats && [stats.matches, stats.runs, stats.wickets].some(v => v !== null)
 
-  // Role badge colour
-  const roleColor = myPlayer?.bowlStyle?.toLowerCase().includes('bat') ? '#f59e0b'
-    : myPlayer?.bowlStyle ? '#ef4444' : '#22c55e'
+  const statItems = [
+    { label: 'Matches', value: stats?.matches, color: '#60a5fa' },
+    { label: 'Runs',    value: stats?.runs,    color: '#4ade80' },
+    { label: 'Wickets', value: stats?.wickets, color: '#f87171' },
+    { label: 'Catches', value: stats?.catches, color: '#c084fc' },
+  ].filter(s => s.value !== null && s.value !== undefined)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -12 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.45 }}
       style={{
-        borderRadius: 28,
-        overflow: 'hidden',
+        background: 'linear-gradient(145deg, #071a10 0%, #0e3320 55%, #1a5c38 100%)',
+        borderRadius: 24,
+        padding: '20px 20px 18px',
         marginBottom: 16,
-        boxShadow: '0 16px 48px rgba(15,56,37,.35)',
+        boxShadow: '0 12px 40px rgba(10,40,20,.45)',
         position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      {/* ── Hero band ── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #071a10 0%, #0f3825 45%, #1a5c38 100%)',
-        padding: '22px 20px 52px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Background decoration */}
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,160,32,.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -20, left: -30, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,116,74,.35) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        {/* Grid lines */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)', backgroundSize: '32px 32px', pointerEvents: 'none' }} />
+      {/* Decorative glows */}
+      <div style={{ position: 'absolute', top: -50, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,160,32,.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: -40, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,116,74,.3) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Top row: avatar + info + logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
-          <DashAvatar photoUrl={myPlayer?.photoUrl} name={displayName} photoPos={myPlayer?.photoPos} size={68} />
+      {/* ── Player identity ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
+        <DashAvatar photoUrl={myPlayer?.photoUrl} name={displayName} photoPos={myPlayer?.photoPos} size={62} />
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Greeting */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', fontFamily: FONT, fontWeight: 600, letterSpacing: 0.5 }}>
-                {greeting}
-              </span>
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: FONT, lineHeight: 1.1, letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {firstName} <span style={{ color: 'rgba(255,255,255,.45)', fontWeight: 700 }}>{displayName.split(' ').slice(1).join(' ')}</span>
-            </div>
-
-            {/* Role + style chips */}
-            {myPlayer && (
-              <div style={{ display: 'flex', gap: 5, marginTop: 7, flexWrap: 'wrap' }}>
-                {myPlayer.batStyle && (
-                  <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONT, padding: '3px 8px', borderRadius: 99, background: 'rgba(233,160,32,.15)', border: '1px solid rgba(233,160,32,.3)', color: '#e9a020' }}>
-                    🏏 {myPlayer.batStyle.replace('Hand', '').trim()}
-                  </span>
-                )}
-                {myPlayer.bowlStyle && (
-                  <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONT, padding: '3px 8px', borderRadius: 99, background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.25)', color: '#fca5a5' }}>
-                    🔴 {myPlayer.bowlStyle.replace('Right-arm ', 'RA ').replace('Left-arm ', 'LA ')}
-                  </span>
-                )}
-              </div>
-            )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Live dot + greeting */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 5px #4ade80', flexShrink: 0, display: 'inline-block' }} />
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', fontFamily: FONT, fontWeight: 600 }}>{greeting}</span>
           </div>
 
-          {/* Logout */}
-          <motion.button
-            onClick={() => signOut()}
-            whileTap={{ scale: 0.9 }}
-            title="Sign out"
-            style={{
-              width: 38, height: 38, borderRadius: '50%', border: '1px solid rgba(255,255,255,.12)',
-              background: 'rgba(255,255,255,.07)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              backdropFilter: 'blur(8px)',
-            }}
-          >
-            <LogOut size={15} color="rgba(255,255,255,.6)" />
-          </motion.button>
+          {/* Name */}
+          <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', fontFamily: FONT, lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {first}{' '}
+            <span style={{ color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>{rest.join(' ')}</span>
+          </div>
+
+          {/* Style chips */}
+          {myPlayer && (
+            <div style={{ display: 'flex', gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
+              {myPlayer.batStyle && (
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(233,160,32,.13)', border: '1px solid rgba(233,160,32,.28)', color: '#fbbf24', fontFamily: FONT }}>
+                  🏏 {myPlayer.batStyle.replace(' Hand', '')}
+                </span>
+              )}
+              {myPlayer.bowlStyle && (
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(248,113,113,.1)', border: '1px solid rgba(248,113,113,.22)', color: '#fca5a5', fontFamily: FONT }}>
+                  🔴 {myPlayer.bowlStyle.replace('Right-arm ', 'RA ').replace('Left-arm ', 'LA ')}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Stats cards — overlap the hero band ── */}
+      {/* ── Divider ── */}
       {hasStats && (
-        <div style={{
-          display: 'flex', gap: 10,
-          padding: '0 16px',
-          marginTop: -36,
-          position: 'relative', zIndex: 2,
-        }}>
-          <StatCard icon={Shield} label="Matches" value={stats.matches}
-            gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)" delay={0.1} />
-          <StatCard icon={Zap} label="Runs" value={stats.runs}
-            gradient="linear-gradient(135deg, #15803d 0%, #22c55e 100%)" delay={0.15} />
-          <StatCard icon={Target} label="Wickets" value={stats.wickets}
-            gradient="linear-gradient(135deg, #b91c1c 0%, #ef4444 100%)" delay={0.2} />
-          {stats.catches !== null && (
-            <StatCard icon={Award} label="Catches" value={stats.catches}
-              gradient="linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)" delay={0.25} />
-          )}
+        <div style={{ height: 1, background: 'rgba(255,255,255,.07)', margin: '16px 0 14px', position: 'relative', zIndex: 1 }} />
+      )}
+
+      {/* ── Stats row ── */}
+      {hasStats && (
+        <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 1 }}>
+          {statItems.map(({ label, value, color }) => (
+            <div key={label} style={{
+              flex: 1,
+              background: 'rgba(255,255,255,.06)',
+              border: '1px solid rgba(255,255,255,.08)',
+              borderRadius: 14,
+              padding: '10px 6px',
+              textAlign: 'center',
+              backdropFilter: 'blur(8px)',
+            }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color, fontFamily: FONT, lineHeight: 1, letterSpacing: '-0.5px' }}>{value}</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,.35)', fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONT }}>{label}</div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* ── Bottom white section ── */}
-      <div style={{
-        background: '#fff',
-        padding: hasStats ? '16px 16px 18px' : '12px 16px 18px',
-        borderTop: 'none',
-      }}>
-        {/* No stats yet */}
-        {btclLoaded && (!hasStats) && (
-          <div style={{ padding: '8px 0 4px', fontSize: 12, color: C.gray3, fontFamily: FONT, textAlign: 'center' }}>
-            🏏 No match stats yet this season
-          </div>
-        )}
-
-        {/* BTCL # badge */}
-        {myPlayer && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: hasStats ? 14 : 0 }}>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <div style={{
-                fontSize: 11, fontWeight: 800, fontFamily: FONT,
-                padding: '4px 10px', borderRadius: 99,
-                background: C.greenBg, color: C.green,
-                border: `1px solid ${C.gray2}`,
-              }}>
-                BTCL #{myPlayer.id}
-              </div>
-              <div style={{
-                fontSize: 11, fontWeight: 700, fontFamily: FONT,
-                padding: '4px 10px', borderRadius: 99,
-                background: '#f0f9ff', color: '#0369a1',
-                border: '1px solid #bae6fd',
-              }}>
-                {myPlayer.ageGroup || 'Pro'}
-              </div>
-            </div>
-            <div style={{ fontSize: 11, color: C.gray3, fontFamily: FONT }}>
-              #{myPlayer.playerType || 'Home'}
-            </div>
-          </div>
-        )}
-
-        {btclLoaded && !myPlayer && (
-          <div style={{ fontSize: 12, color: C.gray3, fontFamily: FONT, textAlign: 'center', padding: '4px 0' }}>
-            Profile not yet linked to squad — contact admin
-          </div>
-        )}
-      </div>
+      {/* Not linked yet */}
+      {loaded && !myPlayer && (
+        <div style={{ marginTop: 14, padding: '9px 12px', background: 'rgba(255,255,255,.05)', borderRadius: 10, fontSize: 12, color: 'rgba(255,255,255,.35)', fontFamily: FONT, position: 'relative', zIndex: 1 }}>
+          🏏 Profile not yet linked to squad — contact admin
+        </div>
+      )}
     </motion.div>
   )
 }

@@ -441,15 +441,30 @@ export default function LandingPage() {
           </form>
         </motion.div>
 
-        {/* Footer note */}
-        <motion.p
+        {/* Footer note + admin link */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}
+          style={{ marginTop: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}
         >
-          Members only portal · TUCC {new Date().getFullYear()}
-        </motion.p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,.3)', margin: 0 }}>
+            Members only portal · TUCC {new Date().getFullYear()}
+          </p>
+          <button
+            onClick={() => nav('/admin/login')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 11, color: 'rgba(255,255,255,.2)', fontFamily: FONT,
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'color .2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'rgba(233,160,32,.7)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.2)'}
+          >
+            🛡 Admin login
+          </button>
+        </motion.div>
       </div>
     </div>
   )
