@@ -12,6 +12,7 @@ import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
 import PlayerDashboard from './PlayerDashboard'
+import PlayerOfWeek from './PlayerOfWeek'
 
 import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap, MapPin, Clock, Home as HomeIcon, Plane, CalendarDays } from 'lucide-react'
 
@@ -905,6 +906,7 @@ export default function Home() {
         {/* ── Season Snapshot + Top Performers ── */}
         <motion.div variants={staggerList} initial="hidden" animate="visible">
           <NextFixtureCard />
+          <PlayerOfWeek />
           <SeasonSnapshot />
           <TopPerformers />
         </motion.div>

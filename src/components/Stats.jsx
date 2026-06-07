@@ -5,6 +5,7 @@ import { supabase } from '../supabase'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
+import PlayerOfWeek from './PlayerOfWeek'
 import { Skeleton } from './ui/Loader'
 import {
   BarChart2, Target, Shield, ArrowLeft,
@@ -1036,8 +1037,13 @@ export default function Stats() {
         </div>
       </div>
 
+      {/* Player of the Week */}
+      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: '20px 16px 0', width: '100%' }}>
+        <PlayerOfWeek />
+      </div>
+
       {/* Content */}
-      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '24px 16px 56px', width: '100%' }}>
+      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '20px 16px 56px', width: '100%' }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={tab + season}
