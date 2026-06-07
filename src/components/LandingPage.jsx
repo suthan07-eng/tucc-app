@@ -489,8 +489,18 @@ export default function LandingPage() {
           <NextMatchCard nav={nav}/>
         </motion.div>
 
-        {/* Bottom spacer */}
-        <div style={{ height:32 }}/>
+        {/* ── Footer copyright ── */}
+        <motion.div
+          initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.2, duration:.8 }}
+          style={{ width:'100%', paddingTop:28, paddingBottom:24, textAlign:'center' }}
+        >
+          <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.22)', fontWeight:600, letterSpacing:.4 }}>
+            🏏 Members only · Tamil United CC 2026
+          </div>
+          <div style={{ fontFamily:FONT, fontSize:11, color:'rgba(255,255,255,.12)', fontWeight:500, marginTop:5, letterSpacing:.3 }}>
+            © {new Date().getFullYear()} Tamil United Cricket Club. All rights reserved.
+          </div>
+        </motion.div>
       </div>
     </div>
   )
