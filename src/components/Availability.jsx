@@ -10,6 +10,7 @@ import Card from './ui/Card'
 import Field, { Input, Textarea, Select } from './ui/Field'
 import Avatar from './ui/Avatar'
 import { useToast } from './Toast'
+import { useAuth } from '../context/AuthContext'
 
 const EASE_OUT = [0.23, 1, 0.32, 1]
 
@@ -58,6 +59,7 @@ export default function Availability() {
   const nav = useNavigate()
   const toast = useToast()
   const [searchParams] = useSearchParams()
+  const { user, profile } = useAuth()
 
   const [allMatches, setAllMatches] = useState([])
   const [selectedMatchId, setSelectedMatchId] = useState(null)
@@ -89,11 +91,44 @@ export default function Availability() {
       setSelectedMatch(active)
       setSelectedMatchId(active?.id || null)
 
-      // nameOrEmail is already pre-filled from the URL param via useState initialiser
-      // Phone is still required for verification so we don't auto-submit here
+      // If user is logged in, auto-find their player record by email or name — skip Step 1
+      if (user) {
+        const userEmail = user.email || ''
+        const userName  = profile?.display_name || user?.user_metadata?.full_name || ''
+
+        // Try to find by email first, then by name
+        let { data: candidates } = await supabase
+          .from('players')
+          .select('*')
+          .or(`email.ilike.${userEmail},name.ilike.%${userName}%`)
+
+        const matched = (candidates || []).find(p =>
+          p.email?.toLowerCase() === userEmail.toLowerCase() ||
+          p.name?.toLowerCase().replace(/\s+/g,' ').trim() === userName.toLowerCase().replace(/\s+/g,' ').trim()
+        ) || (candidates || [])[0] || null
+
+        if (matched) {
+          setPlayer(matched)
+          if (active) {
+            const { data: prev } = await supabase
+              .from('availability').select('*')
+              .eq('match_id', active.id).eq('player_id', matched.id).maybeSingle()
+            setExisting(prev || null)
+            if (prev) { setAvailable(prev.available); setReason(prev.reason || '') }
+          }
+          setStep(2)
+        }
+        // If not found in players table, still skip to step 2 with a placeholder
+        // so they're not blocked — admin can match them later
+        else if (userEmail || userName) {
+          // Create a lightweight player object from auth data so they can still submit
+          setPlayer({ id: null, name: userName || userEmail, email: userEmail, phone: '', role: '' })
+          setStep(2)
+        }
+      }
     }
     init()
-  }, [])
+  }, [user])
 
   async function fetchMessages(playerId) {
     const { data } = await supabase

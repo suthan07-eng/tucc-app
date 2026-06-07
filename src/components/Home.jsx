@@ -745,7 +745,7 @@ export default function Home() {
 
         {/* ── Player Dashboard ── */}
         <div style={{ marginTop: 16 }}>
-          <PlayerDashboard players={players} />
+          <PlayerDashboard />
         </div>
 
         {/* ── Availability Cards — gradient ── */}
