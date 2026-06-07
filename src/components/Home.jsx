@@ -681,14 +681,14 @@ export default function Home() {
     setMatch(active)
     matchIdRef.current = active?.id ?? null
 
-    // Also fetch next fixture from BTCL for automatic display
+    // Also fetch next fixture from BTCL — strictly AFTER today (today's match is finished)
     try {
       const r = await fetch('/api/fixtures')
       const d = await r.json()
-      const today = new Date(); today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0); tomorrow.setDate(tomorrow.getDate() + 1)
       const next = (d.fixtures || []).filter(f => {
         if (!isOursFix(f.team1) && !isOursFix(f.team2)) return false
-        const dt = parseFixDate(f.date); return dt && dt >= today
+        const dt = parseFixDate(f.date); return dt && dt >= tomorrow
       }).sort((a, b) => (parseFixDate(a.date) || 0) - (parseFixDate(b.date) || 0))[0] || null
       setNextFixture(next)
     } catch { /* silent */ }
@@ -759,21 +759,24 @@ export default function Home() {
               <Skeleton height={14} width={220} style={{ background: 'rgba(255,255,255,.15)' }} />
             </div>
           ) : (() => {
-            // Use Supabase active match OR auto-fetched BTCL fixture
+            // Only use Supabase match if it's today or in the future
+            const matchEnd = match?.date ? (() => { const d = new Date(match.date); d.setHours(23,59,59,999); return d })() : null
+            const matchStillCurrent = matchEnd && matchEnd >= new Date()
+            const activeMatch = matchStillCurrent ? match : null
             const fx = nextFixture
-            const displayOpponent = match?.opponent || (fx ? (isOursFix(fx.team1) ? shortenFix(fx.team2) : shortenFix(fx.team1)) : null)
-            const displayDate     = match?.date    || (fx ? (() => { const p = (fx.date||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`).toISOString().slice(0,10) : '' })() : '')
-            const displayTime     = match?.time    || fx?.time || ''
-            const displayVenue    = match?.venue   || fx?.venue || ''
-            const displayAddress  = match?.address || fx?.address || ''
-            const displayFormat   = match?.format  || 'ODI'
-            const displayDeadline = match?.deadline || ''
-            const displayNotes    = match?.notes   || ''
+            const displayOpponent = activeMatch?.opponent || (fx ? (isOursFix(fx.team1) ? shortenFix(fx.team2) : shortenFix(fx.team1)) : null)
+            const displayDate     = activeMatch?.date    || (fx ? (() => { const p = (fx.date||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`).toISOString().slice(0,10) : '' })() : '')
+            const displayTime     = activeMatch?.time    || fx?.time || ''
+            const displayVenue    = activeMatch?.venue   || fx?.venue || ''
+            const displayAddress  = activeMatch?.address || fx?.address || ''
+            const displayFormat   = activeMatch?.format  || 'ODI'
+            const displayDeadline = activeMatch?.deadline || ''
+            const displayNotes    = activeMatch?.notes   || ''
             if (!displayOpponent) return <div style={{ color: 'rgba(255,255,255,.6)', fontSize: 15 }}>No upcoming matches found.</div>
             return (
               <motion.div variants={staggerList} initial="hidden" animate="visible">
                 <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10, opacity: 0.9 }}>
-                  🏏 {displayFormat} · {match ? 'Active Match' : 'Next Match'}
+                  🏏 {displayFormat} · {activeMatch ? 'Active Match' : 'Next Match'}
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, verticalAlign: 'middle' }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block', boxShadow: '0 0 0 2px rgba(74,222,128,0.3)', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
                     <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>live</span>
@@ -1012,15 +1015,17 @@ export default function Home() {
 
         {/* ── Next Match Details card (auto from BTCL or Supabase) ── */}
         {!loading && (() => {
+          const matchEnd2 = match?.date ? (() => { const d = new Date(match.date); d.setHours(23,59,59,999); return d })() : null
+          const activeMatch2 = matchEnd2 && matchEnd2 >= new Date() ? match : null
           const fx = nextFixture
-          const opp      = match?.opponent || (fx ? (isOursFix(fx.team1) ? shortenFix(fx.team2) : shortenFix(fx.team1)) : null)
-          const rawDate  = match?.date || (fx ? (() => { const p = (fx.date||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`).toISOString().slice(0,10) : '' })() : '')
-          const time     = match?.time    || fx?.time    || ''
-          const venue    = match?.venue   || fx?.venue   || ''
-          const address  = match?.address || fx?.address || ''
-          const format   = match?.format  || 'ODI'
-          const deadline = match?.deadline || ''
-          const notes    = match?.notes   || ''
+          const opp      = activeMatch2?.opponent || (fx ? (isOursFix(fx.team1) ? shortenFix(fx.team2) : shortenFix(fx.team1)) : null)
+          const rawDate  = activeMatch2?.date || (fx ? (() => { const p = (fx.date||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`).toISOString().slice(0,10) : '' })() : '')
+          const time     = activeMatch2?.time    || fx?.time    || ''
+          const venue    = activeMatch2?.venue   || fx?.venue   || ''
+          const address  = activeMatch2?.address || fx?.address || ''
+          const format   = activeMatch2?.format  || 'ODI'
+          const deadline = activeMatch2?.deadline || ''
+          const notes    = activeMatch2?.notes   || ''
           if (!opp) return null
           const rows = [
             ['Date',     fmtDate(rawDate)],

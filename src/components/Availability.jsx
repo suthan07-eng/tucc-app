@@ -100,8 +100,8 @@ export default function Availability() {
         const OUR = ['Tamil United','TUCC','Dollishill Tamil United','DTU']
         const isOurs = n => OUR.some(t => (n||'').toLowerCase().includes(t.toLowerCase()))
         const parseD = str => { const p = (str||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`) : null }
-        const today = new Date(); today.setHours(0,0,0,0)
-        const next = (d.fixtures||[]).filter(f => (isOurs(f.team1)||isOurs(f.team2)) && parseD(f.date) >= today)
+        const tomorrow = new Date(); tomorrow.setHours(0,0,0,0); tomorrow.setDate(tomorrow.getDate()+1)
+        const next = (d.fixtures||[]).filter(f => (isOurs(f.team1)||isOurs(f.team2)) && parseD(f.date) >= tomorrow)
           .sort((a,b) => parseD(a.date) - parseD(b.date))[0] || null
         setNextFixture(next)
       } catch { /* silent */ }
