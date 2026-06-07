@@ -38,7 +38,7 @@ export default function Footer() {
             Tamil United CC
           </div>
           <div style={{ color: 'rgba(255,255,255,.4)', fontFamily: FONT, fontSize: 11, marginTop: 3 }}>
-            Plymouth, Devon · Est. 1977
+            Harrow, Middlesex · Est. 1977
           </div>
         </div>
 

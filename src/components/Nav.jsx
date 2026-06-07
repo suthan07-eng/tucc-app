@@ -227,7 +227,7 @@ export default function Nav() {
                     </div>
                     <div>
                       <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: C.gold }}>Tamil United CC</div>
-                      <div style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,.4)', marginTop: 1 }}>Plymouth, Devon</div>
+                      <div style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,.4)', marginTop: 1 }}>Harrow, Middlesex</div>
                     </div>
                   </div>
                   <button
