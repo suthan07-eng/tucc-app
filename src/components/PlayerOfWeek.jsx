@@ -144,7 +144,7 @@ export default function PlayerOfWeek({ compact = false }) {
   if (!loading && !hasBatter && !hasBowler) return null
 
   return (
-    <div style={{ marginBottom: compact ? 0 : 8 }}>
+    <div style={{ marginTop: compact ? 0 : 28, marginBottom: compact ? 0 : 28 }}>
       {/* Section header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
