@@ -467,9 +467,6 @@ export default function LandingPage() {
         {/* ── Admin + members note (between auth and next match) ── */}
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:.9 }}
           style={{ marginTop:18, textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
-          <p style={{ fontSize:12, color:'rgba(255,255,255,.22)', margin:0 }}>
-            🏏 Members only · Tamil United CC {new Date().getFullYear()}
-          </p>
           <button onClick={()=>nav('/admin/login')}
             style={{ background:'none', border:'none', cursor:'pointer', fontSize:11, color:'rgba(255,255,255,.16)', fontFamily:FONT, display:'flex', alignItems:'center', gap:5, transition:'color .2s' }}
             onMouseEnter={e=>e.currentTarget.style.color='rgba(233,160,32,.65)'}
