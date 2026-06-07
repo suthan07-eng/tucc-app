@@ -7,7 +7,6 @@ const LINKS = [
   { label: 'League',       path: '/league'       },
   { label: 'Results',      path: '/results'      },
   { label: 'Statistics',   path: '/stats'        },
-  { label: 'Register',     path: '/register'     },
 ]
 
 export default function Footer() {
