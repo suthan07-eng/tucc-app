@@ -748,81 +748,78 @@ export default function Home() {
           <PlayerDashboard />
         </div>
 
-        {/* ── Availability Cards — gradient ── */}
+        {/* ── CTA Button ── */}
+        <motion.button
+          onClick={() => nav('/availability')}
+          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.01 }}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #1a5c38, #22744a)',
+            color: '#fff', border: 'none', borderRadius: 16,
+            padding: '16px 20px', fontFamily: FONT, fontSize: 15, fontWeight: 800,
+            cursor: 'pointer', boxShadow: '0 6px 20px rgba(26,92,56,.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            marginTop: 4,
+          }}
+        >
+          🏏 Submit My Availability
+        </motion.button>
+
+        {/* ── Availability Cards ── */}
         <motion.div
-          variants={staggerList}
           initial="hidden"
           animate="visible"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: -36, position: 'relative', zIndex: 2 }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 10 }}
         >
           {[
-            {
-              label: 'Available', count: countAvailable, changed: availChanged,
+            { label: 'Available',   count: countAvailable,   changed: availChanged,
               grad: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
-              shadow: '0 8px 24px rgba(21,128,61,.35)',
-              icon: '✅',
-            },
-            {
-              label: 'Unavailable', count: countUnavailable, changed: unavailChanged,
+              shadow: '0 6px 20px rgba(21,128,61,.3)', icon: '✅' },
+            { label: 'Unavailable', count: countUnavailable, changed: unavailChanged,
               grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)',
-              shadow: '0 8px 24px rgba(190,18,60,.3)',
-              icon: '❌',
-            },
-            {
-              label: 'Pending', count: countPending, changed: pendingChanged,
+              shadow: '0 6px 20px rgba(190,18,60,.28)', icon: '❌' },
+            { label: 'Pending',     count: countPending,     changed: pendingChanged,
               grad: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)',
-              shadow: '0 8px 24px rgba(71,85,105,.25)',
-              icon: '⏳',
-            },
+              shadow: '0 6px 20px rgba(71,85,105,.22)', icon: '⏳' },
           ].map(({ label, count, changed, grad, shadow, icon }) => (
-            <motion.div key={label} variants={staggerItem}>
+            <motion.div
+              key={label}
+              variants={{
+                hidden: { opacity: 0, y: 20, scale: 0.92 },
+                visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } },
+              }}
+            >
               <div style={{
-                background: grad,
-                borderRadius: 18,
-                padding: '18px 10px 16px',
-                textAlign: 'center',
-                boxShadow: shadow,
-                position: 'relative', overflow: 'hidden',
+                background: grad, borderRadius: 18,
+                padding: '16px 10px 14px', textAlign: 'center',
+                boxShadow: shadow, position: 'relative', overflow: 'hidden',
               }}>
-                {/* Shine */}
-                <div style={{ position: 'absolute', top: -18, right: -18, width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: -14, right: -14, width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
                 {loading ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-                    <Skeleton height={32} width={40} style={{ background: 'rgba(255,255,255,.3)' }} />
-                    <Skeleton height={10} width={52} style={{ background: 'rgba(255,255,255,.2)' }} />
+                    <Skeleton height={28} width={36} style={{ background: 'rgba(255,255,255,.3)' }} />
+                    <Skeleton height={9} width={48} style={{ background: 'rgba(255,255,255,.2)' }} />
                   </div>
                 ) : (
                   <>
-                    <div style={{ fontSize: 11, marginBottom: 6 }}>{icon}</div>
-                    <div
+                    <div style={{ fontSize: 11, marginBottom: 5 }}>{icon}</div>
+                    <motion.div
+                      key={count}
+                      initial={{ scale: 1.3, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
                       className={`count-flip${changed ? ' changed' : ''}`}
-                      style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}
-                    >{count}</div>
-                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,.75)', fontWeight: 700, marginTop: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
+                      style={{ fontSize: 34, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}
+                    >{count}</motion.div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,.75)', fontWeight: 700, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
                   </>
                 )}
               </div>
             </motion.div>
           ))}
         </motion.div>
-
-        {/* ── CTA Buttons ── */}
-        <div style={{ marginTop: 14, display: 'flex', gap: 10 }}>
-          <motion.button
-            onClick={() => nav('/availability')}
-            whileTap={{ scale: 0.97 }}
-            style={{
-              flex: 1,
-              background: 'linear-gradient(135deg, #1a5c38, #22744a)',
-              color: '#fff', border: 'none', borderRadius: 16,
-              padding: '16px 20px', fontFamily: FONT, fontSize: 15, fontWeight: 800,
-              cursor: 'pointer', boxShadow: '0 6px 20px rgba(26,92,56,.35)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            🏏 Submit My Availability
-          </motion.button>
-        </div>
 
         {/* ── Season Snapshot + Top Performers ── */}
         <motion.div variants={staggerList} initial="hidden" animate="visible">
