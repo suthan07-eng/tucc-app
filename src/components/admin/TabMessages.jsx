@@ -18,6 +18,13 @@ const SENDER_OPTIONS = [
 const LS_KEY = 'tucc_sender_name'
 const DEFAULT_SENDER = 'Suthan — Team Manager'
 
+// ── BTCL league contacts (always shown as extra options in Send To) ────────────
+const BTCL_CONTACTS = [
+  { id: 'btcl_secretary', label: '🏛️ BTCL — Secretary',  email: 'secretary@btcluk.com' },
+  { id: 'btcl_info',      label: '📋 BTCL — Info',        email: 'Info@btcluk.com' },
+  { id: 'btcl_scorecard', label: '📊 BTCL — Scorecard',   email: 'Scorecard@btcluk.com' },
+]
+
 function initSenderOption() {
   const saved = localStorage.getItem(LS_KEY) || DEFAULT_SENDER
   return SENDER_OPTIONS.includes(saved) ? saved : 'custom'
@@ -34,11 +41,15 @@ export default function TabMessages() {
   const [match, setMatch] = useState(null)
   const [history, setHistory] = useState([])
   const [recipient, setRecipient] = useState('all')
+  const [ccInput, setCcInput] = useState('')        // free-text CC field
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [senderOption, setSenderOption] = useState(initSenderOption)
   const [customSender, setCustomSender] = useState(initCustomSender)
+
+  // Parse CC field into array of valid emails
+  const ccEmails = ccInput.split(/[\s,;]+/).map(e => e.trim()).filter(e => e.includes('@'))
 
   const senderName = senderOption === 'custom' ? customSender.trim() : senderOption
 
@@ -64,6 +75,25 @@ export default function TabMessages() {
     if (!text.trim()) { toast('Please enter a message', 'error'); return }
     setSending(true)
 
+    // Check if recipient is a BTCL contact
+    const btclContact = BTCL_CONTACTS.find(c => c.id === recipient)
+
+    if (btclContact) {
+      // Send directly to BTCL email (no DB record needed)
+      try {
+        const { sendEmail: _ignored, ...rest } = {}
+        // Use sendMessageToPlayer-style but with BTCL as recipient
+        const btclPlayer = { id: btclContact.id, name: btclContact.label.replace(/^[^\s]+\s/, ''), email: btclContact.email }
+        await sendMessageToPlayer(btclPlayer, text.trim(), match, senderName, ccEmails)
+        toast(`Message sent to ${btclContact.label} 📤`)
+        setText('')
+      } catch (err) {
+        toast(`Email failed: ${err.message || 'Unknown error'}`, 'error')
+      }
+      setSending(false)
+      return
+    }
+
     const target = recipient === 'all'
       ? players
       : players.filter((p) => p.id === recipient)
@@ -82,9 +112,9 @@ export default function TabMessages() {
     // Send emails — show specific error if it fails
     try {
       if (target.length === 1) {
-        await sendMessageToPlayer(target[0], text.trim(), match, senderName)
+        await sendMessageToPlayer(target[0], text.trim(), match, senderName, ccEmails)
       } else {
-        await sendBulkMessage(target, text.trim(), match, senderName)
+        await sendBulkMessage(target, text.trim(), match, senderName, ccEmails)
       }
       toast(
         recipient === 'all'
@@ -122,11 +152,37 @@ export default function TabMessages() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Field label="Send To">
             <Select value={recipient} onChange={(e) => setRecipient(e.target.value)}>
-              <option value="all">📢 All Players ({players.length})</option>
-              {players.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
+              <optgroup label="── Club Players ──">
+                <option value="all">📢 All Players ({players.length})</option>
+                {players.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="── BTCL League ──">
+                {BTCL_CONTACTS.map(c => (
+                  <option key={c.id} value={c.id}>{c.label} — {c.email}</option>
+                ))}
+              </optgroup>
             </Select>
+          </Field>
+
+          {/* CC field */}
+          <Field label="CC (optional)">
+            <Input
+              type="text"
+              placeholder="e.g. captain@tucc.club, manager@tucc.club"
+              value={ccInput}
+              onChange={(e) => setCcInput(e.target.value)}
+            />
+            {ccEmails.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+                {ccEmails.map(em => (
+                  <span key={em} style={{ fontSize: 11, background: 'rgba(26,92,56,.1)', border: '1px solid rgba(26,92,56,.2)', borderRadius: 20, padding: '2px 10px', color: C.green, fontFamily: FONT, fontWeight: 600 }}>
+                    {em}
+                  </span>
+                ))}
+              </div>
+            )}
           </Field>
           <Field label="From">
             <Select

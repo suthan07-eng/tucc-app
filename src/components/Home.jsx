@@ -382,83 +382,150 @@ function TopPerformers() {
   const nav = useNavigate()
   const [topBat, setTopBat]   = useState(null)
   const [topBowl, setTopBowl] = useState(null)
+  const [squad, setSquad]     = useState([])
 
   useEffect(() => {
-    fetch('/api/player-stats')
-      .then(r => r.json())
-      .then(d => {
-        const bat  = (d.batting  || []).sort((a, b) => (b.runs    || 0) - (a.runs    || 0))[0]
-        const bowl = (d.bowling  || []).sort((a, b) => (b.wickets || 0) - (a.wickets || 0))[0]
-        setTopBat(bat || null)
-        setTopBowl(bowl || null)
-      })
-      .catch(() => {})
+    // Fetch stats + squad photos in parallel
+    Promise.all([
+      fetch('/api/player-stats').then(r => r.json()).catch(() => ({})),
+      fetch('/api/players').then(r => r.json()).catch(() => ({})),
+    ]).then(([stats, sq]) => {
+      const bat  = (stats.batting  || []).sort((a, b) => (b.runs    || 0) - (a.runs    || 0))[0]
+      const bowl = (stats.bowling  || []).sort((a, b) => (b.wickets || 0) - (a.wickets || 0))[0]
+      setTopBat(bat || null)
+      setTopBowl(bowl || null)
+      setSquad(sq.players || [])
+    })
   }, [])
 
   if (!topBat && !topBowl) return null
 
-  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9']
-  function avatarBg(name = '') {
-    let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
-    return PALETTE[Math.abs(h) % PALETTE.length]
+  // Match stat name to BTCL squad player for photo
+  function findPhoto(statName) {
+    if (!statName || !squad.length) return null
+    const norm = s => s.toLowerCase().replace(/\s+/g, ' ').trim()
+    const sn = norm(statName)
+    const hit = squad.find(p => norm(p.name) === sn) ||
+      squad.find(p => { const parts = sn.split(' ').filter(w => w.length > 2); return parts.length && parts.every(w => norm(p.name).includes(w)) })
+    return hit ? { url: hit.photoUrl, pos: hit.photoPos || 'center 35%' } : null
   }
+
   function initials(name = '') {
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   }
 
   const performers = [
-    topBat  && { name: topBat.name,  stat: topBat.runs,    statLabel: 'Runs',    icon: TrendingUp, grad: 'linear-gradient(135deg, #1a5c38, #22744a)', accent: '#1a5c38' },
-    topBowl && { name: topBowl.name, stat: topBowl.wickets, statLabel: 'Wickets', icon: Target,     grad: 'linear-gradient(135deg, #be123c, #f43f5e)', accent: '#be123c' },
+    topBat  && { name: topBat.name,   stat: topBat.runs,     label: 'Runs',    emoji: '🏏', bg: 'linear-gradient(145deg,#0a2e17,#1a5c38 60%,#22744a)', glow: 'rgba(26,92,56,.55)',  bar: '#4ade80' },
+    topBowl && { name: topBowl.name,  stat: topBowl.wickets, label: 'Wickets', emoji: '🎯', bg: 'linear-gradient(145deg,#2d0814,#be123c 60%,#f43f5e)', glow: 'rgba(190,18,60,.5)',  bar: '#fda4af' },
   ].filter(Boolean)
 
   return (
-    <motion.div variants={staggerItem} style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+    <motion.div variants={staggerItem} style={{ marginTop: 22 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #b45309, #f59e0b)', borderRadius: 99 }} />
-          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Top Performers</span>
+          <div style={{ width: 4, height: 20, background: 'linear-gradient(180deg,#f59e0b,#b45309)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: C.dark }}>Top Performers</span>
+          <span style={{ fontSize: 14 }}>⭐</span>
         </div>
-        <button onClick={() => nav('/stats')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.green, display: 'flex', alignItems: 'center', gap: 3 }}>
-          Full stats <ChevronRight size={12} />
+        <button onClick={() => nav('/stats')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: C.green, display: 'flex', alignItems: 'center', gap: 3 }}>
+          Full stats <ChevronRight size={13} />
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        {performers.map(({ name, stat, statLabel, icon: Icon, grad, accent }) => {
-          const bg = avatarBg(name)
-          const ini = initials(name)
+      {/* Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {performers.map(({ name, stat, label, emoji, bg, glow, bar }, idx) => {
+          const photo = findPhoto(name)
+          const ini   = initials(name)
+          const firstName = name.split(' ')[0]
+
           return (
             <motion.div
               key={name}
+              initial={{ opacity: 0, y: 28, scale: 0.93 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.1 + idx * 0.13, duration: 0.6, ease: [0.16,1,0.3,1] }}
               onClick={() => nav('/stats')}
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ y: -4, transition: { duration: 0.22 } }}
               style={{
-                background: grad,
-                borderRadius: 18, padding: '18px 16px',
-                cursor: 'pointer', position: 'relative', overflow: 'hidden',
-                boxShadow: `0 6px 24px ${accent}30`,
+                background: bg,
+                borderRadius: 24, overflow: 'hidden',
+                cursor: 'pointer', position: 'relative',
+                boxShadow: `0 14px 40px ${glow}, 0 0 0 1px rgba(255,255,255,.08)`,
               }}
             >
-              {/* Deco circle */}
-              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
+              {/* Animated background orbs */}
+              <motion.div
+                animate={{ scale: [1, 1.25, 1], opacity: [0.25, 0.08, 0.25] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,.15)', pointerEvents: 'none' }}
+              />
+              <motion.div
+                animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.05, 0.15] }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                style={{ position: 'absolute', bottom: -30, left: -30, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }}
+              />
 
-              {/* Icon badge */}
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                <Icon size={16} color="#fff" strokeWidth={2.5} />
-              </div>
+              {/* Coloured shimmer bar at top */}
+              <div style={{ height: 3, background: `linear-gradient(90deg, transparent 0%, ${bar} 50%, transparent 100%)` }} />
 
-              {/* Avatar + name */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: FONT, fontWeight: 800, fontSize: 12, flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,.2)' }}>
-                  {ini}
+              {/* Card content — centred column */}
+              <div style={{ padding: '20px 14px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+
+                {/* Emoji badge top-left absolute */}
+                <div style={{
+                  position: 'absolute', top: 14, left: 14,
+                  width: 30, height: 30, borderRadius: 9,
+                  background: 'rgba(255,255,255,.13)',
+                  border: '1px solid rgba(255,255,255,.18)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+                }}>
+                  {emoji}
                 </div>
-                <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.9)', lineHeight: 1.2 }}>
-                  {name.split(' ')[0]}
+
+                {/* Large centred photo */}
+                <motion.div
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.25 + idx * 0.13, duration: 0.5, ease: [0.16,1,0.3,1] }}
+                  style={{
+                    width: 80, height: 80, borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: `3px solid ${bar}`,
+                    boxShadow: `0 0 0 4px rgba(255,255,255,.1), 0 8px 24px rgba(0,0,0,.4)`,
+                    background: 'rgba(255,255,255,.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: 12,
+                  }}
+                >
+                  {photo?.url
+                    ? <img src={photo.url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photo.pos }} />
+                    : <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: 22, color: '#fff' }}>{ini}</span>
+                  }
+                </motion.div>
+
+                {/* Name */}
+                <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1.15 }}>{firstName}</div>
+                <div style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 2, marginBottom: 16 }}>{name.split(' ').slice(1).join(' ')}</div>
+
+                {/* Divider */}
+                <div style={{ width: '60%', height: 1, background: 'rgba(255,255,255,.1)', marginBottom: 14 }} />
+
+                {/* Stat */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 + idx * 0.13, duration: 0.45, ease: [0.16,1,0.3,1] }}
+                  style={{ fontFamily: FONT, fontSize: 46, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-2px', fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {stat}
+                </motion.div>
+                <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: bar, marginTop: 5, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                  {label}
                 </div>
               </div>
-
-              <div style={{ fontFamily: FONT, fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{stat}</div>
-              <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.7)', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.7 }}>{statLabel}</div>
             </motion.div>
           )
         })}
@@ -765,6 +832,13 @@ export default function Home() {
         >
           🏏 Submit My Availability
         </motion.button>
+
+        {/* ── Availability Cards Heading ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, marginBottom: 2 }}>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#22c55e,#15803d)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Next Match Availability</span>
+          <span style={{ fontSize: 13 }}>📋</span>
+        </div>
 
         {/* ── Availability Cards ── */}
         <motion.div

@@ -7,10 +7,14 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const { to, subject, html } = body;
+    const { to, subject, html, cc, reply_to } = body;
 
     const resendKey = process.env.VITE_RESEND_API_KEY;
     const fromEmail = process.env.VITE_ADMIN_FROM_EMAIL || 'onboarding@resend.dev';
+
+    const payload = { from: fromEmail, to, subject, html }
+    if (cc && cc.length) payload.cc = cc
+    if (reply_to) payload.reply_to = reply_to
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -18,7 +22,7 @@ export default async function handler(req) {
         'Authorization': `Bearer ${resendKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from: fromEmail, to, subject, html }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();

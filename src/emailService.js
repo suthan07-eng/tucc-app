@@ -3,11 +3,11 @@
 
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'suthan07@gmail.com'
 
-async function sendEmail({ to, subject, html }) {
+async function sendEmail({ to, subject, html, cc, reply_to }) {
   const res = await fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to, subject, html }),
+    body: JSON.stringify({ to, subject, html, cc, reply_to }),
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
@@ -141,7 +141,7 @@ export async function sendAdminAlert(match, player, available, reason) {
 }
 
 // FIX 3 — sendMessageToPlayer also sends an admin copy.
-export async function sendMessageToPlayer(player, messageText, match, senderName) {
+export async function sendMessageToPlayer(player, messageText, match, senderName, ccEmails = []) {
   const from = senderName || 'Tamil United CC'
   const subject = `Message from ${from} — Tamil United CC`
 
@@ -159,6 +159,7 @@ export async function sendMessageToPlayer(player, messageText, match, senderName
     to: player.email,
     subject,
     html: wrap(playerBody),
+    cc: ccEmails.length ? ccEmails : undefined,
   })
 
   // 2. Admin copy (separate call)
@@ -168,12 +169,13 @@ export async function sendMessageToPlayer(player, messageText, match, senderName
     html: wrap(`
       <div style="background:#f3f4f6;border-radius:8px;padding:12px 16px;margin-bottom:20px;color:#374151;font-size:13px">
         📋 This is a copy of a message sent to <strong>${player.name}</strong>
+        ${ccEmails.length ? `<div style="margin-top:4px">CC: ${ccEmails.join(', ')}</div>` : ''}
       </div>
       ${playerBody}
     `),
   })
 }
 
-export async function sendBulkMessage(players, messageText, match, senderName) {
-  await Promise.all(players.map((p) => sendMessageToPlayer(p, messageText, match, senderName)))
+export async function sendBulkMessage(players, messageText, match, senderName, ccEmails = []) {
+  await Promise.all(players.map((p) => sendMessageToPlayer(p, messageText, match, senderName, ccEmails)))
 }

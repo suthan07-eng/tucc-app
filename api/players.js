@@ -9,7 +9,7 @@ const PHOTO_BASE = 'https://admin.btcluk.com/players/'
 
 // Hardcoded fallback — all 29 players scraped from BTCL on 2026-06-06
 const BTCL_FALLBACK = [
-  { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home', statName: null, photoPos: 'center 72%' },
+  { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home', statName: 'Mohamed Nafaz', photoPos: 'center 72%' },
   { PlayerID: 1378, Forename: 'Gobinath',       Surname: 'Navaratnam',         AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '90041.jpg',                                          player_type: 'Home' },
   { PlayerID: 1383, Forename: 'Raj',            Surname: 'Sorna',               AgeGroup: 'Pro', BatStyle: '',           BowlStyle: '',                          Photo: '3615Raj.jpg',                                        player_type: 'Home' },
   { PlayerID: 1385, Forename: 'Roshan',         Surname: 'Thishanthan',         AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: 'IMG-20240409-WA0034-removebg-preview.png',            player_type: 'Home' },
@@ -30,7 +30,7 @@ const BTCL_FALLBACK = [
   { PlayerID: 5299, Forename: 'Hrithisshan',    Surname: 'Kanendran',           AgeGroup: 'Pro', BatStyle: 'Left Hand',  BowlStyle: 'Right-arm medium',         Photo: '976Under 15.png',                                    player_type: 'Home' },
   { PlayerID: 5375, Forename: 'Abdul Khaliq',   Surname: 'Hakeem',              AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '6984886Under 18.png',                                 player_type: 'Home' },
   { PlayerID: 6296, Forename: 'Shenal',         Surname: 'Daniel Anthony',      AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: 'bc581ed9-b973-48e3-9e12-52912924f432.jpeg',           player_type: 'Home', statName: 'Shenal Daniel' },
-  { PlayerID: 6631, Forename: 'Thevakumar',     Surname: 'Kanagarathinam Anton',AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '6631.jpeg',                                          player_type: 'Home' },
+  { PlayerID: 6631, Forename: 'Thevakumar',     Surname: 'Kanagarathinam Anton',AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '6631.jpeg',                                          player_type: 'Home', statName: 'Thevakumar Kanagarathinam Anton' },
   { PlayerID: 7348, Forename: 'Malindu',        Surname: 'Maduranga',           AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Off break (right-arm)',    Photo: '7348.jpeg',                                          player_type: 'Home' },
   { PlayerID: 7349, Forename: 'Prayash',        Surname: 'Singh',               AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Off break (right-arm)',    Photo: '7349.jpeg',                                          player_type: 'Home' },
   { PlayerID: 7358, Forename: 'Arivu',          Surname: 'Sasikumar',           AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast',           Photo: '7358.jpeg',                                          player_type: 'Home' },

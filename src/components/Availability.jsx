@@ -118,11 +118,20 @@ export default function Availability() {
           }
           setStep(2)
         }
-        // If not found in players table, still skip to step 2 with a placeholder
-        // so they're not blocked — admin can match them later
+        // Not found — auto-create a players row from their auth data
         else if (userEmail || userName) {
-          // Create a lightweight player object from auth data so they can still submit
-          setPlayer({ id: null, name: userName || userEmail, email: userEmail, phone: '', role: '' })
+          const phone = user?.user_metadata?.phone || profile?.phone || ''
+          const { data: newRow, error: insErr } = await supabase
+            .from('players')
+            .insert({ name: userName || userEmail, email: userEmail, phone })
+            .select()
+            .single()
+          if (newRow && !insErr) {
+            setPlayer(newRow)
+          } else {
+            // Fallback: lightweight object (insert may fail due to RLS — player can still try)
+            setPlayer({ id: null, name: userName || userEmail, email: userEmail, phone, role: '' })
+          }
           setStep(2)
         }
       }
