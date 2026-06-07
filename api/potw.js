@@ -188,30 +188,49 @@ function extractMatchInfo(html, scorecardPath) {
   return { date, opponent: opponent.replace(/\s*-\s*(Knights?|A|B|1st XI|2nd XI)\s*$/i, '').trim() }
 }
 
+// Hardcoded fallback: last known TUCC match scorecard (31 May 2026 vs Lewisham CC)
+const FALLBACK_SCORECARD = '/website/results/7504406'
+const FALLBACK_DATE      = '31 May 2026'
+const FALLBACK_OPPONENT  = 'Lewisham CC'
+
+async function tryScorecard(path, date, opponent) {
+  const scorecardUrl = `${BASE}${path}`
+  const resp = await fetch(scorecardUrl, { headers: HEADERS })
+  if (!resp.ok) throw new Error(`Scorecard HTTP ${resp.status}`)
+  const html = await resp.text()
+  const { topBatter, topBowler } = parseScorecard(html, opponent)
+  return { scorecardUrl, date, opponent, topBatter, topBowler }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=300')
 
   try {
-    // Step 1: Fetch results page
-    const resultsResp = await fetch(RESULTS_URL, { headers: HEADERS })
-    if (!resultsResp.ok) throw new Error(`Results HTTP ${resultsResp.status}`)
-    const resultsHtml = await resultsResp.text()
+    let scorecardPath = null
+    let date = FALLBACK_DATE
+    let opponent = FALLBACK_OPPONENT
 
-    // Step 2: Find latest TUCC scorecard
-    const scorecardPath = findLatestTUCCScorecard(resultsHtml)
-    if (!scorecardPath) throw new Error('No TUCC scorecard found')
+    // Step 1: Try to get latest TUCC scorecard from results page
+    try {
+      const resultsResp = await fetch(RESULTS_URL, { headers: HEADERS })
+      if (resultsResp.ok) {
+        const resultsHtml = await resultsResp.text()
+        const found = findLatestTUCCScorecard(resultsHtml)
+        if (found) {
+          scorecardPath = found
+          const info = extractMatchInfo(resultsHtml, found)
+          if (info.date) date = info.date
+          if (info.opponent && info.opponent !== 'Unknown') opponent = info.opponent
+        }
+      }
+    } catch (_) { /* fall through to hardcoded fallback */ }
 
-    const { date, opponent } = extractMatchInfo(resultsHtml, scorecardPath)
+    // Step 2: Use hardcoded fallback if live scrape found nothing
+    if (!scorecardPath) scorecardPath = FALLBACK_SCORECARD
 
-    // Step 3: Fetch scorecard page
-    const scorecardUrl = `${BASE}${scorecardPath}`
-    const scorecardResp = await fetch(scorecardUrl, { headers: HEADERS })
-    if (!scorecardResp.ok) throw new Error(`Scorecard HTTP ${scorecardResp.status}`)
-    const scorecardHtml = await scorecardResp.text()
-
-    // Step 4: Parse batting & bowling
-    const { topBatter, topBowler } = parseScorecard(scorecardHtml, opponent)
+    // Step 3: Fetch & parse the scorecard
+    const { scorecardUrl, topBatter, topBowler } = await tryScorecard(scorecardPath, date, opponent)
 
     const result = {
       matchDate: date,
@@ -228,16 +247,15 @@ export default async function handler(req, res) {
         message: bowlerMsg(topBowler.name, topBowler.wickets, topBowler.economy, opponent),
       } : null,
       updatedAt: new Date().toISOString(),
-      source: 'live',
+      source: scorecardPath === FALLBACK_SCORECARD ? 'fallback' : 'live',
     }
 
     return res.status(200).json(result)
   } catch (err) {
     console.error('POTW error:', err.message)
-    // Return empty so component can handle gracefully
     return res.status(200).json({
-      matchDate: '',
-      opponent: '',
+      matchDate: FALLBACK_DATE,
+      opponent: FALLBACK_OPPONENT,
       scorecardUrl: '',
       batter: null,
       bowler: null,
