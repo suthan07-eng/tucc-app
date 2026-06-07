@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, BarChart2, ShieldCheck, ClipboardList,
-  Menu, X, Home, UserPlus, Calendar, ChevronRight, CalendarDays, Users, LogOut,
+  Menu, X, Home, Calendar, ChevronRight, CalendarDays, Users, LogOut,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import { useAuth } from '../context/AuthContext'
@@ -18,7 +18,6 @@ const MENU_LINKS = [
   { path: '/players',      label: 'Players',      Icon: Users,         color: '#7c3aed', bg: '#ede9fe' },
   { path: '/stats',        label: 'Statistics',   Icon: BarChart2,     color: '#6d28d9', bg: '#f5f3ff' },
   { path: '/availability', label: 'Availability', Icon: Calendar,      color: '#0891b2', bg: '#ecfeff' },
-  { path: '/register',     label: 'Register',     Icon: UserPlus,      color: '#be123c', bg: '#fff1f2' },
 ]
 
 const TOP_LINKS = [

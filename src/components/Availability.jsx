@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../supabase'
 import { sendAvailabilityConfirmation } from '../emailService'
 import { C, FONT, MAX_WIDTH } from '../constants'
+import Nav from './Nav'
 import Footer from './Footer'
 import Button from './ui/Button'
 import Card from './ui/Card'
@@ -277,6 +278,7 @@ export default function Availability() {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+      <Nav />
       {/* Header */}
       <div style={{ background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`, padding: '28px 20px' }}>
         <motion.div

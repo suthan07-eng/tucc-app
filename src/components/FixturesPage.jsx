@@ -412,8 +412,8 @@ export default function FixturesPage() {
           <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:.5, ease:EASE }}>
             {/* Title row */}
             <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
-              <div style={{ width:50, height:50, borderRadius:16, background:'rgba(255,255,255,.1)', border:'1px solid rgba(255,255,255,.12)', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, backdropFilter:'blur(8px)' }}>
-                <img src="/logo.png" alt="TUCC" style={{ width:44, height:44, objectFit:'contain' }}/>
+              <div style={{ width:52, height:52, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 0 0 3px rgba(233,160,32,.4), 0 4px 16px rgba(0,0,0,.35)' }}>
+                <img src="/logo.png" alt="TUCC" style={{ width:46, height:46, objectFit:'contain' }}/>
               </div>
               <div>
                 <h1 style={{ color:'#fff', fontSize:26, fontWeight:900, margin:0, letterSpacing:-.5 }}>Fixtures</h1>
