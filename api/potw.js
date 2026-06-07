@@ -51,7 +51,7 @@ function findPlayer(name) {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+  res.setHeader('Cache-Control', 'no-store')
 
   try {
     // Fetch latest POTW row from Supabase

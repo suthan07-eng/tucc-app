@@ -132,7 +132,7 @@ export default function PlayerOfWeek({ compact = false }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/potw')
+    fetch('/api/potw?v=' + Date.now())
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false) })
       .catch(() => setLoading(false))
