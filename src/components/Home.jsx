@@ -631,6 +631,7 @@ const chipItem = {
 export default function Home() {
   const nav = useNavigate()
   const [match, setMatch] = useState(null)
+  const [nextFixture, setNextFixture] = useState(null)   // auto-fetched from BTCL
   const [allMatches, setAllMatches] = useState([])
   const [players, setPlayers] = useState([])
   const [responses, setResponses] = useState([])
@@ -679,6 +680,18 @@ export default function Home() {
     setAllMatches(matches)
     setMatch(active)
     matchIdRef.current = active?.id ?? null
+
+    // Also fetch next fixture from BTCL for automatic display
+    try {
+      const r = await fetch('/api/fixtures')
+      const d = await r.json()
+      const today = new Date(); today.setHours(0, 0, 0, 0)
+      const next = (d.fixtures || []).filter(f => {
+        if (!isOursFix(f.team1) && !isOursFix(f.team2)) return false
+        const dt = parseFixDate(f.date); return dt && dt >= today
+      }).sort((a, b) => (parseFixDate(a.date) || 0) - (parseFixDate(b.date) || 0))[0] || null
+      setNextFixture(next)
+    } catch { /* silent */ }
     setPlayers(ps || [])
     if (active) {
       const [{ data: rs }, { data: ts }] = await Promise.all([
@@ -745,66 +758,57 @@ export default function Home() {
               <Skeleton height={30} width={280} style={{ background: 'rgba(255,255,255,.2)' }} />
               <Skeleton height={14} width={220} style={{ background: 'rgba(255,255,255,.15)' }} />
             </div>
-          ) : match ? (
-            <motion.div variants={staggerList} initial="hidden" animate="visible">
-              <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10, opacity: 0.9 }}>
-                🏏 {match.format || 'T20'} · Active match
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, verticalAlign: 'middle' }}>
-                  <span style={{
-                    width: 6, height: 6, borderRadius: '50%', background: '#4ade80',
-                    display: 'inline-block',
-                    boxShadow: '0 0 0 2px rgba(74,222,128,0.3)',
-                    animation: 'pendingPulse 1.8s ease-in-out infinite',
-                  }} />
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>live</span>
-                </span>
-              </motion.div>
-              <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 30, fontWeight: 900, margin: 0, lineHeight: 1.15, letterSpacing: -0.5, textWrap: 'balance' }}>
-                Tamil United CC vs {match.opponent || 'TBC'}
-              </motion.h1>
-              <motion.div variants={fadeUp} style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
-                <span>📅 {fmtDate(match.date)}</span>
-                {match.time && <span>🕐 {match.time}</span>}
-              </motion.div>
-              {match.venue && (
-                <motion.div variants={fadeUp} style={{ color: 'rgba(255,255,255,.7)', fontSize: 14, marginTop: 4 }}>
-                  📍 {match.venue}{match.address ? `, ${match.address}` : ''}
+          ) : (() => {
+            // Use Supabase active match OR auto-fetched BTCL fixture
+            const fx = nextFixture
+            const displayOpponent = match?.opponent || (fx ? (isOursFix(fx.team1) ? shortenFix(fx.team2) : shortenFix(fx.team1)) : null)
+            const displayDate     = match?.date    || (fx ? (() => { const p = (fx.date||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`).toISOString().slice(0,10) : '' })() : '')
+            const displayTime     = match?.time    || fx?.time || ''
+            const displayVenue    = match?.venue   || fx?.venue || ''
+            const displayAddress  = match?.address || fx?.address || ''
+            const displayFormat   = match?.format  || 'ODI'
+            const displayDeadline = match?.deadline || ''
+            const displayNotes    = match?.notes   || ''
+            if (!displayOpponent) return <div style={{ color: 'rgba(255,255,255,.6)', fontSize: 15 }}>No upcoming matches found.</div>
+            return (
+              <motion.div variants={staggerList} initial="hidden" animate="visible">
+                <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10, opacity: 0.9 }}>
+                  🏏 {displayFormat} · {match ? 'Active Match' : 'Next Match'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, verticalAlign: 'middle' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block', boxShadow: '0 0 0 2px rgba(74,222,128,0.3)', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>live</span>
+                  </span>
                 </motion.div>
-              )}
-              {match.notes && (
-                <motion.div variants={fadeUp} style={{ background: 'rgba(255,255,255,.12)', borderRadius: 8, padding: '10px 14px', marginTop: 14, color: 'rgba(255,255,255,.9)', fontSize: 13, lineHeight: 1.5 }}>
-                  📋 {match.notes}
+                <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 30, fontWeight: 900, margin: 0, lineHeight: 1.15, letterSpacing: -0.5, textWrap: 'balance' }}>
+                  Tamil United CC vs {displayOpponent}
+                </motion.h1>
+                <motion.div variants={fadeUp} style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
+                  <span>📅 {fmtDate(displayDate)}</span>
+                  {displayTime && <span>🕐 {displayTime}</span>}
                 </motion.div>
-              )}
-              {match.deadline && (
-                <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 12, fontWeight: 600, marginTop: 12 }}>
-                  ⏰ Respond by: {match.deadline}
+                {displayVenue && (
+                  <motion.div variants={fadeUp} style={{ color: 'rgba(255,255,255,.7)', fontSize: 14, marginTop: 4 }}>
+                    📍 {displayVenue}{displayAddress ? `, ${displayAddress}` : ''}
+                  </motion.div>
+                )}
+                {displayNotes && (
+                  <motion.div variants={fadeUp} style={{ background: 'rgba(255,255,255,.12)', borderRadius: 8, padding: '10px 14px', marginTop: 14, color: 'rgba(255,255,255,.9)', fontSize: 13, lineHeight: 1.5 }}>
+                    📋 {displayNotes}
+                  </motion.div>
+                )}
+                {displayDeadline && (
+                  <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 12, fontWeight: 600, marginTop: 12 }}>
+                    ⏰ Respond by: {displayDeadline}
+                  </motion.div>
+                )}
+                <motion.div variants={fadeUp} style={{ marginTop: 16 }}>
+                  <button onClick={() => nav('/league')} style={{ background: 'rgba(255,255,255,.15)', color: C.white, border: '1.5px solid rgba(255,255,255,.35)', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
+                    🏆 BTCL League →
+                  </button>
                 </motion.div>
-              )}
-              <motion.div variants={fadeUp} style={{ marginTop: 16 }}>
-                <button
-                  onClick={() => nav('/league')}
-                  style={{
-                    background: 'rgba(255,255,255,.15)',
-                    color: C.white,
-                    border: '1.5px solid rgba(255,255,255,.35)',
-                    borderRadius: 8,
-                    padding: '8px 18px',
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    fontSize: 13,
-                    fontWeight: 600,
-                  }}
-                >
-                  🏆 BTCL League →
-                </button>
               </motion.div>
-            </motion.div>
-          ) : (
-            <div style={{ color: 'rgba(255,255,255,.6)', fontSize: 15 }}>
-              No active match scheduled yet.
-            </div>
-          )}
+            )
+          })()}
         </div>
       </div>
 
@@ -1006,33 +1010,51 @@ export default function Home() {
           </div>
         )}
 
-        {/* Active match details */}
-        {!loading && match && (
-          <Card style={{ marginTop: 14 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.gray5, marginBottom: 14 }}>Match Details</div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                {[
-                  ['Date',     fmtDate(match.date)],
-                  ['Time',     match.time],
-                  ['Venue',    match.venue],
-                  ['Address',  match.address],
-                  ['Opponent', match.opponent],
-                  ['Format',   match.format],
-                  ['Notes',    match.notes],
-                  ['Deadline', match.deadline],
-                ]
-                  .filter(([, v]) => v)
-                  .map(([k, v]) => (
-                    <tr key={k}>
-                      <td style={{ padding: '7px 0', color: C.gray3, fontSize: 13, width: 80, verticalAlign: 'top', whiteSpace: 'nowrap' }}>{k}</td>
-                      <td style={{ padding: '7px 0', color: C.dark, fontSize: 13, fontWeight: 500 }}>{v}</td>
-                    </tr>
+        {/* ── Next Match Details card (auto from BTCL or Supabase) ── */}
+        {!loading && (() => {
+          const fx = nextFixture
+          const opp      = match?.opponent || (fx ? (isOursFix(fx.team1) ? shortenFix(fx.team2) : shortenFix(fx.team1)) : null)
+          const rawDate  = match?.date || (fx ? (() => { const p = (fx.date||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`).toISOString().slice(0,10) : '' })() : '')
+          const time     = match?.time    || fx?.time    || ''
+          const venue    = match?.venue   || fx?.venue   || ''
+          const address  = match?.address || fx?.address || ''
+          const format   = match?.format  || 'ODI'
+          const deadline = match?.deadline || ''
+          const notes    = match?.notes   || ''
+          if (!opp) return null
+          const rows = [
+            ['Date',     fmtDate(rawDate)],
+            ['Time',     time],
+            ['Venue',    venue],
+            ['Address',  address],
+            ['Opponent', opp],
+            ['Format',   format],
+            ['Notes',    notes],
+            ['Deadline', deadline],
+          ].filter(([, v]) => v)
+          return (
+            <div style={{ marginTop: 14, background: `linear-gradient(145deg, ${C.greenDark} 0%, #163d28 100%)`, borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(5,20,10,.35), 0 0 0 1px rgba(255,255,255,.06)' }}>
+              {/* Gold top bar */}
+              <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#e9a020,#f59e0b,transparent)' }}/>
+              <div style={{ padding: '16px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block' }}/>
+                  <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,.6)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                    {match ? 'Active Match' : 'Next Match'} · Match Details
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {rows.map(([k, v], i) => (
+                    <div key={k} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: i < rows.length - 1 ? '1px solid rgba(255,255,255,.06)' : 'none' }}>
+                      <div style={{ width: 72, flexShrink: 0, fontFamily: FONT, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: .5, paddingTop: 1 }}>{k}</div>
+                      <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: '#fff', lineHeight: 1.45 }}>{v}</div>
+                    </div>
                   ))}
-              </tbody>
-            </table>
-          </Card>
-        )}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* ── League Table ── */}
         <LeagueTable />

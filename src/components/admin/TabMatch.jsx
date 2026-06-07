@@ -12,6 +12,9 @@ const EMPTY = {
   opponent: '', format: 'T20', notes: '', deadline: '', home_message: '',
 }
 
+const OUR_NAMES = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
+const isOurs = (n = '') => OUR_NAMES.some(t => n.toLowerCase().includes(t.toLowerCase()))
+
 export default function TabMatch() {
   const toast = useToast()
   const [allMatches, setAllMatches] = useState([])
@@ -20,6 +23,7 @@ export default function TabMatch() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [pendingDelete, setPendingDelete] = useState(false)
 
@@ -77,6 +81,46 @@ export default function TabMatch() {
       await loadMatches(data.id)
     }
     setCreating(false)
+  }
+
+  async function importFromBTCL() {
+    setImporting(true)
+    try {
+      const r = await fetch('/api/fixtures')
+      const data = await r.json()
+      const today = new Date(); today.setHours(0, 0, 0, 0)
+      const fixtures = (data.fixtures || []).filter(f => {
+        if (!isOurs(f.team1) && !isOurs(f.team2)) return false
+        const parts = (f.date || '').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/)
+        if (!parts) return false
+        const dt = new Date(`${parts[2]} ${parts[1]}, ${parts[3]}`)
+        return dt >= today
+      }).sort((a, b) => {
+        const parse = d => { const p = (d||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`) : new Date(9999,0) }
+        return parse(a.date) - parse(b.date)
+      })
+      if (!fixtures.length) { toast('No upcoming fixtures found on BTCL', 'error'); setImporting(false); return }
+      const fx = fixtures[0]
+      // Parse date → YYYY-MM-DD
+      const parts = (fx.date || '').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/)
+      const isoDate = parts ? new Date(`${parts[2]} ${parts[1]}, ${parts[3]}`).toISOString().slice(0, 10) : ''
+      const opponent = isOurs(fx.team1) ? fx.team2 : fx.team1
+      const venue = fx.venue || ''
+      const address = fx.address || ''
+      const time = fx.time || ''
+      // Deactivate all, then create/update active match
+      await supabase.from('matches').update({ is_active: false }).eq('is_active', true)
+      const { data: newMatch, error } = await supabase
+        .from('matches')
+        .insert({ date: isoDate, time, venue, address, opponent, format: 'ODI', is_active: true })
+        .select().single()
+      if (error) { toast(error.message || 'Import failed', 'error'); setImporting(false); return }
+      toast(`✅ Imported: vs ${opponent} on ${isoDate}`)
+      await loadMatches(newMatch.id)
+    } catch (e) {
+      toast('Failed to fetch BTCL fixtures', 'error')
+    }
+    setImporting(false)
   }
 
   async function setActive() {
@@ -149,6 +193,21 @@ export default function TabMatch() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Import from BTCL banner */}
+      <div style={{ background: 'linear-gradient(135deg,#0f3825,#1a5c38)', borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: '#fff' }}>📡 Auto-import from BTCL</div>
+          <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 3 }}>Fetches the next upcoming fixture and sets it as active</div>
+        </div>
+        <button
+          onClick={importFromBTCL}
+          disabled={importing}
+          style={{ background: importing ? 'rgba(255,255,255,.1)' : C.gold, color: importing ? 'rgba(255,255,255,.4)' : '#0f3825', border: 'none', borderRadius: 10, padding: '10px 18px', cursor: importing ? 'not-allowed' : 'pointer', fontFamily: FONT, fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', transition: 'all .2s' }}
+        >
+          {importing ? '⏳ Importing…' : '📡 Import Next Match'}
+        </button>
+      </div>
+
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <div style={{ fontFamily: FONT, fontWeight: 700, color: C.dark, fontSize: 15 }}>

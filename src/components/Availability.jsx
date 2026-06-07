@@ -65,6 +65,7 @@ export default function Availability() {
   const [allMatches, setAllMatches] = useState([])
   const [selectedMatchId, setSelectedMatchId] = useState(null)
   const [selectedMatch, setSelectedMatch] = useState(null)
+  const [nextFixture, setNextFixture] = useState(null)   // auto from BTCL
 
   const [step, setStep] = useState(1)
   const [nameOrEmail, setNameOrEmail] = useState(searchParams.get('email') || '')
@@ -91,6 +92,19 @@ export default function Availability() {
       const active = matches.find((m) => m.is_active) || matches[0] || null
       setSelectedMatch(active)
       setSelectedMatchId(active?.id || null)
+
+      // Auto-fetch next fixture from BTCL
+      try {
+        const r = await fetch('/api/fixtures')
+        const d = await r.json()
+        const OUR = ['Tamil United','TUCC','Dollishill Tamil United','DTU']
+        const isOurs = n => OUR.some(t => (n||'').toLowerCase().includes(t.toLowerCase()))
+        const parseD = str => { const p = (str||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`) : null }
+        const today = new Date(); today.setHours(0,0,0,0)
+        const next = (d.fixtures||[]).filter(f => (isOurs(f.team1)||isOurs(f.team2)) && parseD(f.date) >= today)
+          .sort((a,b) => parseD(a.date) - parseD(b.date))[0] || null
+        setNextFixture(next)
+      } catch { /* silent */ }
 
       // If user is logged in, auto-find their player record by email or name — skip Step 1
       if (user) {
