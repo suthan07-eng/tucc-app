@@ -8,6 +8,7 @@ import TabMatch from './TabMatch'
 import TabTeamSelection from './TabTeamSelection'
 import TabMessages from './TabMessages'
 import TabStats from './TabStats'
+import TabSettings from './TabSettings'
 
 const TABS = [
   { id: 'availability', label: '📋 Availability' },
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'team',         label: '🎽 Team' },
   { id: 'messages',     label: '💬 Messages' },
   { id: 'stats',        label: '📊 Stats' },
+  { id: 'settings',     label: '⚙️ Settings' },
 ]
 
 export default function AdminDashboard() {
@@ -120,6 +122,7 @@ export default function AdminDashboard() {
             {tab === 'team'         && <TabTeamSelection />}
             {tab === 'messages'     && <TabMessages />}
             {tab === 'stats'        && <TabStats />}
+            {tab === 'settings'    && <TabSettings />}
           </motion.div>
         </AnimatePresence>
       </div>

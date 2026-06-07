@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { C, FONT, ADMIN_EMAIL, ADMIN_PASSWORD } from '../../constants'
+import { getAdminPassword } from './TabSettings'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Field, { Input } from '../ui/Field'
@@ -32,7 +33,7 @@ export default function AdminLogin() {
     await new Promise((r) => setTimeout(r, 350)) // brief pause for feel
 
     const emailMatch = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()
-    const passMatch  = password === ADMIN_PASSWORD
+    const passMatch  = password === getAdminPassword()
 
     if (!emailMatch || !passMatch) {
       setErrors({ password: 'Invalid email or password' })

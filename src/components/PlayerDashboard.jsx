@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../supabase'
 import { FONT } from '../constants'
 
 // ── Animated counter ─────────────────────────────────────────────────────────
@@ -95,12 +96,165 @@ function Stat({ label, value, color, accentBg, delay }) {
   )
 }
 
+// ── Change Password Modal ─────────────────────────────────────────────────────
+function ChangePasswordModal({ onClose }) {
+  const [newPw, setNewPw]   = useState('')
+  const [confPw, setConfPw] = useState('')
+  const [showNew, setShowNew]   = useState(false)
+  const [showConf, setShowConf] = useState(false)
+  const [loading, setLoading]   = useState(false)
+  const [err, setErr]   = useState('')
+  const [ok, setOk]     = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setErr('')
+    if (newPw.length < 6)           { setErr('Password must be at least 6 characters'); return }
+    if (newPw !== confPw)           { setErr('Passwords do not match'); return }
+    setLoading(true)
+    const { error } = await supabase.auth.updateUser({ password: newPw })
+    setLoading(false)
+    if (error) { setErr(error.message); return }
+    setOk(true)
+    setTimeout(onClose, 1600)
+  }
+
+  const inputStyle = {
+    width: '100%', boxSizing: 'border-box',
+    padding: '11px 40px 11px 14px',
+    border: '1.5px solid rgba(255,255,255,.12)',
+    borderRadius: 12, background: 'rgba(255,255,255,.06)',
+    color: '#fff', fontSize: 14, fontFamily: FONT,
+    outline: 'none', transition: 'border .2s',
+  }
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 9000,
+          background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 32, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          onClick={e => e.stopPropagation()}
+          style={{
+            width: '100%', maxWidth: 380,
+            background: 'linear-gradient(145deg,#0b2a16,#0f3825)',
+            border: '1px solid rgba(255,255,255,.1)',
+            borderRadius: 24,
+            padding: '28px 24px',
+            boxShadow: '0 24px 80px rgba(0,0,0,.7)',
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', fontFamily: FONT }}>Change Password</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.38)', fontFamily: FONT, marginTop: 2 }}>Set a new account password</div>
+            </div>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,.08)', border: 'none', color: 'rgba(255,255,255,.5)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          </div>
+
+          {ok ? (
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+              <div style={{ color: '#4ade80', fontWeight: 700, fontFamily: FONT, fontSize: 15 }}>Password updated!</div>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* New password */}
+              <div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', fontFamily: FONT, fontWeight: 600, marginBottom: 6 }}>New Password</div>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showNew ? 'text' : 'password'}
+                    value={newPw}
+                    onChange={e => { setNewPw(e.target.value); setErr('') }}
+                    placeholder="Min. 6 characters"
+                    style={inputStyle}
+                    autoFocus
+                  />
+                  <button type="button" onClick={() => setShowNew(v => !v)}
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 14, padding: 0 }}>
+                    {showNew ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm password */}
+              <div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', fontFamily: FONT, fontWeight: 600, marginBottom: 6 }}>Confirm Password</div>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showConf ? 'text' : 'password'}
+                    value={confPw}
+                    onChange={e => { setConfPw(e.target.value); setErr('') }}
+                    placeholder="Repeat new password"
+                    style={inputStyle}
+                  />
+                  <button type="button" onClick={() => setShowConf(v => !v)}
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 14, padding: 0 }}>
+                    {showConf ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Strength indicator */}
+              {newPw.length > 0 && (
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {[4,6,10].map((thresh, i) => (
+                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: newPw.length >= thresh ? (i === 0 ? '#f87171' : i === 1 ? '#fbbf24' : '#4ade80') : 'rgba(255,255,255,.1)', transition: 'background .3s' }} />
+                  ))}
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', fontFamily: FONT, marginLeft: 4 }}>
+                    {newPw.length < 4 ? 'Weak' : newPw.length < 10 ? 'Fair' : 'Strong'}
+                  </span>
+                </div>
+              )}
+
+              {err && (
+                <div style={{ background: 'rgba(248,113,113,.12)', border: '1px solid rgba(248,113,113,.25)', borderRadius: 10, padding: '9px 12px', color: '#fca5a5', fontSize: 12, fontFamily: FONT }}>
+                  {err}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || !newPw || !confPw}
+                style={{
+                  width: '100%', padding: '13px', borderRadius: 14, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+                  background: loading || !newPw || !confPw ? 'rgba(255,255,255,.08)' : 'linear-gradient(135deg,#1a5c38,#22744a)',
+                  color: loading || !newPw || !confPw ? 'rgba(255,255,255,.3)' : '#fff',
+                  fontFamily: FONT, fontWeight: 700, fontSize: 14,
+                  transition: 'all .2s', marginTop: 4,
+                  boxShadow: loading || !newPw || !confPw ? 'none' : '0 4px 20px rgba(26,92,56,.5)',
+                }}
+              >
+                {loading ? 'Updating…' : '🔒 Update Password'}
+              </button>
+            </form>
+          )}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function PlayerDashboard() {
   const { user, profile, signOut } = useAuth()
-  const [myPlayer, setMyPlayer]   = useState(null)
-  const [loaded, setLoaded]       = useState(false)
-  const [greeting, setGreeting]   = useState('Welcome back')
+  const [myPlayer, setMyPlayer]       = useState(null)
+  const [loaded, setLoaded]           = useState(false)
+  const [greeting, setGreeting]       = useState('Welcome back')
+  const [showChangePw, setShowChangePw] = useState(false)
 
   useEffect(() => {
     const h = new Date().getHours()
@@ -229,23 +383,44 @@ export default function PlayerDashboard() {
           )}
         </div>
 
-        {/* Sign out */}
-        <motion.button
-          onClick={() => signOut()}
-          whileHover={{ scale: 1.08, background: 'rgba(255,255,255,.13)' }}
-          whileTap={{ scale: 0.92 }}
-          title="Sign out"
-          style={{
-            width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,.1)',
-            background: 'rgba(255,255,255,.06)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, fontSize: 15, transition: 'background .2s',
-          }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-        </motion.button>
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          {/* Change password */}
+          <motion.button
+            onClick={() => setShowChangePw(true)}
+            whileHover={{ scale: 1.08, background: 'rgba(255,255,255,.13)' }}
+            whileTap={{ scale: 0.92 }}
+            title="Change password"
+            style={{
+              width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,.1)',
+              background: 'rgba(255,255,255,.06)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 15, transition: 'background .2s',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </motion.button>
+
+          {/* Sign out */}
+          <motion.button
+            onClick={() => signOut()}
+            whileHover={{ scale: 1.08, background: 'rgba(255,255,255,.13)' }}
+            whileTap={{ scale: 0.92 }}
+            title="Sign out"
+            style={{
+              width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,.1)',
+              background: 'rgba(255,255,255,.06)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 15, transition: 'background .2s',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </motion.button>
+        </div>
       </div>
 
       {/* ── Divider ── */}
@@ -286,6 +461,9 @@ export default function PlayerDashboard() {
           Profile not yet linked to squad — contact admin
         </motion.div>
       )}
+
+      {/* Change password modal */}
+      {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
     </motion.div>
   )
 }
