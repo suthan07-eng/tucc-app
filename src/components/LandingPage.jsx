@@ -134,16 +134,16 @@ function NextMatchCard({ nav }) {
       transition={{ delay:.5, duration:.6, ease:EASE }}
       style={{
         width:'100%', borderRadius:24, overflow:'hidden', marginBottom:12,
-        background:'linear-gradient(145deg,#1535a8 0%,#1d4ed8 55%,#2563eb 100%)',
-        boxShadow:'0 20px 60px rgba(21,53,168,.5), 0 0 0 1px rgba(255,255,255,.08)',
+        background:'linear-gradient(145deg,#1a0308 0%,#7f1d1d 45%,#991b1b 75%,#b91c1c 100%)',
+        boxShadow:'0 20px 60px rgba(127,29,29,.55), 0 0 0 1px rgba(255,255,255,.08)',
         position:'relative',
       }}
     >
       {/* Animated orbs */}
-      <motion.div animate={{ scale:[1,1.3,1], opacity:[.15,.04,.15] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
-        style={{ position:'absolute', top:-40, right:-40, width:160, height:160, borderRadius:'50%', background:'rgba(255,255,255,.12)', pointerEvents:'none' }}/>
-      <motion.div animate={{ scale:[1,1.2,1], opacity:[.1,.03,.1] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut', delay:2 }}
-        style={{ position:'absolute', bottom:-30, left:-30, width:120, height:120, borderRadius:'50%', background:'rgba(233,160,32,.15)', pointerEvents:'none' }}/>
+      <motion.div animate={{ scale:[1,1.3,1], opacity:[.18,.05,.18] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
+        style={{ position:'absolute', top:-40, right:-40, width:180, height:180, borderRadius:'50%', background:'rgba(220,38,38,.25)', pointerEvents:'none' }}/>
+      <motion.div animate={{ scale:[1,1.2,1], opacity:[.12,.03,.12] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut', delay:2 }}
+        style={{ position:'absolute', bottom:-30, left:-30, width:140, height:140, borderRadius:'50%', background:'rgba(233,160,32,.18)', pointerEvents:'none' }}/>
 
       {/* Gold bar */}
       <div style={{ height:3, background:'linear-gradient(90deg,transparent,#e9a020,#f59e0b,transparent)' }}/>
