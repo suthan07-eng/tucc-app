@@ -8,6 +8,31 @@ import Footer from './Footer'
 
 const EASE = [0.32, 0.72, 0, 1]
 const OUR_NAMES = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
+const isOursLeague = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes(t.toLowerCase()))
+
+// ── Season stat pill (matches Results page style) ─────────
+function SeasonPill({ label, value, grad, shadow, delay = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14, scale: 0.93 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, duration: 0.45, ease: EASE }}
+      style={{
+        background: grad, borderRadius: 18,
+        padding: '14px 10px', textAlign: 'center',
+        boxShadow: shadow, flex: 1,
+        position: 'relative', overflow: 'hidden',
+        minWidth: 0,
+      }}
+    >
+      {/* Decorative circle highlight */}
+      <div style={{ position:'absolute', top:-14, right:-14, width:48, height:48, borderRadius:'50%', background:'rgba(255,255,255,.13)', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', bottom:-10, left:-10, width:32, height:32, borderRadius:'50%', background:'rgba(255,255,255,.07)', pointerEvents:'none' }}/>
+      <div style={{ fontFamily:FONT, fontSize:26, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums', position:'relative', zIndex:1 }}>{value}</div>
+      <div style={{ fontFamily:FONT, fontSize:9, fontWeight:800, color:'rgba(255,255,255,.75)', marginTop:5, textTransform:'uppercase', letterSpacing:1, position:'relative', zIndex:1 }}>{label}</div>
+    </motion.div>
+  )
+}
 const isOurs = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes(t.toLowerCase()))
 const shorten = n =>
   n.replace('Dollishill Tamil United CC - Knights', 'Tamil United CC')
@@ -412,6 +437,17 @@ export default function FixturesPage() {
   const [error, setError]           = useState(false)
   const [source, setSource]         = useState(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [teamStats, setTeamStats]   = useState(null)
+
+  useEffect(() => {
+    fetch('/api/league-table')
+      .then(r => r.json())
+      .then(d => {
+        const ourRow = (d.rows || d.teams || []).find(t => isOursLeague(t.team))
+        if (ourRow) setTeamStats(ourRow)
+      })
+      .catch(() => {})
+  }, [])
 
   const load = (bust = false) => {
     setRefreshing(true)
@@ -440,10 +476,6 @@ export default function FixturesPage() {
   })()
   const countdown = useCountdown(countdownTarget)
   const remaining = nextTucc ? fixtures.filter(f => f !== nextTucc) : fixtures
-
-  const SEASON_TOTAL = 14
-  const PLAYED_HOME  = 3
-  const PLAYED_AWAY  = 2
 
   return (
     <div style={{ minHeight:'100dvh', background:'transparent', fontFamily:FONT, display:'flex', flexDirection:'column' }}>
@@ -504,31 +536,14 @@ export default function FixturesPage() {
               </div>
             </div>
 
-            {/* Stats strip */}
-            {!loading && fixtures.length > 0 && (
-              <div style={{ display:'flex', gap:10 }}>
-                {[
-                  { label:'Season',  value:SEASON_TOTAL, accent:'rgba(255,255,255,.25)' },
-                  { label:'Played',  value:PLAYED_HOME+PLAYED_AWAY, accent:'#60a5fa' },
-                  { label:'Home',    value:PLAYED_HOME,  accent:'#e9a020' },
-                  { label:'Away',    value:PLAYED_AWAY,  accent:'#c084fc' },
-                ].map(({ label, value, accent }, i) => (
-                  <motion.div key={label}
-                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
-                    transition={{ delay:.1+i*.06, duration:.4, ease:EASE }}
-                    style={{
-                      flex:1, borderRadius:18, padding:'14px 8px', textAlign:'center',
-                      background:'rgba(255,255,255,.055)',
-                      border:'1px solid rgba(255,255,255,.08)',
-                      boxShadow:'inset 0 1px 1px rgba(255,255,255,.06)',
-                      position:'relative', overflow:'hidden',
-                    }}
-                  >
-                    <div style={{ position:'absolute', bottom:0, left:'15%', right:'15%', height:2, background:accent, borderRadius:99, opacity:.8 }}/>
-                    <div style={{ fontFamily:FONT, fontSize:24, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{value}</div>
-                    <div style={{ fontFamily:FONT, fontSize:9, fontWeight:800, color:'rgba(255,255,255,.4)', marginTop:5, textTransform:'uppercase', letterSpacing:1 }}>{label}</div>
-                  </motion.div>
-                ))}
+            {/* Season stats pills — live from league table */}
+            {teamStats && (
+              <div style={{ display:'flex', gap:10, marginTop: 4 }}>
+                <SeasonPill delay={0.05} label="Played" value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,#2563eb,#3b82f6)" shadow="0 6px 20px rgba(37,99,235,.4)" />
+                <SeasonPill delay={0.10} label="Won"    value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#22c55e)" shadow="0 6px 20px rgba(21,128,61,.4)" />
+                <SeasonPill delay={0.15} label="Lost"   value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,#be123c,#f43f5e)" shadow="0 6px 20px rgba(190,18,60,.35)" />
+                <SeasonPill delay={0.20} label="Points" value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,#b45309,#f59e0b)" shadow="0 6px 20px rgba(180,83,9,.4)" />
+                <SeasonPill delay={0.25} label="NRR"    value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#22c55e)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.35)" />
               </div>
             )}
           </motion.div>
