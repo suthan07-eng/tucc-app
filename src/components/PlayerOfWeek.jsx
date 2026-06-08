@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { C, FONT } from '../constants'
 
 // Decorative SVG cricket ball
@@ -46,7 +46,7 @@ function Stars({ color }) {
   )
 }
 
-function PosterCard({ hero, type, delay = 0 }) {
+function PosterCard({ hero, type, delay = 0, onClick }) {
   const [imgOk, setImgOk] = useState(true)
 
   const isBatter = type === 'bat'
@@ -76,9 +76,11 @@ function PosterCard({ hero, type, delay = 0 }) {
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ scale: 1.03, y: -3 }}
       transition={{ duration: 0.5, delay, ease: [0.23, 1, 0.32, 1] }}
+      onClick={onClick}
       style={{
-        flex: 1, minWidth: 150, maxWidth: 200,
+        flex: 1, minWidth: 150, maxWidth: 200, cursor: 'pointer',
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         background: `linear-gradient(175deg, ${bgTop} 0%, ${bgMid} 45%, ${bgBot} 100%)`,
         boxShadow: `0 12px 36px ${glow}, 0 0 0 1px rgba(255,255,255,.07), inset 0 1px 0 rgba(255,255,255,.08)`,
@@ -236,9 +238,185 @@ function ShimmerCard() {
   )
 }
 
+// Full-screen modal showing expanded card
+function CardModal({ hero, type, onClose }) {
+  const isBatter = type === 'bat'
+  const accent    = isBatter ? '#60a5fa' : '#fb7185'
+  const accentMid = isBatter ? '#3b82f6' : '#f43f5e'
+  const accentDk  = isBatter ? '#15803d' : '#be123c'
+  const glow      = isBatter ? 'rgba(96,165,250,.6)' : 'rgba(251,113,133,.6)'
+  const bgTop     = isBatter ? '#030d1a' : '#1a0308'
+  const bgMid     = isBatter ? '#1e3a8a' : '#3b0717'
+  const bgBot     = isBatter ? '#1e40af' : '#5c0e22'
+  const stat      = isBatter ? hero.runs   : hero.wickets
+  const label     = isBatter ? 'RUNS'      : 'WICKETS'
+  const roleLabel = isBatter ? 'BEST BATTER' : 'BEST BOWLER'
+  const roleIcon  = isBatter ? '🏏' : '🎯'
+  const sub       = isBatter
+    ? [hero.balls ? `${hero.balls} balls` : null, hero.fours ? `${hero.fours} fours` : null, hero.sixes ? `${hero.sixes} sixes` : null].filter(Boolean).join(' · ') || null
+    : (hero.overs || hero.runsGiven) ? `${hero.overs ?? '?'} overs · ${hero.runsGiven ?? '?'} runs${hero.economy ? ` · Eco ${hero.economy}` : ''}` : null
+
+  const [imgOk, setImgOk] = useState(true)
+
+  // Close on Escape key
+  useEffect(() => {
+    const fn = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
+  }, [onClose])
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(2,6,23,0.82)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24,
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7, y: 40 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.85, y: 20 }}
+          transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+          onClick={e => e.stopPropagation()}
+          style={{
+            width: '100%', maxWidth: 380,
+            borderRadius: 28, overflow: 'hidden', position: 'relative',
+            background: `linear-gradient(175deg, ${bgTop} 0%, ${bgMid} 45%, ${bgBot} 100%)`,
+            boxShadow: `0 40px 100px ${glow}, 0 0 0 1px rgba(255,255,255,.1), inset 0 1px 0 rgba(255,255,255,.1)`,
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            style={{
+              position: 'absolute', top: 14, right: 14, zIndex: 10,
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)',
+              color: '#fff', fontSize: 16, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: FONT, lineHeight: 1,
+            }}
+          >×</button>
+
+          {/* Ball watermark */}
+          <div style={{ position: 'absolute', bottom: -50, right: -50 }}>
+            <CricketBallBg color={accent} size={280} opacity={0.055} />
+          </div>
+
+          {/* Spotlight */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 380,
+            background: `radial-gradient(ellipse 70% 60% at 50% 30%, ${accentMid}28 0%, transparent 70%)`,
+            pointerEvents: 'none',
+          }} />
+
+          <Stars color={accent} />
+
+          {/* Top bar */}
+          <div style={{ height: 4, background: `linear-gradient(90deg, transparent, ${accentDk} 20%, ${accent} 50%, ${accentDk} 80%, transparent)` }} />
+
+          {/* Badge */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 18px 0' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: `linear-gradient(135deg, ${accentDk}55, ${accentMid}33)`,
+              border: `1px solid ${accentMid}55`,
+              backdropFilter: 'blur(10px)',
+              borderRadius: 30, padding: '8px 18px',
+            }}>
+              <span style={{ fontSize: 16 }}>{roleIcon}</span>
+              <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 900, color: accent, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                {roleLabel}
+              </span>
+              <span style={{ fontSize: 18 }}>🏆</span>
+            </div>
+          </div>
+
+          {/* Photo */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 24 }}>
+            <div style={{
+              width: 130, height: 130, borderRadius: '50%',
+              background: `conic-gradient(from 0deg, ${accent}, ${accentDk}, ${accent}, ${accentDk}, ${accent})`,
+              padding: 3,
+              boxShadow: `0 0 0 6px ${accentMid}22, 0 0 50px ${glow}`,
+            }}>
+              <div style={{
+                width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden',
+                background: bgTop, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {imgOk && hero.photoUrl ? (
+                  <img src={hero.photoUrl} alt={hero.displayName} onError={() => setImgOk(false)}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+                ) : <span style={{ fontSize: 54 }}>👤</span>}
+              </div>
+            </div>
+
+            {/* Name */}
+            <div style={{ marginTop: 16, textAlign: 'center', padding: '0 24px' }}>
+              <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 28, color: '#fff', letterSpacing: -0.5, textShadow: `0 2px 24px ${glow}` }}>
+                {hero.displayName}
+              </div>
+              <div style={{ fontFamily: FONT, fontSize: 14, color: `${accent}aa`, marginTop: 3, fontWeight: 500 }}>
+                {hero.name.split(' ').slice(1).join(' ')}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '18px 0', width: '70%' }}>
+              <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${accentMid}44)` }} />
+              <div style={{ width: 4, height: 4, borderRadius: '50%', background: accent }} />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
+              <div style={{ width: 4, height: 4, borderRadius: '50%', background: accent }} />
+              <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accentMid}44, transparent)` }} />
+            </div>
+
+            {/* Big stat */}
+            <div style={{ textAlign: 'center', position: 'relative' }}>
+              <div style={{
+                position: 'absolute', inset: -12,
+                background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${accentMid}35 0%, transparent 70%)`,
+                pointerEvents: 'none',
+              }} />
+              <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 88, color: '#fff', lineHeight: 1, letterSpacing: -4, textShadow: `0 0 50px ${glow}, 0 5px 0 ${accentDk}` }}>
+                {stat}
+              </div>
+              <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 13, letterSpacing: 5, marginTop: 2, background: `linear-gradient(90deg, ${accentDk}, ${accent}, ${accentDk})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                {label}
+              </div>
+              {sub && <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.4)', marginTop: 8, letterSpacing: 0.3 }}>{sub}</div>}
+            </div>
+
+            {/* Message */}
+            <div style={{
+              margin: '18px 20px 24px',
+              background: 'linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03))',
+              borderRadius: 16, padding: '14px 18px',
+              border: `1px solid ${accentMid}30`, position: 'relative', overflow: 'hidden',
+            }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${accent}, ${accentDk})`, borderRadius: '3px 0 0 3px' }} />
+              <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,.8)', lineHeight: 1.6, textAlign: 'center', paddingLeft: 4 }}>
+                {hero.message}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 export default function PlayerOfWeek({ compact = false }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState(null) // { hero, type }
 
   useEffect(() => {
     fetch('/api/potw?v=' + Date.now())
@@ -284,10 +462,25 @@ export default function PlayerOfWeek({ compact = false }) {
           <><ShimmerCard /><ShimmerCard /></>
         ) : (
           cards.map((c, i) => (
-            <PosterCard key={c.hero.name} hero={c.hero} type={c.type} delay={i * 0.08} />
+            <PosterCard
+              key={c.hero.name}
+              hero={c.hero}
+              type={c.type}
+              delay={i * 0.08}
+              onClick={() => setSelected(c)}
+            />
           ))
         )}
       </div>
+
+      {/* Full-screen modal */}
+      {selected && (
+        <CardModal
+          hero={selected.hero}
+          type={selected.type}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   )
 }
