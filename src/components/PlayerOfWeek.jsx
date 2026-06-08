@@ -74,24 +74,24 @@ function PosterCard({ hero, type, delay = 0 }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.6, delay, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.5, delay, ease: [0.23, 1, 0.32, 1] }}
       style={{
-        flex: 1, minWidth: 270, maxWidth: 380,
-        borderRadius: 28, overflow: 'hidden', position: 'relative',
+        flex: 1, minWidth: 150, maxWidth: 200,
+        borderRadius: 18, overflow: 'hidden', position: 'relative',
         background: `linear-gradient(175deg, ${bgTop} 0%, ${bgMid} 45%, ${bgBot} 100%)`,
-        boxShadow: `0 30px 80px ${glow}, 0 0 0 1px rgba(255,255,255,.07), inset 0 1px 0 rgba(255,255,255,.08)`,
+        boxShadow: `0 12px 36px ${glow}, 0 0 0 1px rgba(255,255,255,.07), inset 0 1px 0 rgba(255,255,255,.08)`,
       }}
     >
       {/* Decorative cricket ball watermark */}
-      <div style={{ position: 'absolute', bottom: -40, right: -40, opacity: 1 }}>
-        <CricketBallBg color={accent} size={240} opacity={0.055} />
+      <div style={{ position: 'absolute', bottom: -20, right: -20, opacity: 1 }}>
+        <CricketBallBg color={accent} size={120} opacity={0.055} />
       </div>
 
-      {/* Radial spotlight behind photo */}
+      {/* Radial spotlight */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 320,
+        position: 'absolute', top: 0, left: 0, right: 0, height: 160,
         background: `radial-gradient(ellipse 70% 60% at 50% 30%, ${accentMid}22 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
@@ -101,40 +101,38 @@ function PosterCard({ hero, type, delay = 0 }) {
 
       {/* Top accent bar */}
       <div style={{
-        height: 4,
+        height: 3,
         background: `linear-gradient(90deg, transparent 0%, ${accentDk} 20%, ${accent} 50%, ${accentDk} 80%, transparent 100%)`,
       }} />
 
       {/* Role badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px 0' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 7,
+          display: 'flex', alignItems: 'center', gap: 4,
           background: `linear-gradient(135deg, ${accentDk}55, ${accentMid}33)`,
           border: `1px solid ${accentMid}55`,
           backdropFilter: 'blur(10px)',
-          borderRadius: 30, padding: '7px 14px',
+          borderRadius: 30, padding: '4px 8px',
         }}>
-          <span style={{ fontSize: 13 }}>{roleIcon}</span>
-          <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 900, color: accent, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 9 }}>{roleIcon}</span>
+          <span style={{ fontFamily: FONT, fontSize: 8, fontWeight: 900, color: accent, letterSpacing: 1, textTransform: 'uppercase' }}>
             {roleLabel}
           </span>
         </div>
         <motion.div
           animate={{ rotate: [0, -8, 8, -4, 0] }}
           transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-          style={{ fontSize: 26 }}
+          style={{ fontSize: 14 }}
         >🏆</motion.div>
       </div>
 
       {/* Photo */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 20 }}>
-        {/* Outer glow ring */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 10 }}>
         <div style={{
-          width: 118, height: 118, borderRadius: '50%',
+          width: 62, height: 62, borderRadius: '50%',
           background: `conic-gradient(from 0deg, ${accent}, ${accentDk}, ${accent}, ${accentDk}, ${accent})`,
-          padding: 3,
-          boxShadow: `0 0 0 6px ${accentMid}22, 0 0 40px ${glow}`,
-          position: 'relative',
+          padding: 2,
+          boxShadow: `0 0 0 3px ${accentMid}22, 0 0 20px ${glow}`,
         }}>
           <div style={{
             width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden',
@@ -149,58 +147,57 @@ function PosterCard({ hero, type, delay = 0 }) {
                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
               />
             ) : (
-              <span style={{ fontSize: 46 }}>👤</span>
+              <span style={{ fontSize: 24 }}>👤</span>
             )}
           </div>
         </div>
 
         {/* Name */}
-        <div style={{ marginTop: 14, textAlign: 'center', padding: '0 20px' }}>
+        <div style={{ marginTop: 8, textAlign: 'center', padding: '0 10px' }}>
           <div style={{
-            fontFamily: FONT, fontWeight: 900, fontSize: 24, color: '#fff',
-            letterSpacing: -0.5, textShadow: `0 2px 20px ${glow}`,
+            fontFamily: FONT, fontWeight: 900, fontSize: 13, color: '#fff',
+            letterSpacing: -0.3, textShadow: `0 2px 10px ${glow}`,
           }}>
             {hero.displayName}
           </div>
-          <div style={{ fontFamily: FONT, fontSize: 13, color: `${accent}99`, marginTop: 2, fontWeight: 500 }}>
+          <div style={{ fontFamily: FONT, fontSize: 10, color: `${accent}99`, marginTop: 1, fontWeight: 500 }}>
             {hero.name.split(' ').slice(1).join(' ')}
           </div>
         </div>
 
         {/* Divider with dots */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '16px 0', width: '75%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, margin: '8px 0', width: '75%' }}>
           <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${accentMid}44)` }} />
-          <div style={{ width: 4, height: 4, borderRadius: '50%', background: accent }} />
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 8px ${accent}` }} />
-          <div style={{ width: 4, height: 4, borderRadius: '50%', background: accent }} />
+          <div style={{ width: 3, height: 3, borderRadius: '50%', background: accent }} />
+          <div style={{ width: 4, height: 4, borderRadius: '50%', background: accent, boxShadow: `0 0 5px ${accent}` }} />
+          <div style={{ width: 3, height: 3, borderRadius: '50%', background: accent }} />
           <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accentMid}44, transparent)` }} />
         </div>
 
-        {/* Big stat number */}
+        {/* Stat number */}
         <div style={{ textAlign: 'center', position: 'relative' }}>
-          {/* Number glow backdrop */}
           <div style={{
-            position: 'absolute', inset: -10,
+            position: 'absolute', inset: -6,
             background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${accentMid}30 0%, transparent 70%)`,
             pointerEvents: 'none',
           }} />
           <div style={{
-            fontFamily: FONT, fontWeight: 900, fontSize: 76, color: '#fff',
-            lineHeight: 1, letterSpacing: -4,
-            textShadow: `0 0 40px ${glow}, 0 4px 0 ${accentDk}`,
+            fontFamily: FONT, fontWeight: 900, fontSize: 40, color: '#fff',
+            lineHeight: 1, letterSpacing: -2,
+            textShadow: `0 0 20px ${glow}, 0 2px 0 ${accentDk}`,
           }}>
             {stat}
           </div>
           <div style={{
-            fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: 4,
-            marginTop: 2,
+            fontFamily: FONT, fontWeight: 900, fontSize: 9, letterSpacing: 3,
+            marginTop: 1,
             background: `linear-gradient(90deg, ${accentDk}, ${accent}, ${accentDk})`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             {label}
           </div>
           {sub && (
-            <div style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 7, letterSpacing: 0.3 }}>
+            <div style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,.35)', marginTop: 4, letterSpacing: 0.2 }}>
               {sub}
             </div>
           )}
@@ -208,21 +205,20 @@ function PosterCard({ hero, type, delay = 0 }) {
 
         {/* Message banner */}
         <div style={{
-          margin: '16px 16px 20px',
+          margin: '8px 10px 12px',
           background: `linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.03))`,
-          borderRadius: 16, padding: '12px 16px',
+          borderRadius: 10, padding: '7px 10px',
           border: `1px solid ${accentMid}30`,
           position: 'relative', overflow: 'hidden',
         }}>
-          {/* Left accent line */}
           <div style={{
-            position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
+            position: 'absolute', left: 0, top: 0, bottom: 0, width: 2,
             background: `linear-gradient(180deg, ${accent}, ${accentDk})`,
-            borderRadius: '3px 0 0 3px',
+            borderRadius: '2px 0 0 2px',
           }} />
           <div style={{
-            fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.75)',
-            lineHeight: 1.6, textAlign: 'center', paddingLeft: 4,
+            fontFamily: FONT, fontSize: 9.5, color: 'rgba(255,255,255,.75)',
+            lineHeight: 1.5, textAlign: 'center', paddingLeft: 2,
           }}>
             {hero.message}
           </div>
@@ -234,7 +230,7 @@ function PosterCard({ hero, type, delay = 0 }) {
 
 function ShimmerCard() {
   return (
-    <div style={{ flex: 1, minWidth: 270, borderRadius: 28, overflow: 'hidden', background: 'linear-gradient(175deg,#0a1f0e,#1e3a8a)', height: 480, position: 'relative' }}>
+    <div style={{ flex: 1, minWidth: 150, maxWidth: 200, borderRadius: 18, overflow: 'hidden', background: 'linear-gradient(175deg,#030d1a,#1e3a8a)', height: 260, position: 'relative' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)', animation: 'shimmer 1.6s infinite' }} />
     </div>
   )
