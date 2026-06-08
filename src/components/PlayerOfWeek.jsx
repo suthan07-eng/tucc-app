@@ -251,18 +251,28 @@ export default function PlayerOfWeek({ compact = false }) {
       .catch(() => setLoading(false))
   }, [])
 
-  const hasBatter = data?.batter
-  const hasBowler = data?.bowler
-  if (!loading && !hasBatter && !hasBowler) return null
+  // Support both new (batters[]/bowlers[]) and legacy (batter/bowler) API shapes
+  const batters = data?.batters?.length ? data.batters : (data?.batter ? [data.batter] : [])
+  const bowlers = data?.bowlers?.length ? data.bowlers : (data?.bowler ? [data.bowler] : [])
+
+  if (!loading && batters.length === 0 && bowlers.length === 0) return null
+
+  // Interleave bat/bowl so colours alternate nicely: bat, bowl, bat, bowl…
+  const cards = []
+  const maxLen = Math.max(batters.length, bowlers.length)
+  for (let i = 0; i < maxLen; i++) {
+    if (batters[i]) cards.push({ hero: batters[i], type: 'bat'  })
+    if (bowlers[i]) cards.push({ hero: bowlers[i], type: 'bowl' })
+  }
 
   return (
     <div style={{ marginTop: compact ? 0 : 28, marginBottom: compact ? 0 : 28 }}>
       {/* Section header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 4, height: 22, borderRadius: 99, background: `linear-gradient(180deg, #fbbf24, #d97706)` }} />
+          <div style={{ width: 4, height: 22, borderRadius: 99, background: 'linear-gradient(180deg, #fbbf24, #d97706)' }} />
           <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: 17, color: C.dark, letterSpacing: -0.3 }}>
-            Player of the Week 🏆
+            Players of the Week 🏆
           </span>
         </div>
         {data?.matchDate && (
@@ -272,18 +282,14 @@ export default function PlayerOfWeek({ compact = false }) {
         )}
       </div>
 
-      {/* Poster cards */}
+      {/* Poster cards — wrap into rows of 2 */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         {loading ? (
-          <>
-            <ShimmerCard />
-            <ShimmerCard />
-          </>
+          <><ShimmerCard /><ShimmerCard /></>
         ) : (
-          <>
-            {hasBatter && <PosterCard hero={data.batter} type="bat"  delay={0} />}
-            {hasBowler && <PosterCard hero={data.bowler} type="bowl" delay={0.15} />}
-          </>
+          cards.map((c, i) => (
+            <PosterCard key={c.hero.name} hero={c.hero} type={c.type} delay={i * 0.08} />
+          ))
         )}
       </div>
     </div>

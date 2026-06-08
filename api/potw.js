@@ -71,52 +71,64 @@ export default async function handler(req, res) {
     const row = rows?.[0]
 
     if (!row) {
-      return res.status(200).json({ batter: null, bowler: null, matchDate: '', opponent: '', source: 'empty' })
+      return res.status(200).json({ batters: [], bowlers: [], matchDate: '', opponent: '', source: 'empty' })
     }
 
-    // Build batter object
-    let batter = null
-    if (row.batter_name && row.batter_runs != null) {
-      const player = findPlayer(row.batter_name)
-      batter = {
-        name: row.batter_name,
-        displayName: player ? player.first : row.batter_name.split(' ')[0],
+    function buildBatter(name, r) {
+      if (!name || r == null) return null
+      const player = findPlayer(name)
+      return {
+        name,
+        displayName: player ? player.first : name.split(' ')[0],
         photoUrl: player ? `${PHOTO_BASE}${encodeURIComponent(player.photo)}` : null,
-        runs: row.batter_runs,
-        balls: row.batter_balls || 0,
-        fours: row.batter_fours || 0,
-        sixes: row.batter_sixes || 0,
-        message: row.batter_message || `Outstanding innings from ${row.batter_name.split(' ')[0]}! 🏏`,
+        runs: r.runs,
+        balls: r.balls || null,
+        fours: r.fours || null,
+        sixes: r.sixes || null,
+        message: r.message || `Outstanding innings from ${name.split(' ')[0]}! 🏏`,
       }
     }
 
-    // Build bowler object
-    let bowler = null
-    if (row.bowler_name && row.bowler_wickets != null) {
-      const player = findPlayer(row.bowler_name)
-      bowler = {
-        name: row.bowler_name,
-        displayName: player ? player.first : row.bowler_name.split(' ')[0],
+    function buildBowler(name, r) {
+      if (!name || r.wickets == null) return null
+      const player = findPlayer(name)
+      return {
+        name,
+        displayName: player ? player.first : name.split(' ')[0],
         photoUrl: player ? `${PHOTO_BASE}${encodeURIComponent(player.photo)}` : null,
-        wickets: row.bowler_wickets,
-        overs: row.bowler_overs || 0,
-        runsGiven: row.bowler_runs || 0,
-        economy: row.bowler_economy || 0,
-        message: row.bowler_message || `Brilliant bowling from ${row.bowler_name.split(' ')[0]}! 🎯`,
+        wickets: r.wickets,
+        overs: r.overs || null,
+        runsGiven: r.runs || null,
+        economy: r.economy || null,
+        message: r.message || `Brilliant bowling from ${name.split(' ')[0]}! 🎯`,
       }
     }
+
+    const batters = [
+      buildBatter(row.batter_name,  { runs: row.batter_runs,  balls: row.batter_balls,  fours: row.batter_fours,  sixes: row.batter_sixes,  message: row.batter_message }),
+      buildBatter(row.batter2_name, { runs: row.batter2_runs, balls: row.batter2_balls, fours: row.batter2_fours, sixes: row.batter2_sixes, message: row.batter2_message }),
+    ].filter(Boolean)
+
+    const bowlers = [
+      buildBowler(row.bowler_name,  { wickets: row.bowler_wickets,  overs: row.bowler_overs,  runs: row.bowler_runs,  economy: row.bowler_economy,  message: row.bowler_message }),
+      buildBowler(row.bowler2_name, { wickets: row.bowler2_wickets, overs: row.bowler2_overs, runs: row.bowler2_runs, economy: row.bowler2_economy, message: row.bowler2_message }),
+      buildBowler(row.bowler3_name, { wickets: row.bowler3_wickets, overs: row.bowler3_overs, runs: row.bowler3_runs, economy: row.bowler3_economy, message: row.bowler3_message }),
+    ].filter(Boolean)
 
     return res.status(200).json({
       matchDate: row.match_date || '',
       opponent: row.opponent || '',
-      batter,
-      bowler,
+      batters,
+      bowlers,
+      // legacy fields so old cached clients don't break
+      batter: batters[0] || null,
+      bowler: bowlers[0] || null,
       updatedAt: row.updated_at,
       source: 'supabase',
     })
 
   } catch (err) {
     console.error('POTW error:', err.message)
-    return res.status(200).json({ batter: null, bowler: null, matchDate: '', opponent: '', source: 'error' })
+    return res.status(200).json({ batters: [], bowlers: [], batter: null, bowler: null, matchDate: '', opponent: '', source: 'error' })
   }
 }
