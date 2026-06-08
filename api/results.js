@@ -3,17 +3,31 @@
 const BASE_URL = 'https://dtucc.play-cricket.com'
 const RESULTS_URL = `${BASE_URL}/website/division/137680?type=last_10_results`
 
+// Logos
+const L = {
+  tucc:     'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
+  lewisham: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',
+  northerns:'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
+  redbridge:'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg',
+  stanly:   'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg',
+  west3:    'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG',
+  kent:     'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg',
+}
+
 const FALLBACK = [
-  { date: '31 May 2026', winner: 'Lewisham CC', margin: '3 wickets',  team1: 'Dollishill Tamil United CC - Knights', score1: '213/8 (40.0)',       pts1: '8',  logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',  team2: 'Lewisham CC - A',    score2: '217/7 (33.0)',       pts2: '20', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',  scorecardUrl: '/website/results/7504406' },
-  { date: '31 May 2026', winner: 'Northerns CC', margin: '6 wickets', team1: 'Northerns CC - A',   score1: '105/4 (17.1)',       pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg', team2: 'Kent United CC - 1st XI',  score2: '103/All out (27.3)', pts2: '4',  logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg', scorecardUrl: '/website/results/7504405' },
-  { date: '31 May 2026', winner: 'Northerns CC', margin: '7 wickets', team1: 'Redbridge Lankians Sports & Social Club CC - 1st XI', score1: '138/All out (36.4)', pts1: '4', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg', team2: 'Northerns CC - B', score2: '139/3 (29.3)', pts2: '20', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg', scorecardUrl: '/website/results/7504408' },
-  { date: '24 May 2026', winner: 'Stanly CC',    margin: '54 runs',   team1: 'Stanly CC - A',      score1: '261/All out (39.5)', pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg', team2: 'West 3 CC - 1st XI', score2: '207/9 (40.0)', pts2: '10', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG', scorecardUrl: '/website/results/7504407' },
-  { date: '24 May 2026', winner: 'Northerns CC', margin: '250 runs',  team1: 'Dollishill Tamil United CC - Knights', score1: '201/All out (23.4)', pts1: '7', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png', team2: 'Northerns CC - A', score2: '451/4 (40.0)', pts2: '20', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg', scorecardUrl: '/website/results/7504401' },
-  { date: '24 May 2026', winner: 'Kent United CC', margin: '4 wickets', team1: 'Kent United CC - 1st XI', score1: '172/6 (33.0)', pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg', team2: 'West 3 CC - 1st XI', score2: '169/8 (40.0)', pts2: '7', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16343/w3.JPG', scorecardUrl: '/website/results/7504402' },
-  { date: '17 May 2026', winner: 'Lewisham CC',  margin: '254 runs',  team1: 'Lewisham CC - A',    score1: '386/7 (40.0)',       pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG', team2: 'Redbridge Lankians Sports & Social Club CC - 1st XI', score2: '132/All out (27.1)', pts2: '6', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg', scorecardUrl: '/website/results/7504403' },
-  { date: '17 May 2026', winner: 'Stanly CC',    margin: '9 wickets', team1: 'Stanly CC - A',      score1: '159/1 (16.5)',       pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg', team2: 'Northerns CC - B', score2: '158/All out (40.0)', pts2: '3', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg', scorecardUrl: '/website/results/7504404' },
-  { date: '17 May 2026', winner: 'Northerns CC', margin: '74 runs',   team1: 'Northerns CC - B',   score1: '222/All out (38.2)', pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg', team2: 'Kent United CC - 1st XI', score2: '148/All out (31.3)', pts2: '8', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16346/KENT_UNITED_CC_mockup_new__1_.jpg', scorecardUrl: '/website/results/7504399' },
-  { date: '17 May 2026', winner: 'Redbridge Lankians CC', margin: '8 wickets', team1: 'Redbridge Lankians Sports & Social Club CC - 1st XI', score1: '153/2 (22.0)', pts1: '20', logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg', team2: 'Dollishill Tamil United CC - Knights', score2: '208/All out (39.2)', pts2: '6', logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png', scorecardUrl: '/website/results/7504398' },
+  // 07 June 2026
+  { date: '07 June 2026', winner: 'Lewisham CC',  margin: '5 wickets',  team1: 'Lewisham CC',                         score1: '216/5 (35.2)',       pts1: '20', logo1: L.lewisham, team2: 'Northerns CC',                              score2: '212/9 (40.0)',        pts2: '4',  logo2: L.northerns, scorecardUrl: `${BASE_URL}/website/results/7504409` },
+  { date: '07 June 2026', winner: 'Abandoned',    margin: '',           team1: 'Dollishill Tamil United CC - Knights', score1: '— (Abandoned)',      pts1: '5',  logo1: L.tucc,     team2: 'Northerns CC',                              score2: '— (Abandoned)',       pts2: '5',  logo2: L.northerns, scorecardUrl: `${BASE_URL}/website/results/7504411` },
+  { date: '07 June 2026', winner: 'Stanly CC',    margin: '9 wickets',  team1: 'Stanly CC',                           score1: '85/1 (12.5)',         pts1: '20', logo1: L.stanly,   team2: 'Kent United CC',                            score2: '84/All out (27.1)',   pts2: '2',  logo2: L.kent,      scorecardUrl: `${BASE_URL}/website/results/7504410` },
+  { date: '07 June 2026', winner: 'West 3 CC',    margin: '6 wickets',  team1: 'West 3 CC',                           score1: '209/4 (32.4)',        pts1: '20', logo1: L.west3,    team2: 'Redbridge Lankians CC',                     score2: '203/8 (40.0)',        pts2: '7',  logo2: L.redbridge, scorecardUrl: `${BASE_URL}/website/results/7504412` },
+  // 31 May 2026
+  { date: '31 May 2026',  winner: 'Lewisham CC',  margin: '3 wickets',  team1: 'Dollishill Tamil United CC - Knights', score1: '213/8 (40.0)',        pts1: '8',  logo1: L.tucc,     team2: 'Lewisham CC',                               score2: '217/7 (33.0)',        pts2: '20', logo2: L.lewisham,  scorecardUrl: `${BASE_URL}/website/results/7504406` },
+  { date: '31 May 2026',  winner: 'Northerns CC', margin: '6 wickets',  team1: 'Northerns CC',                        score1: '105/4 (17.1)',        pts1: '20', logo1: L.northerns,team2: 'Kent United CC',                            score2: '103/All out (27.3)', pts2: '4',  logo2: L.kent,      scorecardUrl: `${BASE_URL}/website/results/7504405` },
+  { date: '31 May 2026',  winner: 'Northerns CC', margin: '7 wickets',  team1: 'Redbridge Lankians CC',               score1: '138/All out (36.4)', pts1: '4',  logo1: L.redbridge,team2: 'Northerns CC',                              score2: '139/3 (29.3)',        pts2: '20', logo2: L.northerns, scorecardUrl: `${BASE_URL}/website/results/7504408` },
+  { date: '31 May 2026',  winner: 'Stanly CC',    margin: '54 runs',    team1: 'Stanly CC',                           score1: '261/All out (39.5)', pts1: '20', logo1: L.stanly,   team2: 'West 3 CC',                                 score2: '207/9 (40.0)',        pts2: '10', logo2: L.west3,     scorecardUrl: `${BASE_URL}/website/results/7504407` },
+  // 24 May 2026
+  { date: '24 May 2026',  winner: 'Northerns CC', margin: '250 runs',   team1: 'Dollishill Tamil United CC - Knights', score1: '201/All out (23.4)', pts1: '7',  logo1: L.tucc,     team2: 'Northerns CC',                              score2: '451/4 (40.0)',        pts2: '20', logo2: L.northerns, scorecardUrl: `${BASE_URL}/website/results/7504401` },
+  { date: '24 May 2026',  winner: 'Kent United CC',margin: '4 wickets', team1: 'Kent United CC',                      score1: '172/6 (33.0)',        pts1: '20', logo1: L.kent,     team2: 'West 3 CC',                                 score2: '169/8 (40.0)',        pts2: '7',  logo2: L.west3,     scorecardUrl: `${BASE_URL}/website/results/7504402` },
 ]
 
 const HEADERS = {
@@ -27,75 +41,98 @@ function strip(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+// Logo lookup by team name
+function logoFor(name = '') {
+  const n = name.toLowerCase()
+  if (n.includes('tamil') || n.includes('dollishill') || n.includes('dtu') || n.includes('knights')) return L.tucc
+  if (n.includes('lewisham')) return L.lewisham
+  if (n.includes('northerns')) return L.northerns
+  if (n.includes('redbridge') || n.includes('lankians')) return L.redbridge
+  if (n.includes('stanly')) return L.stanly
+  if (n.includes('west 3')) return L.west3
+  if (n.includes('kent')) return L.kent
+  return ''
+}
+
 function parseResults(html) {
   const results = []
 
-  // Extract dates
-  const dateMatches = [...html.matchAll(/(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4})/g)]
-  const dates = dateMatches.map(m => m[1])
+  // Fix: use full month names in date regex
+  const DATE_RE = /(\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})/g
+  const dateMatches = [...html.matchAll(DATE_RE)]
 
-  // Extract scorecard links
-  const scorecardLinks = [...html.matchAll(/href='(\/website\/results\/(\d+))'/g)].map(m => m[1])
-  // Deduplicate (each appears twice)
-  const uniqueLinks = [...new Set(scorecardLinks)]
+  // Split into match blocks using the mobile status div (one per match)
+  const splitRe = /class=['"]col-sm-12 d-md-none match-status-mobile['"]/g
+  const splitPositions = [...html.matchAll(splitRe)].map(m => m.index)
 
-  // Extract badge images
-  const badgeImgs = [...html.matchAll(/src="(https:\/\/s3[^"]+badge_image\/\d+\/[^"]+)"/g)].map(m => m[1])
+  for (let i = 0; i < splitPositions.length; i++) {
+    const blockStart = splitPositions[i]
+    const blockEnd   = splitPositions[i + 1] ?? html.length
 
-  // Extract TDs (3 per match: team1+score, pts display, team2+score)
-  const tdRe = /<td[\s\S]*?>([\s\S]*?)<\/td>/gi
-  const tds = []
-  let m
-  while ((m = tdRe.exec(html)) !== null) {
-    const text = strip(m[1])
-    if (text) tds.push(text)
-  }
+    // The desktop table row is further ahead — look up to 6000 chars
+    const block      = html.slice(blockStart, Math.min(blockEnd, blockStart + 6000))
+    const blockText  = strip(block)
 
-  let logoIdx = 0
+    // Scorecard ID — from link-scorecard href within this block
+    const scMatch = block.match(/href='(\/website\/results\/(\d+))'\s+class='link-scorecard/)
+    if (!scMatch) continue
+    const scorecardPath = scMatch[1]
+    const scorecardUrl  = `${BASE_URL}${scorecardPath}`
 
-  for (let i = 0; i < tds.length - 2; i += 3) {
-    const td0 = tds[i]
-    const td1 = tds[i + 1]
-    const td2 = tds[i + 2]
+    // Result text
+    const resultMatch = block.match(/match-status-mobile[^>]*>\s*([^<]+)</)
+    const resultText  = resultMatch ? resultMatch[1].trim().replace(/\s+/g, ' ') : ''
 
-    if (!td0.includes('WON BY') && !td0.includes('TIED') && !td0.includes('NO RESULT')) continue
+    // Skip rows with no result info
+    if (!resultText) continue
 
-    const matchIdx = results.length
+    // Determine winner and margin from result text
+    let winner = '', margin = ''
+    const wonBy = resultText.match(/^(.+?)\s+WON\s+BY\s+(.+)$/i)
+    if (wonBy) { winner = wonBy[1].trim(); margin = wonBy[2].trim().toLowerCase() }
+    const abandoned = /ABANDONED|NO RESULT|TIED/i.test(resultText)
 
-    // Parse winner + margin
-    const wonIdx = td0.indexOf(' WON BY ')
-    const winnerRaw = wonIdx >= 0 ? td0.substring(0, wonIdx) : ''
-    const marginMatch = td0.match(/WON BY\s+([^0-9]+?)(?=\s+\d+\s+pts)/)
-    const margin = marginMatch ? marginMatch[1].trim().toLowerCase() : ''
+    // Nearest date before this block
+    let date = ''
+    for (const dm of dateMatches) {
+      if (dm.index < blockStart) date = dm[1]
+    }
 
-    // Parse team1 + score (from td0 after margin)
-    const afterMargin = td0.replace(/^[\s\S]*?WON BY\s+[^0-9]*?/, '')
-    const t1m = afterMargin.match(/(\d+)\s+pts\s+(.+?)\s+(\d+\s*\/\s*(?:All\s*out|\d+)\s*\([\d.]+\))/)
-    const pts1   = t1m ? t1m[1] : ''
-    const team1  = t1m ? t1m[2].trim() : ''
-    const score1 = t1m ? t1m[3].replace(/\s+/g, '') : ''
+    // Parse teams and scores from the desktop table row (d-none d-md-table-row)
+    // Format: "[pts] pts [TeamName] - [XI/A/B/Knights] [score] / [wkts or All out] ([overs])"
+    const desktopRow = block.match(/d-none d-md-table-row[^>]*>([\s\S]*?)(?=d-none d-md-table-row|$)/)
+    const rowText = desktopRow ? strip(desktopRow[0]) : blockText
 
-    // Parse team2 + score (from td2)
-    const t2m = td2.match(/(\d+)\s+pts\s+(.+?)\s+(\d+\s*\/\s*(?:All\s*out|\d+)\s*\([\d.]+\))/)
-    const pts2   = t2m ? t2m[1] : ''
-    const team2  = t2m ? t2m[2].trim() : ''
-    const score2 = t2m ? t2m[3].replace(/\s+/g, '') : ''
+    // Extract team names — look for known club names
+    const CLUBS = ['Dollishill Tamil United CC', 'Tamil United CC', 'Lewisham CC', 'Northerns CC',
+                   'Stanly CC', 'West 3 CC', 'Kent United CC', 'Redbridge Lankians Sports & Social Club CC', 'Redbridge Lankians CC']
+    const foundTeams = CLUBS.filter(c => rowText.toLowerCase().includes(c.toLowerCase()))
+    const team1 = foundTeams[0] || ''
+    const team2 = foundTeams[1] || ''
 
-    // Assign logos (pairs of 2 per match, some nav logos at start to skip)
-    // Skip first 2 which are nav/header logos
-    const logoOffset = 2
-    const logo1 = badgeImgs[logoOffset + logoIdx * 2]     || ''
-    const logo2 = badgeImgs[logoOffset + logoIdx * 2 + 1] || ''
-    logoIdx++
+    // Extract scores — pattern: digits / (digits|All out) (overs)
+    const scoreRe = /(\d{2,3})\s*\/\s*(\d+|All\s*out)\s*\(([\d.]+)\)/gi
+    const scoreMatches = [...rowText.matchAll(scoreRe)]
+    const score1 = scoreMatches[0] ? `${scoreMatches[0][1]}/${scoreMatches[0][2].replace(/\s/g, '')} (${scoreMatches[0][3]})` : '—'
+    const score2 = scoreMatches[1] ? `${scoreMatches[1][1]}/${scoreMatches[1][2].replace(/\s/g, '')} (${scoreMatches[1][3]})` : '—'
 
-    // Assign date (3 results per round)
-    const dateIdx = Math.floor(matchIdx / 3)
-    const date = dates[dateIdx] || ''
+    // Extract pts — look for numbers near "pts"
+    const ptsMatches = [...rowText.matchAll(/(\d+)\s*pts/gi)]
+    const pts1 = ptsMatches[0]?.[1] || ''
+    const pts2 = ptsMatches[1]?.[1] || ''
 
-    // Scorecard URL
-    const scorecardUrl = uniqueLinks[matchIdx] ? `${BASE_URL}${uniqueLinks[matchIdx]}` : ''
-
-    results.push({ date, winner: winnerRaw, margin, team1, score1, pts1, logo1, team2, score2, pts2, logo2, scorecardUrl })
+    results.push({
+      date, winner, margin,
+      team1: team1 || (abandoned ? 'Tamil United CC - Knights' : ''),
+      score1: abandoned ? '— (Abandoned)' : score1,
+      pts1,
+      logo1: logoFor(team1),
+      team2: team2 || '',
+      score2: abandoned ? '— (Abandoned)' : score2,
+      pts2,
+      logo2: logoFor(team2),
+      scorecardUrl,
+    })
   }
 
   return results
@@ -111,7 +148,7 @@ export default async function handler(req, res) {
     const html = await response.text()
     const results = parseResults(html)
 
-    if (results.length > 0) {
+    if (results.length >= 5) {
       return res.status(200).json({ results, updatedAt: new Date().toISOString(), source: 'live' })
     }
     return res.status(200).json({ results: FALLBACK, updatedAt: new Date().toISOString(), source: 'fallback' })
