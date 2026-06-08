@@ -147,7 +147,7 @@ function ChangePasswordModal({ onClose }) {
           onClick={e => e.stopPropagation()}
           style={{
             width: '100%', maxWidth: 380,
-            background: 'linear-gradient(145deg,#0b2a16,#0f3825)',
+            background: 'linear-gradient(145deg,#0b2a16,#1e3a8a)',
             border: '1px solid rgba(255,255,255,.1)',
             borderRadius: 24,
             padding: '28px 24px',
@@ -167,7 +167,7 @@ function ChangePasswordModal({ onClose }) {
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
               style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
-              <div style={{ color: '#4ade80', fontWeight: 700, fontFamily: FONT, fontSize: 15 }}>Password updated!</div>
+              <div style={{ color: '#60a5fa', fontWeight: 700, fontFamily: FONT, fontSize: 15 }}>Password updated!</div>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -212,7 +212,7 @@ function ChangePasswordModal({ onClose }) {
               {newPw.length > 0 && (
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                   {[4,6,10].map((thresh, i) => (
-                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: newPw.length >= thresh ? (i === 0 ? '#f87171' : i === 1 ? '#fbbf24' : '#4ade80') : 'rgba(255,255,255,.1)', transition: 'background .3s' }} />
+                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: newPw.length >= thresh ? (i === 0 ? '#f87171' : i === 1 ? '#fbbf24' : '#60a5fa') : 'rgba(255,255,255,.1)', transition: 'background .3s' }} />
                   ))}
                   <span style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', fontFamily: FONT, marginLeft: 4 }}>
                     {newPw.length < 4 ? 'Weak' : newPw.length < 10 ? 'Fair' : 'Strong'}
@@ -231,11 +231,11 @@ function ChangePasswordModal({ onClose }) {
                 disabled={loading || !newPw || !confPw}
                 style={{
                   width: '100%', padding: '13px', borderRadius: 14, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                  background: loading || !newPw || !confPw ? 'rgba(255,255,255,.08)' : 'linear-gradient(135deg,#1a5c38,#22744a)',
+                  background: loading || !newPw || !confPw ? 'rgba(255,255,255,.08)' : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
                   color: loading || !newPw || !confPw ? 'rgba(255,255,255,.3)' : '#fff',
                   fontFamily: FONT, fontWeight: 700, fontSize: 14,
                   transition: 'all .2s', marginTop: 4,
-                  boxShadow: loading || !newPw || !confPw ? 'none' : '0 4px 20px rgba(26,92,56,.5)',
+                  boxShadow: loading || !newPw || !confPw ? 'none' : '0 4px 20px rgba(37,99,235,.5)',
                 }}
               >
                 {loading ? 'Updating…' : '🔒 Update Password'}
@@ -290,7 +290,7 @@ export default function PlayerDashboard() {
 
   const statItems = [
     { label: 'Matches', value: stats?.matches, color: '#60a5fa' },
-    { label: 'Runs',    value: stats?.runs,    color: '#4ade80' },
+    { label: 'Runs',    value: stats?.runs,    color: '#60a5fa' },
     { label: 'Wickets', value: stats?.wickets, color: '#f87171' },
     { label: 'Catches', value: stats?.catches, color: '#c084fc' },
   ].filter(s => s.value !== null && s.value !== undefined)
@@ -305,7 +305,7 @@ export default function PlayerDashboard() {
       style={{
         borderRadius: 28, overflow: 'hidden', marginBottom: 16,
         position: 'relative',
-        background: 'linear-gradient(145deg, #050e09 0%, #0b2e17 40%, #103d21 75%, #1a5c38 100%)',
+        background: 'linear-gradient(145deg, #050e09 0%, #0b2e17 40%, #103d21 75%, #2563eb 100%)',
         boxShadow: '0 20px 60px rgba(5,20,10,.6), 0 0 0 1px rgba(255,255,255,.06)',
         padding: '22px 18px 20px',
       }}
@@ -337,7 +337,7 @@ export default function PlayerDashboard() {
             <motion.span
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block', boxShadow: '0 0 6px #4ade80' }}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', display: 'inline-block', boxShadow: '0 0 6px #60a5fa' }}
             />
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', fontFamily: FONT, fontWeight: 600, letterSpacing: 0.3 }}>
               {greeting} 👋

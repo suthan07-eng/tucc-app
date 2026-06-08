@@ -56,7 +56,7 @@ function TeamLogo({ logo: logoProp, name, size = 52 }) {
   const logo = getLogoForTeam(name) || logoProp
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
-  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d']
+  const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d']
   let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
 
@@ -95,7 +95,7 @@ function TeamLogo({ logo: logoProp, name, size = 52 }) {
 function PtsBadge({ pts }) {
   const n = parseInt(pts)
   const configs = [
-    [15, { bg: 'linear-gradient(135deg,#15803d,#22c55e)', color: '#fff', shadow: '#15803d40' }],
+    [15, { bg: 'linear-gradient(135deg,#15803d,#3b82f6)', color: '#fff', shadow: '#15803d40' }],
     [10, { bg: 'linear-gradient(135deg,#b45309,#f59e0b)', color: '#fff', shadow: '#b4530940' }],
     [0,  { bg: C.gray1, color: C.gray4, shadow: 'none' }],
   ]
@@ -122,7 +122,7 @@ function ResultCard({ result, index }) {
   const theme = us
     ? won
       ? {
-          headerGrad:  'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
+          headerGrad:  'linear-gradient(135deg, #15803d 0%, #3b82f6 100%)',
           cardBg:      '#f0fdf4',
           cardBorder:  '#bbf7d0',
           shadow:      '0 8px 32px rgba(21,128,61,.18)',
@@ -347,9 +347,9 @@ function DateHeader({ date, count, index }) {
       style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}
     >
       <div style={{
-        background: `linear-gradient(135deg, ${C.greenDark}, #22744a)`,
+        background: `linear-gradient(135deg, ${C.greenDark}, #1d4ed8)`,
         borderRadius: 12, padding: '6px 14px', flexShrink: 0,
-        boxShadow: '0 3px 12px rgba(26,92,56,.3)',
+        boxShadow: '0 3px 12px rgba(37,99,235,.3)',
       }}>
         <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: C.gold, letterSpacing: 0.3 }}>{date}</div>
       </div>
@@ -413,7 +413,7 @@ export default function ResultsPage() {
 
       {/* ── Hero ── */}
       <div style={{
-        background: `radial-gradient(ellipse at 80% -10%, #22744a60 0%, transparent 55%), linear-gradient(160deg, ${C.greenDark} 0%, #0f2a1a 100%)`,
+        background: `radial-gradient(ellipse at 80% -10%, #1d4ed860 0%, transparent 55%), linear-gradient(160deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
         padding: '28px 20px 36px', position: 'relative', overflow: 'hidden',
       }}>
         {/* Decorative cricket ball */}
@@ -443,7 +443,7 @@ export default function ResultsPage() {
                   <span>BTCL Premier League 2026</span>
                   {source === 'live' && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80', display: 'inline-block', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 6px #60a5fa', display: 'inline-block', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
                       <span style={{ color: '#86efac', fontWeight: 600, fontSize: 11 }}>Live</span>
                     </span>
                   )}
@@ -455,10 +455,10 @@ export default function ResultsPage() {
             {teamStats ? (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 2 }}>
                 <SeasonPill label="Played"   value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,#2563eb,#3b82f6)" shadow="0 6px 20px rgba(37,99,235,.35)" />
-                <SeasonPill label="Won"      value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#22c55e)" shadow="0 6px 20px rgba(21,128,61,.35)" />
+                <SeasonPill label="Won"      value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#3b82f6)" shadow="0 6px 20px rgba(21,128,61,.35)" />
                 <SeasonPill label="Lost"     value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,#be123c,#f43f5e)" shadow="0 6px 20px rgba(190,18,60,.3)" />
                 <SeasonPill label="Points"   value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,#b45309,#f59e0b)" shadow="0 6px 20px rgba(180,83,9,.35)" />
-                <SeasonPill label="NRR"      value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#22c55e)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.3)" />
+                <SeasonPill label="NRR"      value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#3b82f6)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.3)" />
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 8 }}>
@@ -546,7 +546,7 @@ export default function ResultsPage() {
                   background: `linear-gradient(135deg, ${C.greenDark}, #163d28)`,
                   borderRadius: 20, padding: '20px 24px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: 12, boxShadow: '0 6px 24px rgba(26,92,56,.3)',
+                  gap: 12, boxShadow: '0 6px 24px rgba(37,99,235,.3)',
                 }}
               >
                 <div>

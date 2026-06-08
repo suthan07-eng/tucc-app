@@ -177,7 +177,7 @@ export default function TabMessages() {
             {ccEmails.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
                 {ccEmails.map(em => (
-                  <span key={em} style={{ fontSize: 11, background: 'rgba(26,92,56,.1)', border: '1px solid rgba(26,92,56,.2)', borderRadius: 20, padding: '2px 10px', color: C.green, fontFamily: FONT, fontWeight: 600 }}>
+                  <span key={em} style={{ fontSize: 11, background: 'rgba(37,99,235,.1)', border: '1px solid rgba(37,99,235,.2)', borderRadius: 20, padding: '2px 10px', color: C.green, fontFamily: FONT, fontWeight: 600 }}>
                     {em}
                   </span>
                 ))}

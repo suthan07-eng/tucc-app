@@ -26,7 +26,7 @@ function detectRole(p) {
 }
 
 const ROLE_META = {
-  'Batsman':       { color: '#15803d', bg: '#dcfce7', grad: 'linear-gradient(135deg,#15803d,#22c55e)', icon: TrendingUp,  label: 'BAT' },
+  'Batsman':       { color: '#15803d', bg: '#dcfce7', grad: 'linear-gradient(135deg,#15803d,#3b82f6)', icon: TrendingUp,  label: 'BAT' },
   'Bowler':        { color: '#be123c', bg: '#ffe4e6', grad: 'linear-gradient(135deg,#be123c,#f43f5e)', icon: Target,      label: 'BOWL' },
   'All-Rounder':   { color: '#7c3aed', bg: '#ede9fe', grad: 'linear-gradient(135deg,#7c3aed,#a78bfa)', icon: Star,        label: 'AR' },
   'Wicket-Keeper': { color: '#b45309', bg: '#fef3c7', grad: 'linear-gradient(135deg,#b45309,#f59e0b)', icon: Shield,      label: 'WK' },
@@ -42,7 +42,7 @@ const HAND_SHORT = s => (s || '').replace('Right Hand', 'RHB').replace('Left Han
 function PlayerPhoto({ photoUrl, name, size = 96, fill = false, photoPos = 'center 35%' }) {
   const [err, setErr] = useState(false)
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  const PALETTE  = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9','#c2410c','#0f766e']
+  const PALETTE  = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9','#c2410c','#0f766e']
   let h = 0; for (const c of (name || '')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
 
@@ -445,7 +445,7 @@ export default function PlayersPage() {
                   <span>Tamil United CC · BTCL 2026</span>
                   {source === 'live' && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ade80', animation: 'pendingPulse 1.8s ease-in-out infinite', display: 'inline-block' }} />
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#60a5fa', animation: 'pendingPulse 1.8s ease-in-out infinite', display: 'inline-block' }} />
                       <span style={{ color: '#86efac', fontWeight: 600, fontSize: 11 }}>Live</span>
                     </span>
                   )}
@@ -458,7 +458,7 @@ export default function PlayersPage() {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {[
                   { label: 'Total', value: players.length, grad: 'linear-gradient(135deg,#4338ca,#6366f1)', shadow: '0 4px 14px rgba(67,56,202,.4)' },
-                  { label: 'Batsmen', value: (roleCounts['Batsman'] || 0) + (roleCounts['All-Rounder'] || 0), grad: 'linear-gradient(135deg,#15803d,#22c55e)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
+                  { label: 'Batsmen', value: (roleCounts['Batsman'] || 0) + (roleCounts['All-Rounder'] || 0), grad: 'linear-gradient(135deg,#15803d,#3b82f6)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
                   { label: 'Bowlers', value: (roleCounts['Bowler'] || 0) + (roleCounts['All-Rounder'] || 0), grad: 'linear-gradient(135deg,#be123c,#f43f5e)', shadow: '0 4px 14px rgba(190,18,60,.3)' },
                   { label: 'WK', value: roleCounts['Wicket-Keeper'] || 0, grad: 'linear-gradient(135deg,#b45309,#f59e0b)', shadow: '0 4px 14px rgba(180,83,9,.35)' },
                 ].map(({ label, value, grad, shadow }) => (

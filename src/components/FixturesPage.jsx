@@ -44,7 +44,7 @@ function useCountdown(targetDate) {
 function TeamLogo({ logo, name, size = 60 }) {
   const [error, setError] = useState(false)
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#15803d','#9d174d']
+  const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#15803d','#9d174d']
   let h = 0; for (const c of (name||'')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
 
@@ -103,7 +103,7 @@ function NextMatchBanner({ fixture, countdown }) {
       transition={{ duration: 0.6, ease: EASE }}
       style={{
         borderRadius: 28, overflow: 'hidden', marginBottom: 8,
-        background: 'linear-gradient(145deg, #0a2a14 0%, #1a5c38 55%, #22744a 100%)',
+        background: 'linear-gradient(145deg, #172554 0%, #2563eb 55%, #1d4ed8 100%)',
         boxShadow: '0 20px 60px rgba(10,42,20,.6), 0 0 0 1px rgba(255,255,255,.07)',
         position: 'relative',
       }}
@@ -123,17 +123,17 @@ function NextMatchBanner({ fixture, countdown }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <motion.div animate={{ opacity:[1,.3,1] }} transition={{ duration:2, repeat:Infinity }}
-              style={{ width:8, height:8, borderRadius:'50%', background:'#4ade80', boxShadow:'0 0 10px #4ade80' }} />
+              style={{ width:8, height:8, borderRadius:'50%', background:'#60a5fa', boxShadow:'0 0 10px #60a5fa' }} />
             <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'rgba(255,255,255,.7)', letterSpacing:1.2, textTransform:'uppercase' }}>Next Match</span>
           </div>
           <div style={{
             display:'flex', alignItems:'center', gap:5,
-            background: isHome ? 'rgba(74,222,128,.15)' : 'rgba(251,191,36,.15)',
-            border: `1px solid ${isHome ? 'rgba(74,222,128,.3)' : 'rgba(251,191,36,.3)'}`,
+            background: isHome ? 'rgba(96,165,250,.15)' : 'rgba(251,191,36,.15)',
+            border: `1px solid ${isHome ? 'rgba(96,165,250,.3)' : 'rgba(251,191,36,.3)'}`,
             borderRadius:20, padding:'4px 12px',
           }}>
-            {isHome ? <Home size={11} color="#4ade80" strokeWidth={2.5}/> : <Plane size={11} color="#fbbf24" strokeWidth={2.5}/>}
-            <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color: isHome ? '#4ade80' : '#fbbf24' }}>{isHome ? 'Home' : 'Away'}</span>
+            {isHome ? <Home size={11} color="#60a5fa" strokeWidth={2.5}/> : <Plane size={11} color="#fbbf24" strokeWidth={2.5}/>}
+            <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color: isHome ? '#60a5fa' : '#fbbf24' }}>{isHome ? 'Home' : 'Away'}</span>
           </div>
         </div>
 
@@ -192,14 +192,14 @@ function NextMatchBanner({ fixture, countdown }) {
         {/* Venue */}
         <div style={{ background:'rgba(0,0,0,.25)', borderRadius:16, padding:'12px 14px', display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:30, height:30, borderRadius:9, background:'rgba(255,255,255,.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <MapPin size={14} color="#4ade80" strokeWidth={2}/>
+            <MapPin size={14} color="#60a5fa" strokeWidth={2}/>
           </div>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontFamily:FONT, fontSize:10, color:'rgba(255,255,255,.35)', fontWeight:700, textTransform:'uppercase', letterSpacing:.8, marginBottom:2 }}>Venue</div>
             <div style={{ fontFamily:FONT, fontSize:12, fontWeight:600, color:'rgba(255,255,255,.8)', lineHeight:1.4 }}>{fixture.venue}</div>
           </div>
           <a href={mapUrl} target="_blank" rel="noopener noreferrer"
-            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, background:'rgba(74,222,128,.15)', border:'1px solid rgba(74,222,128,.3)', borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:11, fontWeight:800, color:'#4ade80', textDecoration:'none' }}>
+            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, background:'rgba(96,165,250,.15)', border:'1px solid rgba(96,165,250,.3)', borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:11, fontWeight:800, color:'#60a5fa', textDecoration:'none' }}>
             Map <ExternalLink size={10} strokeWidth={2.5}/>
           </a>
         </div>
@@ -225,20 +225,20 @@ function FixtureCard({ fixture, index }) {
       style={{
         borderRadius:22, overflow:'hidden',
         background: isTucc ? '#fff' : '#fff',
-        border: `1.5px solid ${isTucc ? 'rgba(26,92,56,.18)' : 'rgba(0,0,0,.07)'}`,
+        border: `1.5px solid ${isTucc ? 'rgba(37,99,235,.18)' : 'rgba(0,0,0,.07)'}`,
         boxShadow: isTucc
-          ? '0 8px 32px rgba(26,92,56,.12), 0 2px 8px rgba(0,0,0,.04)'
+          ? '0 8px 32px rgba(37,99,235,.12), 0 2px 8px rgba(0,0,0,.04)'
           : '0 4px 20px rgba(0,0,0,.06)',
       }}
     >
       {/* Top accent stripe */}
-      {isTucc && <div style={{ height:3, background:'linear-gradient(90deg, #1a5c38, #4ade80, #1a5c38)' }} />}
+      {isTucc && <div style={{ height:3, background:'linear-gradient(90deg, #2563eb, #60a5fa, #2563eb)' }} />}
 
       {/* Header */}
       <div style={{
         padding:'11px 16px',
         background: isTucc
-          ? 'linear-gradient(135deg, #0d3320 0%, #1a5c38 100%)'
+          ? 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)'
           : 'linear-gradient(135deg, #1e2533 0%, #2d3748 100%)',
         display:'flex', alignItems:'center', justifyContent:'space-between',
         position:'relative', overflow:'hidden',
@@ -254,12 +254,12 @@ function FixtureCard({ fixture, index }) {
           {isTucc && (
             <div style={{
               display:'flex', alignItems:'center', gap:5,
-              background: isHome ? 'rgba(74,222,128,.18)' : 'rgba(251,191,36,.18)',
-              border: `1px solid ${isHome ? 'rgba(74,222,128,.35)' : 'rgba(251,191,36,.35)'}`,
+              background: isHome ? 'rgba(96,165,250,.18)' : 'rgba(251,191,36,.18)',
+              border: `1px solid ${isHome ? 'rgba(96,165,250,.35)' : 'rgba(251,191,36,.35)'}`,
               borderRadius:8, padding:'3px 9px',
             }}>
-              {isHome ? <Home size={10} color="#4ade80" strokeWidth={2.5}/> : <Plane size={10} color="#fbbf24" strokeWidth={2.5}/>}
-              <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: isHome ? '#4ade80' : '#fbbf24' }}>
+              {isHome ? <Home size={10} color="#60a5fa" strokeWidth={2.5}/> : <Plane size={10} color="#fbbf24" strokeWidth={2.5}/>}
+              <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: isHome ? '#60a5fa' : '#fbbf24' }}>
                 {isHome ? 'Home' : 'Away'}
               </span>
             </div>
@@ -279,7 +279,7 @@ function FixtureCard({ fixture, index }) {
           <div style={{
             fontFamily:FONT, fontSize:12, lineHeight:1.3, textAlign:'center',
             fontWeight: tucc1 ? 800 : 600,
-            color: tucc1 ? '#1a5c38' : '#1e293b',
+            color: tucc1 ? '#2563eb' : '#1e293b',
           }}>
             {tucc1 && <span style={{ color:'#e9a020' }}>🏏 </span>}{shorten(fixture.team1)}
           </div>
@@ -287,16 +287,16 @@ function FixtureCard({ fixture, index }) {
 
         {/* VS divider */}
         <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
-          <div style={{ width:1, height:20, background: isTucc ? 'rgba(26,92,56,.15)' : '#e2e8f0' }}/>
+          <div style={{ width:1, height:20, background: isTucc ? 'rgba(37,99,235,.15)' : '#e2e8f0' }}/>
           <div style={{
             width:34, height:34, borderRadius:'50%',
-            background: isTucc ? 'linear-gradient(135deg,#1a5c38,#22744a)' : '#f1f5f9',
+            background: isTucc ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : '#f1f5f9',
             display:'flex', alignItems:'center', justifyContent:'center',
-            boxShadow: isTucc ? '0 3px 10px rgba(26,92,56,.3)' : 'none',
+            boxShadow: isTucc ? '0 3px 10px rgba(37,99,235,.3)' : 'none',
           }}>
             <span style={{ fontFamily:FONT, fontSize:9, fontWeight:900, color: isTucc ? '#fff' : '#94a3b8', letterSpacing:1.5 }}>VS</span>
           </div>
-          <div style={{ width:1, height:20, background: isTucc ? 'rgba(26,92,56,.15)' : '#e2e8f0' }}/>
+          <div style={{ width:1, height:20, background: isTucc ? 'rgba(37,99,235,.15)' : '#e2e8f0' }}/>
         </div>
 
         {/* Team 2 */}
@@ -305,7 +305,7 @@ function FixtureCard({ fixture, index }) {
           <div style={{
             fontFamily:FONT, fontSize:12, lineHeight:1.3, textAlign:'center',
             fontWeight: tucc2 ? 800 : 600,
-            color: tucc2 ? '#1a5c38' : '#1e293b',
+            color: tucc2 ? '#2563eb' : '#1e293b',
           }}>
             {tucc2 && <span style={{ color:'#e9a020' }}>🏏 </span>}{shorten(fixture.team2)}
           </div>
@@ -313,13 +313,13 @@ function FixtureCard({ fixture, index }) {
       </div>
 
       {/* Venue row */}
-      <div style={{ margin:'0 14px 14px', background: isTucc ? 'rgba(26,92,56,.05)' : '#f8fafc', borderRadius:12, padding:'9px 12px', display:'flex', alignItems:'center', gap:8 }}>
-        <MapPin size={13} color={isTucc ? '#1a5c38' : '#94a3b8'} strokeWidth={2} style={{ flexShrink:0 }}/>
-        <div style={{ flex:1, minWidth:0, fontFamily:FONT, fontSize:11, fontWeight:500, color: isTucc ? '#1a5c38' : '#64748b', lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:1, WebkitBoxOrient:'vertical' }}>
+      <div style={{ margin:'0 14px 14px', background: isTucc ? 'rgba(37,99,235,.05)' : '#f8fafc', borderRadius:12, padding:'9px 12px', display:'flex', alignItems:'center', gap:8 }}>
+        <MapPin size={13} color={isTucc ? '#2563eb' : '#94a3b8'} strokeWidth={2} style={{ flexShrink:0 }}/>
+        <div style={{ flex:1, minWidth:0, fontFamily:FONT, fontSize:11, fontWeight:500, color: isTucc ? '#2563eb' : '#64748b', lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:1, WebkitBoxOrient:'vertical' }}>
           {fixture.venue}
         </div>
         <a href={mapUrl} target="_blank" rel="noopener noreferrer"
-          style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4, background: isTucc ? '#1a5c38' : '#334155', borderRadius:8, padding:'5px 10px', fontFamily:FONT, fontSize:10, fontWeight:800, color:'#fff', textDecoration:'none' }}>
+          style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4, background: isTucc ? '#2563eb' : '#334155', borderRadius:8, padding:'5px 10px', fontFamily:FONT, fontSize:10, fontWeight:800, color:'#fff', textDecoration:'none' }}>
           Map <ExternalLink size={9} strokeWidth={2.5}/>
         </a>
       </div>
@@ -392,7 +392,7 @@ export default function FixturesPage() {
 
       {/* ── Hero Header ── */}
       <div style={{
-        background: 'linear-gradient(160deg, #071a0d 0%, #0d3320 40%, #1a5c38 100%)',
+        background: 'linear-gradient(160deg, #172554 0%, #1e3a8a 40%, #2563eb 100%)',
         padding:'24px 20px 36px', position:'relative', overflow:'hidden',
       }}>
         {/* Decorative elements */}
@@ -420,14 +420,14 @@ export default function FixturesPage() {
                 <div style={{ color:'rgba(255,255,255,.4)', fontSize:12, marginTop:3, display:'flex', alignItems:'center', gap:8 }}>
                   <span>BTCL Premier League 2026</span>
                   {!loading && (
-                    <span style={{ background:'rgba(74,222,128,.12)', border:'1px solid rgba(74,222,128,.25)', borderRadius:20, padding:'2px 8px', fontFamily:FONT, fontSize:10, fontWeight:700, color:'#4ade80' }}>
+                    <span style={{ background:'rgba(96,165,250,.12)', border:'1px solid rgba(96,165,250,.25)', borderRadius:20, padding:'2px 8px', fontFamily:FONT, fontSize:10, fontWeight:700, color:'#60a5fa' }}>
                       {fixtures.length} upcoming
                     </span>
                   )}
                   {source==='live' && (
                     <span style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
                       <motion.span animate={{ opacity:[1,.2,1] }} transition={{ duration:1.8, repeat:Infinity }}
-                        style={{ width:6, height:6, borderRadius:'50%', background:'#4ade80', boxShadow:'0 0 8px #4ade80', display:'inline-block' }}/>
+                        style={{ width:6, height:6, borderRadius:'50%', background:'#60a5fa', boxShadow:'0 0 8px #60a5fa', display:'inline-block' }}/>
                       <span style={{ color:'#86efac', fontWeight:700, fontSize:11 }}>Live</span>
                     </span>
                   )}
@@ -440,7 +440,7 @@ export default function FixturesPage() {
               <div style={{ display:'flex', gap:10 }}>
                 {[
                   { label:'Season',  value:SEASON_TOTAL, grad:'linear-gradient(135deg,#1e293b,#334155)', bar:'rgba(255,255,255,.3)' },
-                  { label:'Played',  value:PLAYED_HOME+PLAYED_AWAY, grad:'linear-gradient(135deg,#0d3320,#1a5c38)', bar:'#4ade80' },
+                  { label:'Played',  value:PLAYED_HOME+PLAYED_AWAY, grad:'linear-gradient(135deg,#1e3a8a,#2563eb)', bar:'#60a5fa' },
                   { label:'Home 🏠', value:PLAYED_HOME,   grad:'linear-gradient(135deg,#7c2d12,#ea580c)', bar:'#fdba74' },
                   { label:'Away ✈️', value:PLAYED_AWAY,   grad:'linear-gradient(135deg,#1e3a5f,#2563eb)', bar:'#93c5fd' },
                 ].map(({ label, value, grad, bar }, i) => (
@@ -481,7 +481,7 @@ export default function FixturesPage() {
           <div style={{ background:'#fff1f2', border:'1.5px solid #fecaca', borderRadius:16, padding:'16px 20px', marginBottom:20, textAlign:'center', color:'#be123c', fontSize:14, fontWeight:500 }}>
             Couldn't load fixtures.{' '}
             <button onClick={() => { setError(false); setLoading(true); load(true) }}
-              style={{ color:'#1a5c38', background:'none', border:'none', cursor:'pointer', fontWeight:800, fontFamily:FONT, fontSize:14 }}>
+              style={{ color:'#2563eb', background:'none', border:'none', cursor:'pointer', fontWeight:800, fontFamily:FONT, fontSize:14 }}>
               Try again →
             </button>
           </div>
@@ -521,14 +521,14 @@ export default function FixturesPage() {
               {/* Footer CTA */}
               <motion.div
                 initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:.4 }}
-                style={{ background:'linear-gradient(145deg, #071a0d, #0d3320, #1a5c38)', borderRadius:22, padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, boxShadow:'0 8px 32px rgba(7,26,13,.4)', marginTop:6, border:'1px solid rgba(255,255,255,.06)' }}
+                style={{ background:'linear-gradient(145deg, #172554, #1e3a8a, #2563eb)', borderRadius:22, padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, boxShadow:'0 8px 32px rgba(15,23,42,.4)', marginTop:6, border:'1px solid rgba(255,255,255,.06)' }}
               >
                 <div>
                   <div style={{ fontFamily:FONT, fontSize:14, fontWeight:800, color:'#fff' }}>Full season schedule</div>
                   <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.35)', marginTop:3 }}>View on play-cricket.com</div>
                 </div>
                 <a href="https://dtucc.play-cricket.com/Matches?tab=Fixture" target="_blank" rel="noopener noreferrer"
-                  style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(74,222,128,.15)', border:'1px solid rgba(74,222,128,.3)', color:'#4ade80', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, textDecoration:'none', flexShrink:0 }}>
+                  style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(96,165,250,.15)', border:'1px solid rgba(96,165,250,.3)', color:'#60a5fa', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, textDecoration:'none', flexShrink:0 }}>
                   Open <ExternalLink size={13} strokeWidth={2.5}/>
                 </a>
               </motion.div>

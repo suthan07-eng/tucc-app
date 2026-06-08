@@ -52,13 +52,13 @@ function PosterCard({ hero, type, delay = 0 }) {
   const isBatter = type === 'bat'
 
   // Colour palette
-  const accent    = isBatter ? '#4ade80' : '#fb7185'
-  const accentMid = isBatter ? '#22c55e' : '#f43f5e'
+  const accent    = isBatter ? '#60a5fa' : '#fb7185'
+  const accentMid = isBatter ? '#3b82f6' : '#f43f5e'
   const accentDk  = isBatter ? '#15803d' : '#be123c'
-  const glow      = isBatter ? 'rgba(74,222,128,.5)' : 'rgba(251,113,133,.5)'
-  const bgTop     = isBatter ? '#041a0d' : '#1a0308'
-  const bgMid     = isBatter ? '#0a3318' : '#3b0717'
-  const bgBot     = isBatter ? '#0f4422' : '#5c0e22'
+  const glow      = isBatter ? 'rgba(96,165,250,.5)' : 'rgba(251,113,133,.5)'
+  const bgTop     = isBatter ? '#030d1a' : '#1a0308'
+  const bgMid     = isBatter ? '#1e3a8a' : '#3b0717'
+  const bgBot     = isBatter ? '#1e40af' : '#5c0e22'
 
   const stat      = isBatter ? hero.runs   : hero.wickets
   const label     = isBatter ? 'RUNS'      : 'WICKETS'
@@ -234,7 +234,7 @@ function PosterCard({ hero, type, delay = 0 }) {
 
 function ShimmerCard() {
   return (
-    <div style={{ flex: 1, minWidth: 270, borderRadius: 28, overflow: 'hidden', background: 'linear-gradient(175deg,#0a1f0e,#0f2d14)', height: 480, position: 'relative' }}>
+    <div style={{ flex: 1, minWidth: 270, borderRadius: 28, overflow: 'hidden', background: 'linear-gradient(175deg,#0a1f0e,#1e3a8a)', height: 480, position: 'relative' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)', animation: 'shimmer 1.6s infinite' }} />
     </div>
   )

@@ -194,7 +194,7 @@ export default function TabMatch() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Import from BTCL banner */}
-      <div style={{ background: 'linear-gradient(135deg,#0f3825,#1a5c38)', borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: '#fff' }}>📡 Auto-import from BTCL</div>
           <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 3 }}>Fetches the next upcoming fixture and sets it as active</div>
@@ -202,7 +202,7 @@ export default function TabMatch() {
         <button
           onClick={importFromBTCL}
           disabled={importing}
-          style={{ background: importing ? 'rgba(255,255,255,.1)' : C.gold, color: importing ? 'rgba(255,255,255,.4)' : '#0f3825', border: 'none', borderRadius: 10, padding: '10px 18px', cursor: importing ? 'not-allowed' : 'pointer', fontFamily: FONT, fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', transition: 'all .2s' }}
+          style={{ background: importing ? 'rgba(255,255,255,.1)' : C.gold, color: importing ? 'rgba(255,255,255,.4)' : '#1e3a8a', border: 'none', borderRadius: 10, padding: '10px 18px', cursor: importing ? 'not-allowed' : 'pointer', fontFamily: FONT, fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', transition: 'all .2s' }}
         >
           {importing ? '⏳ Importing…' : '📡 Import Next Match'}
         </button>

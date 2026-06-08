@@ -25,7 +25,7 @@ function fmtDate(d) {
 
 const wrap = (body) => `
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#f2f7f4;padding:20px">
-  <div style="background:linear-gradient(135deg,#0f3825,#1a5c38);padding:22px 28px;border-radius:12px 12px 0 0">
+  <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:22px 28px;border-radius:12px 12px 0 0">
     <div style="display:flex;align-items:center;gap:12px">
       <span style="font-size:28px">🏏</span>
       <div>
@@ -88,7 +88,7 @@ export async function sendAvailabilityConfirmation(player, match, available, rea
     ? `<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin:16px 0">
         <div style="color:#16a34a;font-weight:700;font-size:16px">✅ Available</div>
        </div>
-       ${playerMessage ? `<div style="background:#e8f5ee;border-left:4px solid #1a5c38;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;color:#0f3825;font-size:14px"><strong>Player note:</strong> ${playerMessage}</div>` : ''}`
+       ${playerMessage ? `<div style="background:#e8f5ee;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;color:#1e3a8a;font-size:14px"><strong>Player note:</strong> ${playerMessage}</div>` : ''}`
     : `<div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:14px 18px;margin:16px 0">
         <div style="color:#dc2626;font-weight:700;font-size:16px">❌ Unavailable</div>
        </div>
@@ -129,7 +129,7 @@ export async function sendAdminAlert(match, player, available, reason) {
       <div style="color:#9ca3af;font-size:13px;margin-top:4px">${player.role || ''}</div>
     </div>
     <div style="margin-top:20px">
-      <a href="${adminPanelUrl}" style="background:#1a5c38;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">View Admin Panel →</a>
+      <a href="${adminPanelUrl}" style="background:#2563eb;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">View Admin Panel →</a>
     </div>
   `)
 
@@ -148,7 +148,7 @@ export async function sendMessageToPlayer(player, messageText, match, senderName
   const playerBody = `
     <p style="color:#374151;font-size:15px">Hi <strong>${player.name}</strong>,</p>
     <p style="color:#374151;font-size:15px;margin:12px 0 16px">You have a message from <strong>${from}</strong>:</p>
-    <blockquote style="border-left:4px solid #1a5c38;margin:0 0 20px;padding:14px 18px;background:#e8f5ee;border-radius:0 8px 8px 0;color:#0f3825;font-size:15px;font-style:italic">
+    <blockquote style="border-left:4px solid #2563eb;margin:0 0 20px;padding:14px 18px;background:#e8f5ee;border-radius:0 8px 8px 0;color:#1e3a8a;font-size:15px;font-style:italic">
       ${messageText}
     </blockquote>
     ${match ? matchBox(match) : ''}

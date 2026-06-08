@@ -472,7 +472,7 @@ export default function TabTeamSelection() {
                     <div
                       style={{
                         padding: '10px 14px 14px',
-                        borderTop: `1px solid rgba(26,92,56,.15)`,
+                        borderTop: `1px solid rgba(37,99,235,.15)`,
                       }}
                     >
                       <div

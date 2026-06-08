@@ -118,7 +118,7 @@ export default function TabPOTW() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* Info banner */}
-      <div style={{ background: 'linear-gradient(135deg,#0f3825,#1a5c38)', borderRadius: 14, padding: '14px 18px' }}>
+      <div style={{ background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', borderRadius: 14, padding: '14px 18px' }}>
         <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: '#fff' }}>🏆 Player of the Week</div>
         <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>
           Set after each match. Shown on the Home page and Stats page. Leave batter or bowler blank to hide that card.

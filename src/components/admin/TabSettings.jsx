@@ -93,7 +93,7 @@ export default function TabSettings() {
             <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: -6 }}>
               {[4, 6, 10].map((thresh, i) => (
                 <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, transition: 'background .3s',
-                  background: newPw.length >= thresh ? (i === 0 ? '#f87171' : i === 1 ? '#fbbf24' : '#22c55e') : C.gray1 }} />
+                  background: newPw.length >= thresh ? (i === 0 ? '#f87171' : i === 1 ? '#fbbf24' : '#3b82f6') : C.gray1 }} />
               ))}
               <span style={{ fontSize: 10, color: C.gray3, fontFamily: FONT, marginLeft: 4 }}>
                 {newPw.length < 4 ? 'Weak' : newPw.length < 10 ? 'Fair' : 'Strong'}
@@ -128,7 +128,7 @@ export default function TabSettings() {
                 ? C.gray1 : `linear-gradient(135deg,${C.greenDark},${C.green})`,
               color: !currentPw || !newPw || !confPw ? C.gray3 : '#fff',
               fontFamily: FONT, fontWeight: 700, fontSize: 14, marginTop: 4,
-              boxShadow: !currentPw || !newPw || !confPw ? 'none' : '0 4px 20px rgba(26,92,56,.35)',
+              boxShadow: !currentPw || !newPw || !confPw ? 'none' : '0 4px 20px rgba(37,99,235,.35)',
               transition: 'all .2s',
             }}
           >

@@ -84,7 +84,7 @@ function useFixCountdown(targetMs) {
 function FixLogoSmall({ logo, name, size = 52 }) {
   const [err, setErr] = useState(false)
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d']
+  const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d']
   let h = 0; for (const c of (name||'')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
   if (!logo || err) return (
@@ -329,7 +329,7 @@ function SeasonSnapshot() {
   const stats = row
     ? [
         { label: 'Played',  value: row.p   ?? '—', color: '#2563eb', bg: '#eff6ff' },
-        { label: 'Won',     value: row.w   ?? '—', color: '#15803d', bg: '#edfaf3' },
+        { label: 'Won',     value: row.w   ?? '—', color: '#15803d', bg: '#dcfce7' },
         { label: 'Lost',    value: row.l   ?? '—', color: '#be123c', bg: '#fff1f2' },
         { label: 'Points',  value: row.pts ?? '—', color: '#b45309', bg: '#fffbeb' },
         { label: 'NRR',     value: row.nrr ?? '—', color: '#6d28d9', bg: '#f5f3ff' },
@@ -337,7 +337,7 @@ function SeasonSnapshot() {
       ]
     : [
         { label: 'Played',  value: '5',    color: '#2563eb', bg: '#eff6ff' },
-        { label: 'Won',     value: '0',    color: '#15803d', bg: '#edfaf3' },
+        { label: 'Won',     value: '0',    color: '#15803d', bg: '#dcfce7' },
         { label: 'Lost',    value: '5',    color: '#be123c', bg: '#fff1f2' },
         { label: 'Points',  value: '33',   color: '#b45309', bg: '#fffbeb' },
         { label: 'NRR',     value: '-2.85',color: '#6d28d9', bg: '#f5f3ff' },
@@ -349,7 +349,7 @@ function SeasonSnapshot() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #1a5c38, #22744a)', borderRadius: 99 }} />
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #2563eb, #1d4ed8)', borderRadius: 99 }} />
           <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>2026 Season</span>
           <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, fontWeight: 500 }}>BTCL</span>
         </div>
@@ -416,7 +416,7 @@ function TopPerformers() {
   }
 
   const performers = [
-    topBat  && { name: topBat.name,   stat: topBat.runs,     label: 'Runs',    emoji: '🏏', bg: 'linear-gradient(145deg,#0a2e17,#1a5c38 60%,#22744a)', glow: 'rgba(26,92,56,.55)',  bar: '#4ade80' },
+    topBat  && { name: topBat.name,   stat: topBat.runs,     label: 'Runs',    emoji: '🏏', bg: 'linear-gradient(145deg,#172554,#2563eb 60%,#1d4ed8)', glow: 'rgba(37,99,235,.55)',  bar: '#60a5fa' },
     topBowl && { name: topBowl.name,  stat: topBowl.wickets, label: 'Wickets', emoji: '🎯', bg: 'linear-gradient(145deg,#2d0814,#be123c 60%,#f43f5e)', glow: 'rgba(190,18,60,.5)',  bar: '#fda4af' },
   ].filter(Boolean)
 
@@ -779,7 +779,7 @@ export default function Home() {
                 <motion.div variants={fadeUp} style={{ color: C.gold, fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10, opacity: 0.9 }}>
                   🏏 {displayFormat} · {activeMatch ? 'Active Match' : 'Next Match'}
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, verticalAlign: 'middle' }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block', boxShadow: '0 0 0 2px rgba(74,222,128,0.3)', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', display: 'inline-block', boxShadow: '0 0 0 2px rgba(96,165,250,0.3)', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
                     <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>live</span>
                   </span>
                 </motion.div>
@@ -830,10 +830,10 @@ export default function Home() {
           whileHover={{ scale: 1.01 }}
           style={{
             width: '100%',
-            background: 'linear-gradient(135deg, #1a5c38, #22744a)',
+            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
             color: '#fff', border: 'none', borderRadius: 16,
             padding: '16px 20px', fontFamily: FONT, fontSize: 15, fontWeight: 800,
-            cursor: 'pointer', boxShadow: '0 6px 20px rgba(26,92,56,.35)',
+            cursor: 'pointer', boxShadow: '0 6px 20px rgba(37,99,235,.35)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             marginTop: 4,
           }}
@@ -843,7 +843,7 @@ export default function Home() {
 
         {/* ── Availability Cards Heading ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, marginBottom: 2 }}>
-          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#22c55e,#15803d)', borderRadius: 99 }} />
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #2563eb, #1d4ed8)', borderRadius: 99 }} />
           <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Next Match Availability</span>
           <span style={{ fontSize: 13 }}>📋</span>
         </div>
@@ -857,7 +857,7 @@ export default function Home() {
         >
           {[
             { label: 'Available',   count: countAvailable,   changed: availChanged,
-              grad: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
+              grad: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
               shadow: '0 6px 20px rgba(21,128,61,.3)', icon: '✅' },
             { label: 'Unavailable', count: countUnavailable, changed: unavailChanged,
               grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)',
@@ -925,7 +925,7 @@ export default function Home() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #1a5c38, #22744a)', borderRadius: 99 }} />
+              <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #2563eb, #1d4ed8)', borderRadius: 99 }} />
               <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Squad</span>
               {!loading && (
                 <span style={{ background: C.greenBg, color: C.green, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
@@ -1045,7 +1045,7 @@ export default function Home() {
               <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#e9a020,#f59e0b,transparent)' }}/>
               <div style={{ padding: '16px 18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block' }}/>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 8px #60a5fa', display: 'inline-block' }}/>
                   <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,.6)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
                     {match ? 'Active Match' : 'Next Match'} · Match Details
                   </span>

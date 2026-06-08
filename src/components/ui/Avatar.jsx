@@ -2,7 +2,7 @@ import { C, FONT } from '../../constants'
 
 // Richer, more distinct palette
 const PALETTE = [
-  '#1a5c38', // brand green
+  '#2563eb', // brand green
   '#7c3aed', // violet
   '#0369a1', // ocean blue
   '#b45309', // amber

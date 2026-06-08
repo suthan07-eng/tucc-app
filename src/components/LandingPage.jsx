@@ -50,7 +50,7 @@ const getWmo = code => WMO.find(w => code <= w.max) || WMO[WMO.length-1]
 function TeamLogo({ logo, name, size = 60 }) {
   const [err, setErr] = useState(false)
   const ini = (name||'??').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()
-  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#15803d','#9d174d']
+  const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#15803d','#9d174d']
   let h=0; for (const c of (name||'')) h=(h*31+c.charCodeAt(0))&0xffffff
   const bg = PALETTE[Math.abs(h)%PALETTE.length]
   if (!logo||err) return (
@@ -156,9 +156,9 @@ function NextMatchCard({ nav }) {
               style={{ width:7, height:7, borderRadius:'50%', background:'#86efac', boxShadow:'0 0 8px #86efac' }}/>
             <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'rgba(255,255,255,.75)', letterSpacing:1.2, textTransform:'uppercase' }}>Next Match</span>
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:5, background: isHome?'rgba(74,222,128,.15)':'rgba(251,191,36,.15)', border:`1px solid ${isHome?'rgba(74,222,128,.3)':'rgba(251,191,36,.3)'}`, borderRadius:20, padding:'4px 12px' }}>
-            {isHome ? <Home size={10} color="#4ade80" strokeWidth={2.5}/> : <Plane size={10} color="#fbbf24" strokeWidth={2.5}/>}
-            <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: isHome?'#4ade80':'#fbbf24' }}>{isHome?'Home':'Away'}</span>
+          <div style={{ display:'flex', alignItems:'center', gap:5, background: isHome?'rgba(96,165,250,.15)':'rgba(251,191,36,.15)', border:`1px solid ${isHome?'rgba(96,165,250,.3)':'rgba(251,191,36,.3)'}`, borderRadius:20, padding:'4px 12px' }}>
+            {isHome ? <Home size={10} color="#60a5fa" strokeWidth={2.5}/> : <Plane size={10} color="#fbbf24" strokeWidth={2.5}/>}
+            <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: isHome?'#60a5fa':'#fbbf24' }}>{isHome?'Home':'Away'}</span>
           </div>
         </div>
 
@@ -334,13 +334,13 @@ export default function LandingPage() {
   return (
     <div style={{
       minHeight:'100vh', width:'100%',
-      background:'linear-gradient(160deg, #020a05 0%, #071a0d 30%, #0c2e18 65%, #0f1f16 100%)',
+      background:'linear-gradient(160deg, #020a05 0%, #172554 30%, #0c2e18 65%, #0f1f16 100%)',
       display:'flex', flexDirection:'column', alignItems:'center',
       position:'relative', overflow:'hidden', fontFamily:FONT,
     }}>
       {/* Animated blobs */}
       {[
-        { w:340,h:340,top:'-90px',left:'-90px',color:'rgba(26,92,56,.5)' },
+        { w:340,h:340,top:'-90px',left:'-90px',color:'rgba(37,99,235,.5)' },
         { w:260,h:260,bottom:'80px',right:'-60px',color:'rgba(34,116,74,.4)' },
         { w:180,h:180,top:'45%',left:'65%',color:'rgba(233,160,32,.14)' },
       ].map((b,i)=>(
@@ -362,7 +362,7 @@ export default function LandingPage() {
       <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px)', backgroundSize:'40px 40px' }}/>
 
       {/* Premium radial spotlight from top */}
-      <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:700, height:500, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 0%, rgba(26,92,56,.35) 0%, transparent 70%)', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:700, height:500, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 0%, rgba(37,99,235,.35) 0%, transparent 70%)', pointerEvents:'none' }}/>
 
       {/* Gold vignette bottom */}
       <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:500, height:300, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 100%, rgba(233,160,32,.08) 0%, transparent 70%)', pointerEvents:'none' }}/>
@@ -418,7 +418,7 @@ export default function LandingPage() {
           <div style={{ display:'flex', background:'rgba(0,0,0,.3)', borderRadius:13, padding:4, marginBottom:22 }}>
             {['login','signup'].map(m=>(
               <button key={m} onClick={()=>{setMode(m);setErr('')}}
-                style={{ flex:1, padding:'10px 0', borderRadius:10, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, transition:'all .25s', background: mode===m?'linear-gradient(135deg,#1a5c38,#22744a)':'transparent', color: mode===m?'#fff':'rgba(255,255,255,.38)', boxShadow: mode===m?'0 4px 16px rgba(26,92,56,.45)':'none' }}>
+                style={{ flex:1, padding:'10px 0', borderRadius:10, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, transition:'all .25s', background: mode===m?'linear-gradient(135deg,#2563eb,#1d4ed8)':'transparent', color: mode===m?'#fff':'rgba(255,255,255,.38)', boxShadow: mode===m?'0 4px 16px rgba(37,99,235,.45)':'none' }}>
                 {m==='login'?'🔐 Login':'✨ Join Club'}
               </button>
             ))}
@@ -455,7 +455,7 @@ export default function LandingPage() {
             </AnimatePresence>
 
             <motion.button type="submit" disabled={busy} whileTap={{ scale:.97 }} whileHover={{ scale:1.01 }}
-              style={{ marginTop:6, padding:'16px 0', borderRadius:14, border:'none', cursor: busy?'not-allowed':'pointer', background: busy?'rgba(255,255,255,.1)':'linear-gradient(135deg,#1a5c38 0%,#22744a 50%,#1a5c38 100%)', color:'#fff', fontFamily:FONT, fontSize:15, fontWeight:800, boxShadow: busy?'none':'0 8px 28px rgba(26,92,56,.55)', transition:'all .25s', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+              style={{ marginTop:6, padding:'16px 0', borderRadius:14, border:'none', cursor: busy?'not-allowed':'pointer', background: busy?'rgba(255,255,255,.1)':'linear-gradient(135deg,#2563eb 0%,#1d4ed8 50%,#2563eb 100%)', color:'#fff', fontFamily:FONT, fontSize:15, fontWeight:800, boxShadow: busy?'none':'0 8px 28px rgba(37,99,235,.55)', transition:'all .25s', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
               {busy
                 ? <motion.div animate={{ rotate:360 }} transition={{ duration:1, repeat:Infinity, ease:'linear' }} style={{ width:18, height:18, border:'2px solid rgba(255,255,255,.3)', borderTopColor:'#fff', borderRadius:'50%' }}/>
                 : <>{mode==='login'?'🚀 Login to Club Portal':'🏏 Create My Account'}<ChevronRight size={16}/></>

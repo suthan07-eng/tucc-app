@@ -27,7 +27,7 @@ const MEDALS   = ['🥇', '🥈', '🥉']
 
 // Per-tab color themes
 const TAB_THEMES = {
-  batting:  { color: '#1a5c38', light: '#22744a', bg: '#edf7f1', grad: 'linear-gradient(135deg, #1a5c38 0%, #22744a 100%)' },
+  batting:  { color: '#2563eb', light: '#1d4ed8', bg: '#eff6ff', grad: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' },
   bowling:  { color: '#be123c', light: '#f43f5e', bg: '#fff1f2', grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' },
   fielding: { color: '#6d28d9', light: '#8b5cf6', bg: '#f5f3ff', grad: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)' },
   matchlog: { color: '#1d4ed8', light: '#3b82f6', bg: '#eff6ff', grad: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' },
@@ -67,13 +67,13 @@ function RunsBarChart({ data, color }) {
   if (!top.length) return null
 
   const BAR_COLORS = [
-    '#1a5c38','#22744a','#2e8b5c','#3aa870','#059669','#0d9488','#0891b2','#0369a1',
+    '#2563eb','#1d4ed8','#3b82f6','#60a5fa','#059669','#0d9488','#0891b2','#0369a1',
   ]
 
   return (
     <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#1a5c38,#22744a)', borderRadius: 99 }} />
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#2563eb,#1d4ed8)', borderRadius: 99 }} />
         <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Runs This Season</span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
@@ -345,7 +345,7 @@ const cellStyle = { fontFamily: FONT, fontSize: 13, color: C.gray5, textAlign: '
 
 // ── Avatar ────────────────────────────────────────────────
 function Avatar({ name = '', size = 32 }) {
-  const PALETTE = ['#1a5c38','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9']
+  const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9']
   let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
@@ -546,7 +546,7 @@ function BattingDashboard({ stats, loading }) {
       <motion.div variants={stagger} initial="hidden" animate="visible"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 28 }}
       >
-        <StatCard icon={TrendingUp} label="Total Runs"      value={totalRuns}    sub={`${sorted.length} batters`}                 gradient="linear-gradient(135deg, #1a5c38, #22744a)" loading={false} />
+        <StatCard icon={TrendingUp} label="Total Runs"      value={totalRuns}    sub={`${sorted.length} batters`}                 gradient="linear-gradient(135deg, #2563eb, #1d4ed8)" loading={false} />
         <StatCard icon={Award}      label="Half Centuries"  value={totalFifties} sub="50+ scores this season"                     gradient="linear-gradient(135deg, #b45309, #f59e0b)" loading={false} />
         <StatCard icon={Zap}        label="Sixes Hit"       value={totalSixes}   sub="maximums this season"                       gradient="linear-gradient(135deg, #6d28d9, #8b5cf6)" loading={false} />
         <StatCard icon={BarChart2}  label="Top Strike Rate" value={topSR ? fmt2(topSR.bat_strike_rate) : '—'} sub={topSR?.player_name?.split(' ')[0] || '—'} gradient="linear-gradient(135deg, #0369a1, #0ea5e9)" loading={false} />
@@ -665,7 +665,7 @@ function BowlingDashboard({ stats, loading }) {
         style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 28 }}
       >
         <StatCard icon={Target}    label="Total Wickets"   value={totalWkts}    sub={`${sorted.length} bowlers`}                  gradient="linear-gradient(135deg, #be123c, #f43f5e)" loading={false} />
-        <StatCard icon={BarChart2} label="Overs Bowled"    value={fmt1(totalOvers)} sub="total this season"                       gradient="linear-gradient(135deg, #1a5c38, #22744a)" loading={false} />
+        <StatCard icon={BarChart2} label="Overs Bowled"    value={fmt1(totalOvers)} sub="total this season"                       gradient="linear-gradient(135deg, #2563eb, #1d4ed8)" loading={false} />
         <StatCard icon={Zap}       label="Best Economy"    value={bestEcon ? fmt2(bestEcon.bowl_economy) : '—'} sub={bestEcon?.player_name?.split(' ')[0] || '—'} gradient="linear-gradient(135deg, #0891b2, #06b6d4)" loading={false} />
         <StatCard icon={Award}     label="5-Wicket Hauls"  value={fiveWkts}     sub="season total"                               gradient="linear-gradient(135deg, #b45309, #f59e0b)" loading={false} />
       </motion.div>
@@ -1002,7 +1002,7 @@ export default function Stats() {
                   border: `1px solid ${source === 'live' ? 'rgba(21,128,61,.5)' : 'rgba(233,160,32,.4)'}`,
                   borderRadius: 20, padding: '5px 12px',
                 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: source === 'live' ? '#4ade80' : C.gold, boxShadow: source === 'live' ? '0 0 6px #4ade80' : 'none' }} />
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: source === 'live' ? '#60a5fa' : C.gold, boxShadow: source === 'live' ? '0 0 6px #60a5fa' : 'none' }} />
                   <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: source === 'live' ? '#86efac' : C.gold }}>
                     {source === 'live' ? 'Live · play-cricket.com' : `Excel import · Updated ${updatedAt ? new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}`}
                   </span>

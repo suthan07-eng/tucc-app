@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext'
 const EASE = [0.23, 1, 0.32, 1]
 
 const MENU_LINKS = [
-  { path: '/',             label: 'Home',         Icon: Home,          color: '#22744a', bg: '#edf7f1' },
+  { path: '/',             label: 'Home',         Icon: Home,          color: '#1d4ed8', bg: '#eff6ff' },
   { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: '#fffbeb' },
   { path: '/fixtures',     label: 'Fixtures',     Icon: CalendarDays,  color: '#1d4ed8', bg: '#eff6ff' },
   { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: '#e0f2fe' },
@@ -241,7 +241,7 @@ export default function Nav() {
                 {/* Season badge */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(233,160,32,.18)', border: '1px solid rgba(233,160,32,.35)', borderRadius: 20, padding: '5px 12px' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 6px #60a5fa', animation: 'pendingPulse 1.8s ease-in-out infinite' }} />
                     <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.gold }}>BTCL 2026 Season</span>
                   </div>
                 </div>

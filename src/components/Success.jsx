@@ -42,7 +42,7 @@ export default function Success() {
           <motion.div variants={popIn} style={{ marginBottom: 28 }}>
             <div style={{
               width: 88, height: 88, borderRadius: '50%',
-              background: `linear-gradient(135deg, ${C.ok} 0%, #22c55e 100%)`,
+              background: `linear-gradient(135deg, ${C.ok} 0%, #3b82f6 100%)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto',
               boxShadow: `0 8px 32px rgba(21,128,61,.3), 0 0 0 12px ${C.okBg}`,
