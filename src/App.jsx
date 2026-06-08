@@ -12,6 +12,7 @@ import FixturesPage from './components/FixturesPage'
 import PlayersPage from './components/PlayersPage'
 import AdminLogin from './components/admin/AdminLogin'
 import AdminDashboard from './components/admin/AdminDashboard'
+import ResetPassword from './components/ResetPassword'
 
 // Protects all player-facing routes — redirects to /login if not signed in
 function RequireAuth({ children }) {
@@ -42,6 +43,9 @@ function AppRoutes() {
       <Route path="/results" element={<RequireAuth><ResultsPage /></RequireAuth>} />
       <Route path="/fixtures" element={<RequireAuth><FixturesPage /></RequireAuth>} />
       <Route path="/players" element={<RequireAuth><PlayersPage /></RequireAuth>} />
+
+      {/* Password reset (public — accessed via email link) */}
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Admin */}
       <Route path="/admin/login" element={<AdminLogin />} />

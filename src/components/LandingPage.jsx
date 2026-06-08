@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../supabase'
 import { FONT } from '../constants'
 import { Eye, EyeOff, Mail, Lock, User, Phone, ChevronRight, MapPin, Clock, Calendar, Home, Plane, ExternalLink } from 'lucide-react'
 
@@ -304,15 +305,24 @@ export default function LandingPage() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone]       = useState('')
-  const [showPass, setShowPass] = useState(false)
-  const [err, setErr]           = useState('')
-  const [busy, setBusy]         = useState(false)
+  const [showPass, setShowPass]     = useState(false)
+  const [err, setErr]               = useState('')
+  const [busy, setBusy]             = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
 
   useEffect(() => { if (!loading && user) nav('/', { replace: true }) }, [user, loading])
 
   async function handleSubmit(e) {
     e.preventDefault(); setErr(''); setBusy(true)
     try {
+      if (mode === 'forgot') {
+        await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+        setForgotSent(true)
+        setBusy(false)
+        return
+      }
       if (mode === 'login') {
         await signIn(email, password)
         nav('/', { replace: true })
@@ -415,54 +425,98 @@ export default function LandingPage() {
             boxShadow:'0 40px 80px rgba(0,0,0,.45)',
           }}
         >
-          {/* Tab */}
-          <div style={{ display:'flex', background:'rgba(0,0,0,.3)', borderRadius:13, padding:4, marginBottom:22 }}>
-            {['login','signup'].map(m=>(
-              <button key={m} onClick={()=>{setMode(m);setErr('')}}
-                style={{ flex:1, padding:'10px 0', borderRadius:10, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, transition:'all .25s', background: mode===m?'linear-gradient(135deg,#2563eb,#1d4ed8)':'transparent', color: mode===m?'#fff':'rgba(255,255,255,.38)', boxShadow: mode===m?'0 4px 16px rgba(37,99,235,.45)':'none' }}>
-                {m==='login'?'🔐 Login':'✨ Join Club'}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:11 }}>
-            <AnimatePresence mode="wait">
-              {mode==='signup' && (
-                <motion.div key="su" initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} exit={{ opacity:0, height:0 }}
-                  style={{ overflow:'hidden', display:'flex', flexDirection:'column', gap:11 }}>
-                  <Field icon={User} type="text" placeholder="Full Name" value={fullName} onChange={e=>setFullName(e.target.value)} autoComplete="name"/>
-                  <Field icon={Phone} type="tel" placeholder="Phone (optional)" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel"/>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <Field icon={Mail} type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/>
-            <Field icon={Lock} type={showPass?'text':'password'} placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)}
-              autoComplete={mode==='login'?'current-password':'new-password'}
-              rightEl={
-                <button type="button" onClick={()=>setShowPass(s=>!s)} style={{ background:'none', border:'none', cursor:'pointer', padding:0, display:'flex' }}>
-                  {showPass?<EyeOff size={15} color="rgba(255,255,255,.35)"/>:<Eye size={15} color="rgba(255,255,255,.35)"/>}
+          {/* Tab — hide when in forgot mode */}
+          {mode !== 'forgot' && (
+            <div style={{ display:'flex', background:'rgba(0,0,0,.3)', borderRadius:13, padding:4, marginBottom:22 }}>
+              {['login','signup'].map(m=>(
+                <button key={m} onClick={()=>{setMode(m);setErr('');setForgotSent(false)}}
+                  style={{ flex:1, padding:'10px 0', borderRadius:10, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, transition:'all .25s', background: mode===m?'linear-gradient(135deg,#2563eb,#1d4ed8)':'transparent', color: mode===m?'#fff':'rgba(255,255,255,.38)', boxShadow: mode===m?'0 4px 16px rgba(37,99,235,.45)':'none' }}>
+                  {m==='login'?'🔐 Login':'✨ Join Club'}
                 </button>
-              }
-            />
+              ))}
+            </div>
+          )}
 
-            <AnimatePresence>
-              {err && (
-                <motion.div initial={{ opacity:0, y:-4 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
-                  style={{ background:'rgba(200,48,42,.15)', border:'1px solid rgba(200,48,42,.3)', borderRadius:10, padding:'10px 14px', fontSize:13, color:'#f87171', fontFamily:FONT }}>
-                  {err}
-                </motion.div>
+          {/* Forgot password header */}
+          {mode === 'forgot' && (
+            <div style={{ marginBottom:20 }}>
+              <button onClick={()=>{setMode('login');setErr('');setForgotSent(false)}}
+                style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,.45)', fontFamily:FONT, fontSize:13, fontWeight:600, padding:0, display:'flex', alignItems:'center', gap:5, marginBottom:14 }}>
+                ← Back to Login
+              </button>
+              <div style={{ color:'#fff', fontSize:17, fontWeight:800, marginBottom:4 }}>Forgot Password?</div>
+              <div style={{ color:'rgba(255,255,255,.4)', fontSize:13 }}>Enter your email and we'll send you a reset link.</div>
+            </div>
+          )}
+
+          {/* Forgot sent confirmation */}
+          {mode === 'forgot' && forgotSent ? (
+            <motion.div initial={{ opacity:0, scale:0.97 }} animate={{ opacity:1, scale:1 }}
+              style={{ textAlign:'center', padding:'20px 0' }}>
+              <div style={{ fontSize:46, marginBottom:10 }}>📧</div>
+              <div style={{ color:'#86efac', fontSize:16, fontWeight:800, marginBottom:6 }}>Reset email sent!</div>
+              <div style={{ color:'rgba(255,255,255,.45)', fontSize:13, lineHeight:1.6 }}>
+                Check your inbox at <strong style={{ color:'rgba(255,255,255,.7)' }}>{email}</strong><br/>
+                Click the link in the email to set a new password.
+              </div>
+              <button onClick={()=>{setMode('login');setForgotSent(false);setEmail('')}}
+                style={{ marginTop:18, background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:10, padding:'10px 20px', color:'rgba(255,255,255,.7)', fontFamily:FONT, fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                Back to Login
+              </button>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:11 }}>
+              <AnimatePresence mode="wait">
+                {mode==='signup' && (
+                  <motion.div key="su" initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} exit={{ opacity:0, height:0 }}
+                    style={{ overflow:'hidden', display:'flex', flexDirection:'column', gap:11 }}>
+                    <Field icon={User} type="text" placeholder="Full Name" value={fullName} onChange={e=>setFullName(e.target.value)} autoComplete="name"/>
+                    <Field icon={Phone} type="tel" placeholder="Phone (optional)" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel"/>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Field icon={Mail} type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/>
+
+              {mode !== 'forgot' && (
+                <Field icon={Lock} type={showPass?'text':'password'} placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)}
+                  autoComplete={mode==='login'?'current-password':'new-password'}
+                  rightEl={
+                    <button type="button" onClick={()=>setShowPass(s=>!s)} style={{ background:'none', border:'none', cursor:'pointer', padding:0, display:'flex' }}>
+                      {showPass?<EyeOff size={15} color="rgba(255,255,255,.35)"/>:<Eye size={15} color="rgba(255,255,255,.35)"/>}
+                    </button>
+                  }
+                />
               )}
-            </AnimatePresence>
 
-            <motion.button type="submit" disabled={busy} whileTap={{ scale:.97 }} whileHover={{ scale:1.01 }}
-              style={{ marginTop:6, padding:'16px 0', borderRadius:14, border:'none', cursor: busy?'not-allowed':'pointer', background: busy?'rgba(255,255,255,.1)':'linear-gradient(135deg,#2563eb 0%,#1d4ed8 50%,#2563eb 100%)', color:'#fff', fontFamily:FONT, fontSize:15, fontWeight:800, boxShadow: busy?'none':'0 8px 28px rgba(37,99,235,.55)', transition:'all .25s', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-              {busy
-                ? <motion.div animate={{ rotate:360 }} transition={{ duration:1, repeat:Infinity, ease:'linear' }} style={{ width:18, height:18, border:'2px solid rgba(255,255,255,.3)', borderTopColor:'#fff', borderRadius:'50%' }}/>
-                : <>{mode==='login'?'🚀 Login to Club Portal':'🏏 Create My Account'}<ChevronRight size={16}/></>
-              }
-            </motion.button>
-          </form>
+              {/* Forgot password link — only on login mode */}
+              {mode === 'login' && (
+                <div style={{ textAlign:'right', marginTop:-4 }}>
+                  <button type="button" onClick={()=>{setMode('forgot');setErr('');setForgotSent(false)}}
+                    style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,.38)', fontFamily:FONT, fontSize:12, fontWeight:600, padding:0, textDecoration:'underline' }}>
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+
+              <AnimatePresence>
+                {err && (
+                  <motion.div initial={{ opacity:0, y:-4 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+                    style={{ background:'rgba(200,48,42,.15)', border:'1px solid rgba(200,48,42,.3)', borderRadius:10, padding:'10px 14px', fontSize:13, color:'#f87171', fontFamily:FONT }}>
+                    {err}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.button type="submit" disabled={busy} whileTap={{ scale:.97 }} whileHover={{ scale:1.01 }}
+                style={{ marginTop:6, padding:'16px 0', borderRadius:14, border:'none', cursor: busy?'not-allowed':'pointer', background: busy?'rgba(255,255,255,.1)':'linear-gradient(135deg,#2563eb 0%,#1d4ed8 50%,#2563eb 100%)', color:'#fff', fontFamily:FONT, fontSize:15, fontWeight:800, boxShadow: busy?'none':'0 8px 28px rgba(37,99,235,.55)', transition:'all .25s', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                {busy
+                  ? <motion.div animate={{ rotate:360 }} transition={{ duration:1, repeat:Infinity, ease:'linear' }} style={{ width:18, height:18, border:'2px solid rgba(255,255,255,.3)', borderTopColor:'#fff', borderRadius:'50%' }}/>
+                  : <>{mode==='login'?'🚀 Login to Club Portal':mode==='forgot'?'📧 Send Reset Link':'🏏 Create My Account'}<ChevronRight size={16}/></>
+                }
+              </motion.button>
+            </form>
+          )}
         </motion.div>
 
         {/* ── Admin + members note (between auth and next match) ── */}
