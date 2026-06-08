@@ -152,11 +152,6 @@ function PosterCard({ hero, type, delay = 0 }) {
               <span style={{ fontSize: 46 }}>👤</span>
             )}
           </div>
-          {/* Small crown on top */}
-          <div style={{
-            position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
-            fontSize: 20, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.8))',
-          }}>👑</div>
         </div>
 
         {/* Name */}
