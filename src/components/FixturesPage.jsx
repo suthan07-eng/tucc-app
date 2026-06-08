@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Clock, ArrowLeft, ExternalLink, RotateCw, Home, Plane, Calendar, Zap } from 'lucide-react'
+import { MapPin, Clock, ArrowLeft, ExternalLink, RotateCw, Home, Plane, Calendar, Zap, ChevronRight } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
 
-const EASE = [0.16, 1, 0.3, 1]
+const EASE = [0.32, 0.72, 0, 1]
 const OUR_NAMES = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
 const isOurs = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes(t.toLowerCase()))
 const shorten = n =>
@@ -40,33 +40,53 @@ function useCountdown(targetDate) {
   }
 }
 
-// ── Team Logo ─────────────────────────────────────────────────
-function TeamLogo({ logo, name, size = 60 }) {
+// ── Team Logo — always circular ───────────────────────────────
+function TeamLogo({ logo, name, size = 68, ring = 'rgba(255,255,255,.2)', glow = false }) {
   const [error, setError] = useState(false)
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#15803d','#9d174d']
   let h = 0; for (const c of (name||'')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
 
-  if (!logo || error) return (
-    <div style={{
-      width: size, height: size, borderRadius: size * 0.24, flexShrink: 0,
-      background: `linear-gradient(145deg, ${bg}dd, ${bg}88)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: FONT, fontWeight: 900, fontSize: Math.round(size * 0.3),
-      color: '#fff', boxShadow: `0 4px 16px ${bg}44`,
-    }}>{initials}</div>
-  )
   return (
-    <div style={{
-      width: size, height: size, borderRadius: size * 0.24, flexShrink: 0,
-      background: '#fff', overflow: 'hidden',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 4px 18px rgba(0,0,0,.12)',
-      border: '2px solid rgba(255,255,255,.9)',
-    }}>
-      <img src={logo} alt={name} style={{ width: '88%', height: '88%', objectFit: 'contain' }}
-        onError={() => setError(true)} />
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      {/* Glow ring for "our team" */}
+      {glow && (
+        <motion.div
+          animate={{ scale: [1, 1.15, 1], opacity: [0.45, 0.1, 0.45] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            position: 'absolute', inset: -6, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(233,160,32,.5) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+      {/* Outer ring shell */}
+      <div style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
+        background: 'rgba(255,255,255,.06)',
+        border: `2px solid ${ring}`,
+        boxShadow: glow
+          ? '0 0 0 3px rgba(233,160,32,.18), 0 8px 28px rgba(0,0,0,.4)'
+          : '0 4px 20px rgba(0,0,0,.3)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 3,
+      }}>
+        {/* Inner circle */}
+        <div style={{
+          width: '100%', height: '100%', borderRadius: '50%',
+          background: (!logo || error) ? `linear-gradient(145deg, ${bg}dd, ${bg}88)` : '#fff',
+          overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,.15)',
+        }}>
+          {(!logo || error)
+            ? <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: Math.round(size * 0.28), color: '#fff' }}>{initials}</span>
+            : <img src={logo} alt={name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} onError={() => setError(true)} />
+          }
+        </div>
+      </div>
     </div>
   )
 }
@@ -74,17 +94,18 @@ function TeamLogo({ logo, name, size = 60 }) {
 // ── Countdown Unit ────────────────────────────────────────────
 function CountUnit({ value, label }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 52 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{
-        background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.15)',
-        borderRadius: 12, padding: '8px 12px', minWidth: 52, textAlign: 'center',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(255,255,255,.1)',
+        border: '1px solid rgba(255,255,255,.14)',
+        borderRadius: 14, padding: '10px 14px', minWidth: 58, textAlign: 'center',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,.08)',
       }}>
-        <div style={{ fontFamily: FONT, fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+        <div style={{ fontFamily: FONT, fontSize: 28, fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
           {String(value).padStart(2, '0')}
         </div>
       </div>
-      <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.45)', textTransform: 'uppercase', letterSpacing: 1, marginTop: 5 }}>
+      <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,.4)', textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 6 }}>
         {label}
       </div>
     </div>
@@ -95,113 +116,127 @@ function CountUnit({ value, label }) {
 function NextMatchBanner({ fixture, countdown }) {
   const isHome = isOurs(fixture.team1)
   const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(fixture.venue)}`
+  const tucc1  = isOurs(fixture.team1)
+  const tucc2  = isOurs(fixture.team2)
 
   return (
+    // Outer shell (double bezel)
     <motion.div
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.6, ease: EASE }}
       style={{
-        borderRadius: 28, overflow: 'hidden', marginBottom: 8,
-        background: 'linear-gradient(145deg, #172554 0%, #2563eb 55%, #1d4ed8 100%)',
-        boxShadow: '0 20px 60px rgba(10,42,20,.6), 0 0 0 1px rgba(255,255,255,.07)',
+        borderRadius: 28, padding: 3, marginBottom: 8,
+        background: 'rgba(255,255,255,.07)',
+        border: '1px solid rgba(255,255,255,.12)',
+        boxShadow: '0 28px 72px rgba(10,20,60,.65), 0 0 0 1px rgba(255,255,255,.04)',
         position: 'relative',
       }}
     >
-      {/* Animated orbs */}
-      <motion.div animate={{ scale: [1,1.3,1], opacity:[.2,.06,.2] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
-        style={{ position:'absolute', top:-50, right:-50, width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,.12)', pointerEvents:'none' }} />
-      <motion.div animate={{ scale:[1,1.2,1], opacity:[.15,.04,.15] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut', delay:2 }}
-        style={{ position:'absolute', bottom:-40, left:-40, width:140, height:140, borderRadius:'50%', background:'rgba(233,160,32,.15)', pointerEvents:'none' }} />
+      {/* Inner core */}
+      <div style={{
+        borderRadius: 26, overflow: 'hidden', position: 'relative',
+        background: 'linear-gradient(145deg, #060d2e 0%, #0f1e5a 45%, #1a1060 75%, #0a0730 100%)',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,.08)',
+      }}>
+        {/* Ambient orbs */}
+        <motion.div animate={{ scale:[1,1.3,1], opacity:[.18,.05,.18] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
+          style={{ position:'absolute', top:-50, right:-50, width:200, height:200, borderRadius:'50%', background:'rgba(99,102,241,.3)', filter:'blur(50px)', pointerEvents:'none' }}/>
+        <motion.div animate={{ scale:[1,1.2,1], opacity:[.14,.04,.14] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut', delay:2 }}
+          style={{ position:'absolute', bottom:-40, left:-40, width:160, height:160, borderRadius:'50%', background:'rgba(233,160,32,.2)', filter:'blur(40px)', pointerEvents:'none' }}/>
 
-      {/* Gold shimmer bar */}
-      <div style={{ height: 3, background: 'linear-gradient(90deg, transparent, #e9a020, #f59e0b, transparent)' }} />
+        {/* Gold shimmer bar */}
+        <div style={{ height: 3, background: 'linear-gradient(90deg, transparent, #e9a020 30%, #f59e0b 50%, #e9a020 70%, transparent)' }} />
 
-      <div style={{ padding: '18px 20px 22px', position: 'relative', zIndex: 1 }}>
-
-        {/* Top row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <motion.div animate={{ opacity:[1,.3,1] }} transition={{ duration:2, repeat:Infinity }}
-              style={{ width:8, height:8, borderRadius:'50%', background:'#60a5fa', boxShadow:'0 0 10px #60a5fa' }} />
-            <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'rgba(255,255,255,.7)', letterSpacing:1.2, textTransform:'uppercase' }}>Next Match</span>
-          </div>
-          <div style={{
-            display:'flex', alignItems:'center', gap:5,
-            background: isHome ? 'rgba(96,165,250,.15)' : 'rgba(251,191,36,.15)',
-            border: `1px solid ${isHome ? 'rgba(96,165,250,.3)' : 'rgba(251,191,36,.3)'}`,
-            borderRadius:20, padding:'4px 12px',
-          }}>
-            {isHome ? <Home size={11} color="#60a5fa" strokeWidth={2.5}/> : <Plane size={11} color="#fbbf24" strokeWidth={2.5}/>}
-            <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color: isHome ? '#60a5fa' : '#fbbf24' }}>{isHome ? 'Home' : 'Away'}</span>
-          </div>
-        </div>
-
-        {/* Teams */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, marginBottom:18 }}>
-          {/* Team 1 */}
-          <motion.div initial={{ opacity:0, x:-16 }} animate={{ opacity:1, x:0 }} transition={{ delay:.15, duration:.5, ease:EASE }}
-            style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
-            <TeamLogo logo={fixture.logo1} name={fixture.team1} size={72} />
-            <div style={{ fontFamily:FONT, fontSize:13, fontWeight:800, color:'#fff', textAlign:'center', lineHeight:1.25 }}>
-              {shorten(fixture.team1)}
+        <div style={{ padding: '20px 22px 24px', position: 'relative', zIndex: 1 }}>
+          {/* Top row */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <motion.div animate={{ opacity:[1,.2,1] }} transition={{ duration:1.8, repeat:Infinity }}
+                style={{ width:8, height:8, borderRadius:'50%', background:'#67e8f9', boxShadow:'0 0 10px #67e8f9' }}/>
+              <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'rgba(255,255,255,.65)', letterSpacing:1.5, textTransform:'uppercase' }}>Next Match</span>
             </div>
-          </motion.div>
-
-          {/* VS */}
-          <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
-            <div style={{ fontFamily:FONT, fontSize:11, fontWeight:900, color:'rgba(255,255,255,.3)', letterSpacing:3 }}>VS</div>
-            <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(255,255,255,.1)', border:'1px solid rgba(255,255,255,.12)', borderRadius:10, padding:'5px 11px' }}>
-              <Clock size={11} color="rgba(255,255,255,.7)" strokeWidth={2}/>
-              <span style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:'#fff' }}>{fixture.time}</span>
+            <div style={{
+              display:'flex', alignItems:'center', gap:5,
+              background: isHome ? 'rgba(96,165,250,.12)' : 'rgba(251,191,36,.12)',
+              border:`1px solid ${isHome ? 'rgba(96,165,250,.28)' : 'rgba(251,191,36,.28)'}`,
+              borderRadius:20, padding:'5px 13px',
+            }}>
+              {isHome ? <Home size={11} color="#60a5fa" strokeWidth={2.5}/> : <Plane size={11} color="#fbbf24" strokeWidth={2.5}/>}
+              <span style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color: isHome?'#60a5fa':'#fbbf24' }}>{isHome?'Home':'Away'}</span>
             </div>
           </div>
 
-          {/* Team 2 */}
-          <motion.div initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:.15, duration:.5, ease:EASE }}
-            style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
-            <TeamLogo logo={fixture.logo2} name={fixture.team2} size={72} />
-            <div style={{ fontFamily:FONT, fontSize:13, fontWeight:800, color:'#fff', textAlign:'center', lineHeight:1.25 }}>
-              {shorten(fixture.team2)}
+          {/* Teams row — bigger logos */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:22 }}>
+            <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }} transition={{ delay:.15, duration:.55, ease:EASE }}
+              style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+              <TeamLogo logo={fixture.logo1} name={fixture.team1} size={88} ring={tucc1?'rgba(233,160,32,.6)':'rgba(255,255,255,.18)'} glow={tucc1}/>
+              <div style={{ fontFamily:FONT, fontSize:13, fontWeight:800, color:'#fff', textAlign:'center', lineHeight:1.3 }}>
+                {shorten(fixture.team1)}
+              </div>
+            </motion.div>
+
+            {/* VS */}
+            <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+              <div style={{ width:42, height:42, borderRadius:'50%', background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <span style={{ fontFamily:FONT, fontSize:10, fontWeight:900, color:'rgba(255,255,255,.35)', letterSpacing:2 }}>VS</span>
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.1)', borderRadius:10, padding:'6px 12px' }}>
+                <Clock size={11} color="rgba(255,255,255,.6)" strokeWidth={2}/>
+                <span style={{ fontFamily:FONT, fontSize:13, fontWeight:700, color:'#fff' }}>{fixture.time}</span>
+              </div>
             </div>
-          </motion.div>
-        </div>
 
-        {/* Date pill */}
-        <div style={{ display:'flex', justifyContent:'center', marginBottom:18 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.12)', borderRadius:20, padding:'6px 14px' }}>
-            <Calendar size={12} color="rgba(255,255,255,.6)" strokeWidth={2}/>
-            <span style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(255,255,255,.8)' }}>{fixture.date}</span>
+            <motion.div initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} transition={{ delay:.15, duration:.55, ease:EASE }}
+              style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+              <TeamLogo logo={fixture.logo2} name={fixture.team2} size={88} ring={tucc2?'rgba(233,160,32,.6)':'rgba(255,255,255,.18)'} glow={tucc2}/>
+              <div style={{ fontFamily:FONT, fontSize:13, fontWeight:800, color:'#fff', textAlign:'center', lineHeight:1.3 }}>
+                {shorten(fixture.team2)}
+              </div>
+            </motion.div>
           </div>
-        </div>
 
-        {/* Countdown */}
-        {countdown && (
-          <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:.3 }}
-            style={{ display:'flex', alignItems:'flex-start', justifyContent:'center', gap:8, marginBottom:18 }}>
-            <CountUnit value={countdown.days}  label="Days"/>
-            <div style={{ width:2, height:52, background:'rgba(255,255,255,.1)', borderRadius:2, marginTop:0 }}/>
-            <CountUnit value={countdown.hours} label="Hrs"/>
-            <div style={{ width:2, height:52, background:'rgba(255,255,255,.1)', borderRadius:2 }}/>
-            <CountUnit value={countdown.mins}  label="Min"/>
-            <div style={{ width:2, height:52, background:'rgba(255,255,255,.1)', borderRadius:2 }}/>
-            <CountUnit value={countdown.secs}  label="Sec"/>
-          </motion.div>
-        )}
+          {/* Date pill */}
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:20 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:7, background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.1)', borderRadius:20, padding:'7px 16px' }}>
+              <Calendar size={12} color="rgba(255,255,255,.55)" strokeWidth={2}/>
+              <span style={{ fontFamily:FONT, fontSize:13, fontWeight:700, color:'rgba(255,255,255,.8)' }}>{fixture.date}</span>
+            </div>
+          </div>
 
-        {/* Venue */}
-        <div style={{ background:'rgba(0,0,0,.25)', borderRadius:16, padding:'12px 14px', display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:30, height:30, borderRadius:9, background:'rgba(255,255,255,.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <MapPin size={14} color="#60a5fa" strokeWidth={2}/>
+          {/* Countdown */}
+          {countdown && (
+            <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:.3 }}
+              style={{ display:'flex', alignItems:'flex-start', justifyContent:'center', gap:10, marginBottom:20 }}>
+              {[
+                { v:countdown.days, l:'Days' },
+                { v:countdown.hours,l:'Hrs'  },
+                { v:countdown.mins, l:'Min'  },
+                { v:countdown.secs, l:'Sec'  },
+              ].map(({v,l},i) => (
+                <div key={l} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <CountUnit value={v} label={l}/>
+                  {i<3 && <div style={{ width:2, height:48, background:'rgba(255,255,255,.08)', borderRadius:2, marginBottom:20 }}/>}
+                </div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Venue */}
+          <div style={{ background:'rgba(0,0,0,.22)', border:'1px solid rgba(255,255,255,.07)', borderRadius:18, padding:'13px 16px', display:'flex', alignItems:'center', gap:12 }}>
+            <div style={{ width:34, height:34, borderRadius:12, background:'rgba(99,102,241,.15)', border:'1px solid rgba(99,102,241,.25)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <MapPin size={15} color="#a5b4fc" strokeWidth={2}/>
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontFamily:FONT, fontSize:9, color:'rgba(255,255,255,.3)', fontWeight:800, textTransform:'uppercase', letterSpacing:1, marginBottom:3 }}>Venue</div>
+              <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(255,255,255,.75)', lineHeight:1.4 }}>{fixture.venue}</div>
+            </div>
+            <a href={mapUrl} target="_blank" rel="noopener noreferrer"
+              style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, background:'rgba(233,160,32,.12)', border:'1px solid rgba(233,160,32,.28)', borderRadius:12, padding:'8px 14px', fontFamily:FONT, fontSize:12, fontWeight:800, color:'#e9a020', textDecoration:'none' }}>
+              Map <ExternalLink size={11} strokeWidth={2.5}/>
+            </a>
           </div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontFamily:FONT, fontSize:10, color:'rgba(255,255,255,.35)', fontWeight:700, textTransform:'uppercase', letterSpacing:.8, marginBottom:2 }}>Venue</div>
-            <div style={{ fontFamily:FONT, fontSize:12, fontWeight:600, color:'rgba(255,255,255,.8)', lineHeight:1.4 }}>{fixture.venue}</div>
-          </div>
-          <a href={mapUrl} target="_blank" rel="noopener noreferrer"
-            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, background:'rgba(96,165,250,.15)', border:'1px solid rgba(96,165,250,.3)', borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:11, fontWeight:800, color:'#60a5fa', textDecoration:'none' }}>
-            Map <ExternalLink size={10} strokeWidth={2.5}/>
-          </a>
         </div>
       </div>
     </motion.div>
@@ -210,118 +245,138 @@ function NextMatchBanner({ fixture, countdown }) {
 
 // ── Fixture Card ──────────────────────────────────────────────
 function FixtureCard({ fixture, index }) {
-  const tucc1 = isOurs(fixture.team1)
-  const tucc2 = isOurs(fixture.team2)
+  const tucc1  = isOurs(fixture.team1)
+  const tucc2  = isOurs(fixture.team2)
   const isTucc = tucc1 || tucc2
   const isHome = tucc1
   const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(fixture.venue)}`
 
   return (
+    // Outer shell (double bezel)
     <motion.div
-      initial={{ opacity:0, y:20, scale:.97 }}
+      initial={{ opacity:0, y:18, scale:.97 }}
       animate={{ opacity:1, y:0, scale:1 }}
-      transition={{ duration:.5, ease:EASE, delay: index * 0.06 }}
-      whileHover={{ y:-2, transition:{ duration:.2 } }}
+      transition={{ duration:.5, ease:EASE, delay: index * 0.055 }}
+      whileHover={{ y:-3, transition:{ duration:.2, ease:EASE } }}
       style={{
-        borderRadius:22, overflow:'hidden',
-        background: isTucc ? '#fff' : '#fff',
-        border: `1.5px solid ${isTucc ? 'rgba(37,99,235,.18)' : 'rgba(0,0,0,.07)'}`,
+        borderRadius: 22, padding: 2,
+        background: isTucc ? 'rgba(233,160,32,.12)' : 'rgba(255,255,255,.06)',
+        border: `1px solid ${isTucc ? 'rgba(233,160,32,.25)' : 'rgba(255,255,255,.09)'}`,
         boxShadow: isTucc
-          ? '0 8px 32px rgba(37,99,235,.12), 0 2px 8px rgba(0,0,0,.04)'
-          : '0 4px 20px rgba(0,0,0,.06)',
+          ? '0 12px 40px rgba(15,23,42,.45), 0 0 0 1px rgba(233,160,32,.08)'
+          : '0 8px 28px rgba(15,23,42,.3)',
+        cursor: 'default',
       }}
     >
-      {/* Top accent stripe */}
-      {isTucc && <div style={{ height:3, background:'linear-gradient(90deg, #2563eb, #60a5fa, #2563eb)' }} />}
-
-      {/* Header */}
+      {/* Inner core */}
       <div style={{
-        padding:'11px 16px',
+        borderRadius: 21, overflow: 'hidden',
         background: isTucc
-          ? 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)'
-          : 'linear-gradient(135deg, #1e2533 0%, #2d3748 100%)',
-        display:'flex', alignItems:'center', justifyContent:'space-between',
-        position:'relative', overflow:'hidden',
+          ? 'linear-gradient(145deg, #060d2e 0%, #0f1e5a 50%, #1a1060 100%)'
+          : 'linear-gradient(145deg, #0a0e1a 0%, #111827 60%, #0f172a 100%)',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,.06)',
+        position: 'relative',
       }}>
-        <div style={{ position:'absolute', top:-10, right:-10, width:50, height:50, borderRadius:'50%', background:'rgba(255,255,255,.06)', pointerEvents:'none' }}/>
-        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-          <div style={{ width:26, height:26, borderRadius:8, background:'rgba(255,255,255,.1)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Calendar size={12} color="rgba(255,255,255,.75)" strokeWidth={2}/>
-          </div>
-          <span style={{ fontFamily:FONT, fontSize:12, fontWeight:800, color:'#fff' }}>{fixture.date}</span>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-          {isTucc && (
-            <div style={{
-              display:'flex', alignItems:'center', gap:5,
-              background: isHome ? 'rgba(96,165,250,.18)' : 'rgba(251,191,36,.18)',
-              border: `1px solid ${isHome ? 'rgba(96,165,250,.35)' : 'rgba(251,191,36,.35)'}`,
-              borderRadius:8, padding:'3px 9px',
-            }}>
-              {isHome ? <Home size={10} color="#60a5fa" strokeWidth={2.5}/> : <Plane size={10} color="#fbbf24" strokeWidth={2.5}/>}
-              <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: isHome ? '#60a5fa' : '#fbbf24' }}>
-                {isHome ? 'Home' : 'Away'}
-              </span>
+        {/* Subtle ambient */}
+        <div style={{ position:'absolute', top:-30, right:-30, width:120, height:120, borderRadius:'50%', background: isTucc?'rgba(233,160,32,.06)':'rgba(99,102,241,.06)', filter:'blur(30px)', pointerEvents:'none' }}/>
+
+        {/* Top accent bar */}
+        {isTucc
+          ? <div style={{ height:2, background:'linear-gradient(90deg,transparent,#e9a020 30%,#f59e0b 50%,#e9a020 70%,transparent)' }}/>
+          : <div style={{ height:1, background:'rgba(255,255,255,.05)' }}/>
+        }
+
+        {/* Header row */}
+        <div style={{ padding:'13px 16px 0', display:'flex', alignItems:'center', justifyContent:'space-between', position:'relative', zIndex:1 }}>
+          {/* Date */}
+          <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+            <div style={{ width:28, height:28, borderRadius:9, background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.08)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Calendar size={12} color="rgba(255,255,255,.5)" strokeWidth={2}/>
             </div>
-          )}
-          <div style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(255,255,255,.09)', borderRadius:7, padding:'3px 8px' }}>
-            <Clock size={10} color="rgba(255,255,255,.6)" strokeWidth={2}/>
-            <span style={{ fontFamily:FONT, fontSize:11, fontWeight:700, color:'rgba(255,255,255,.85)' }}>{fixture.time}</span>
+            <span style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(255,255,255,.7)' }}>{fixture.date}</span>
+          </div>
+
+          {/* Badges */}
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            {isTucc && (
+              <div style={{
+                display:'flex', alignItems:'center', gap:4,
+                background: isHome?'rgba(96,165,250,.1)':'rgba(251,191,36,.1)',
+                border:`1px solid ${isHome?'rgba(96,165,250,.25)':'rgba(251,191,36,.25)'}`,
+                borderRadius:20, padding:'4px 10px',
+              }}>
+                {isHome?<Home size={10} color="#60a5fa" strokeWidth={2.5}/>:<Plane size={10} color="#fbbf24" strokeWidth={2.5}/>}
+                <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:isHome?'#60a5fa':'#fbbf24' }}>
+                  {isHome?'Home':'Away'}
+                </span>
+              </div>
+            )}
+            <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.09)', borderRadius:20, padding:'4px 10px' }}>
+              <Clock size={10} color="rgba(255,255,255,.5)" strokeWidth={2}/>
+              <span style={{ fontFamily:FONT, fontSize:11, fontWeight:700, color:'rgba(255,255,255,.7)' }}>{fixture.time}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Teams row */}
-      <div style={{ padding:'18px 16px 14px', display:'flex', alignItems:'center', gap:8 }}>
-        {/* Team 1 */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:9 }}>
-          <TeamLogo logo={fixture.logo1} name={fixture.team1} size={52} />
-          <div style={{
-            fontFamily:FONT, fontSize:12, lineHeight:1.3, textAlign:'center',
-            fontWeight: tucc1 ? 800 : 600,
-            color: tucc1 ? '#2563eb' : '#1e293b',
-          }}>
-            {tucc1 && <span style={{ color:'#e9a020' }}>🏏 </span>}{shorten(fixture.team1)}
+        {/* Teams row — circular logos */}
+        <div style={{ padding:'18px 20px 16px', display:'flex', alignItems:'center', gap:10, position:'relative', zIndex:1 }}>
+          {/* Team 1 */}
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+            <TeamLogo
+              logo={fixture.logo1} name={fixture.team1} size={68}
+              ring={tucc1?'rgba(233,160,32,.55)':'rgba(255,255,255,.15)'}
+              glow={tucc1}
+            />
+            <div style={{
+              fontFamily:FONT, fontSize:12, lineHeight:1.3, textAlign:'center', fontWeight:700,
+              color: tucc1?'#e9a020':'rgba(255,255,255,.75)',
+            }}>
+              {shorten(fixture.team1)}
+            </div>
+          </div>
+
+          {/* VS divider */}
+          <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
+            <div style={{ width:1, height:16, background:'rgba(255,255,255,.07)' }}/>
+            <div style={{
+              width:36, height:36, borderRadius:'50%',
+              background: isTucc?'linear-gradient(135deg,#e9a020,#f59e0b)':'rgba(255,255,255,.07)',
+              border:`1px solid ${isTucc?'rgba(233,160,32,.4)':'rgba(255,255,255,.1)'}`,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              boxShadow: isTucc?'0 4px 14px rgba(233,160,32,.3)':'none',
+            }}>
+              <span style={{ fontFamily:FONT, fontSize:9, fontWeight:900, color: isTucc?'#0f172a':'rgba(255,255,255,.3)', letterSpacing:1.5 }}>VS</span>
+            </div>
+            <div style={{ width:1, height:16, background:'rgba(255,255,255,.07)' }}/>
+          </div>
+
+          {/* Team 2 */}
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+            <TeamLogo
+              logo={fixture.logo2} name={fixture.team2} size={68}
+              ring={tucc2?'rgba(233,160,32,.55)':'rgba(255,255,255,.15)'}
+              glow={tucc2}
+            />
+            <div style={{
+              fontFamily:FONT, fontSize:12, lineHeight:1.3, textAlign:'center', fontWeight:700,
+              color: tucc2?'#e9a020':'rgba(255,255,255,.75)',
+            }}>
+              {shorten(fixture.team2)}
+            </div>
           </div>
         </div>
 
-        {/* VS divider */}
-        <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
-          <div style={{ width:1, height:20, background: isTucc ? 'rgba(37,99,235,.15)' : '#e2e8f0' }}/>
-          <div style={{
-            width:34, height:34, borderRadius:'50%',
-            background: isTucc ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : '#f1f5f9',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            boxShadow: isTucc ? '0 3px 10px rgba(37,99,235,.3)' : 'none',
-          }}>
-            <span style={{ fontFamily:FONT, fontSize:9, fontWeight:900, color: isTucc ? '#fff' : '#94a3b8', letterSpacing:1.5 }}>VS</span>
+        {/* Venue row */}
+        <div style={{ margin:'0 14px 14px', background:'rgba(0,0,0,.2)', border:'1px solid rgba(255,255,255,.06)', borderRadius:14, padding:'10px 13px', display:'flex', alignItems:'center', gap:9, position:'relative', zIndex:1 }}>
+          <MapPin size={12} color={isTucc?'#a5b4fc':'rgba(255,255,255,.3)'} strokeWidth={2} style={{ flexShrink:0 }}/>
+          <div style={{ flex:1, minWidth:0, fontFamily:FONT, fontSize:11, fontWeight:500, color:'rgba(255,255,255,.45)', lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+            {fixture.venue}
           </div>
-          <div style={{ width:1, height:20, background: isTucc ? 'rgba(37,99,235,.15)' : '#e2e8f0' }}/>
+          <a href={mapUrl} target="_blank" rel="noopener noreferrer"
+            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4, background:isTucc?'rgba(233,160,32,.12)':'rgba(255,255,255,.07)', border:`1px solid ${isTucc?'rgba(233,160,32,.25)':'rgba(255,255,255,.1)'}`, borderRadius:9, padding:'5px 11px', fontFamily:FONT, fontSize:10, fontWeight:800, color:isTucc?'#e9a020':'rgba(255,255,255,.5)', textDecoration:'none' }}>
+            Map <ExternalLink size={9} strokeWidth={2.5}/>
+          </a>
         </div>
-
-        {/* Team 2 */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:9 }}>
-          <TeamLogo logo={fixture.logo2} name={fixture.team2} size={52} />
-          <div style={{
-            fontFamily:FONT, fontSize:12, lineHeight:1.3, textAlign:'center',
-            fontWeight: tucc2 ? 800 : 600,
-            color: tucc2 ? '#2563eb' : '#1e293b',
-          }}>
-            {tucc2 && <span style={{ color:'#e9a020' }}>🏏 </span>}{shorten(fixture.team2)}
-          </div>
-        </div>
-      </div>
-
-      {/* Venue row */}
-      <div style={{ margin:'0 14px 14px', background: isTucc ? 'rgba(37,99,235,.05)' : '#f8fafc', borderRadius:12, padding:'9px 12px', display:'flex', alignItems:'center', gap:8 }}>
-        <MapPin size={13} color={isTucc ? '#2563eb' : '#94a3b8'} strokeWidth={2} style={{ flexShrink:0 }}/>
-        <div style={{ flex:1, minWidth:0, fontFamily:FONT, fontSize:11, fontWeight:500, color: isTucc ? '#2563eb' : '#64748b', lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:1, WebkitBoxOrient:'vertical' }}>
-          {fixture.venue}
-        </div>
-        <a href={mapUrl} target="_blank" rel="noopener noreferrer"
-          style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4, background: isTucc ? '#2563eb' : '#334155', borderRadius:8, padding:'5px 10px', fontFamily:FONT, fontSize:10, fontWeight:800, color:'#fff', textDecoration:'none' }}>
-          Map <ExternalLink size={9} strokeWidth={2.5}/>
-        </a>
       </div>
     </motion.div>
   )
@@ -330,17 +385,21 @@ function FixtureCard({ fixture, index }) {
 // ── Skeleton ──────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div style={{ borderRadius:22, overflow:'hidden', border:'1.5px solid #e2e8f0', background:'#fff' }}>
-      <div style={{ height:44, background:'linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite linear' }}/>
-      <div style={{ padding:'18px 16px', display:'flex', alignItems:'center', gap:10 }}>
+    <div style={{ borderRadius:22, overflow:'hidden', background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ height:3, background:'rgba(255,255,255,.04)' }}/>
+      <div style={{ padding:'13px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ height:12, width:90, borderRadius:6, background:'rgba(255,255,255,.07)' }}/>
+        <div style={{ height:12, width:60, borderRadius:6, background:'rgba(255,255,255,.07)' }}/>
+      </div>
+      <div style={{ padding:'18px 20px 16px', display:'flex', alignItems:'center', gap:10 }}>
         {[0,1,2].map(i => (
-          <div key={i} style={{ flex: i===1?0:1, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
-            <div style={{ width: i===1?34:52, height: i===1?34:52, borderRadius: i===1?'50%':12, background:'#e2e8f0' }}/>
-            {i!==1 && <div style={{ height:11, width:'70%', borderRadius:6, background:'#e2e8f0' }}/>}
+          <div key={i} style={{ flex:i===1?0:1, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
+            <div style={{ width:i===1?36:68, height:i===1?36:68, borderRadius:'50%', background:'rgba(255,255,255,.07)' }}/>
+            {i!==1 && <div style={{ height:10, width:'70%', borderRadius:6, background:'rgba(255,255,255,.06)' }}/>}
           </div>
         ))}
       </div>
-      <div style={{ margin:'0 14px 14px', height:36, borderRadius:12, background:'#f1f5f9' }}/>
+      <div style={{ margin:'0 14px 14px', height:38, borderRadius:14, background:'rgba(255,255,255,.05)' }}/>
     </div>
   )
 }
@@ -387,48 +446,58 @@ export default function FixturesPage() {
   const PLAYED_AWAY  = 2
 
   return (
-    <div style={{ minHeight:'100dvh', background:'#f0f4f0', fontFamily:FONT, display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100dvh', background:'transparent', fontFamily:FONT, display:'flex', flexDirection:'column' }}>
       <Nav />
 
       {/* ── Hero Header ── */}
       <div style={{
-        background: 'linear-gradient(160deg, #172554 0%, #1e3a8a 40%, #2563eb 100%)',
-        padding:'24px 20px 36px', position:'relative', overflow:'hidden',
+        background: 'linear-gradient(160deg, #020818 0%, #0f1e5a 35%, #1a1060 65%, #0a0730 100%)',
+        padding:'24px 20px 40px', position:'relative', overflow:'hidden',
       }}>
-        {/* Decorative elements */}
-        <motion.div animate={{ rotate:[0,360] }} transition={{ duration:30, repeat:Infinity, ease:'linear' }}
-          style={{ position:'absolute', top:-60, right:-60, width:200, height:200, borderRadius:'50%', border:'1px solid rgba(255,255,255,.04)', pointerEvents:'none' }}/>
-        <div style={{ position:'absolute', bottom:-20, left:-20, width:100, height:100, borderRadius:'50%', background:'rgba(233,160,32,.08)', pointerEvents:'none' }}/>
+        {/* Background orbs */}
+        <motion.div animate={{ scale:[1,1.2,1], opacity:[.15,.04,.15] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut' }}
+          style={{ position:'absolute', top:-60, right:-60, width:240, height:240, borderRadius:'50%', background:'rgba(99,102,241,.3)', filter:'blur(60px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-30, left:-30, width:160, height:160, borderRadius:'50%', background:'rgba(233,160,32,.08)', filter:'blur(40px)', pointerEvents:'none' }}/>
+        {/* Subtle grid */}
+        <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px)', backgroundSize:'40px 40px' }}/>
 
-        <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', position:'relative' }}>
+        <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', position:'relative', zIndex:1 }}>
           <motion.button
             onClick={() => nav('/')}
             whileTap={{ scale:.95 }}
-            style={{ display:'flex', alignItems:'center', gap:6, color:'rgba(255,255,255,.4)', background:'none', border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:600, padding:0, marginBottom:22 }}
+            style={{ display:'flex', alignItems:'center', gap:6, color:'rgba(255,255,255,.38)', background:'none', border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:600, padding:0, marginBottom:24 }}
           >
             <ArrowLeft size={15} strokeWidth={2}/> Home
           </motion.button>
 
-          <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:.5, ease:EASE }}>
+          <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:.55, ease:EASE }}>
             {/* Title row */}
-            <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
-              <div style={{ width:52, height:52, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 0 0 3px rgba(233,160,32,.4), 0 4px 16px rgba(0,0,0,.35)' }}>
-                <img src="/logo.png" alt="TUCC" style={{ width:46, height:46, objectFit:'contain' }}/>
+            <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:24 }}>
+              {/* Logo — bigger, circular with gold ring */}
+              <div style={{ position:'relative', flexShrink:0 }}>
+                <motion.div animate={{ scale:[1,1.1,1], opacity:[.4,.1,.4] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
+                  style={{ position:'absolute', inset:-8, borderRadius:'50%', background:'radial-gradient(circle,rgba(233,160,32,.4) 0%,transparent 70%)', pointerEvents:'none' }}/>
+                <div style={{ width:68, height:68, borderRadius:'50%', background:'rgba(255,255,255,.06)', border:'3px solid rgba(233,160,32,.6)', boxShadow:'0 0 0 2px rgba(233,160,32,.15), 0 8px 28px rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', position:'relative', zIndex:1 }}>
+                  <div style={{ width:58, height:58, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <img src="/logo.png" alt="TUCC" style={{ width:50, height:50, objectFit:'contain' }}/>
+                  </div>
+                </div>
               </div>
+
               <div>
-                <h1 style={{ color:'#fff', fontSize:26, fontWeight:900, margin:0, letterSpacing:-.5 }}>Fixtures</h1>
-                <div style={{ color:'rgba(255,255,255,.4)', fontSize:12, marginTop:3, display:'flex', alignItems:'center', gap:8 }}>
+                <h1 style={{ color:'#fff', fontSize:28, fontWeight:900, margin:0, letterSpacing:'-0.5px' }}>Fixtures</h1>
+                <div style={{ color:'rgba(255,255,255,.38)', fontSize:12, marginTop:4, display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                   <span>BTCL Premier League 2026</span>
                   {!loading && (
-                    <span style={{ background:'rgba(96,165,250,.12)', border:'1px solid rgba(96,165,250,.25)', borderRadius:20, padding:'2px 8px', fontFamily:FONT, fontSize:10, fontWeight:700, color:'#60a5fa' }}>
+                    <span style={{ background:'rgba(99,102,241,.12)', border:'1px solid rgba(99,102,241,.25)', borderRadius:20, padding:'2px 9px', fontFamily:FONT, fontSize:10, fontWeight:700, color:'#a5b4fc' }}>
                       {fixtures.length} upcoming
                     </span>
                   )}
                   {source==='live' && (
                     <span style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
                       <motion.span animate={{ opacity:[1,.2,1] }} transition={{ duration:1.8, repeat:Infinity }}
-                        style={{ width:6, height:6, borderRadius:'50%', background:'#60a5fa', boxShadow:'0 0 8px #60a5fa', display:'inline-block' }}/>
-                      <span style={{ color:'#86efac', fontWeight:700, fontSize:11 }}>Live</span>
+                        style={{ width:6, height:6, borderRadius:'50%', background:'#67e8f9', boxShadow:'0 0 8px #67e8f9', display:'inline-block' }}/>
+                      <span style={{ color:'#67e8f9', fontWeight:700, fontSize:11 }}>Live</span>
                     </span>
                   )}
                 </div>
@@ -439,19 +508,25 @@ export default function FixturesPage() {
             {!loading && fixtures.length > 0 && (
               <div style={{ display:'flex', gap:10 }}>
                 {[
-                  { label:'Season',  value:SEASON_TOTAL, grad:'linear-gradient(135deg,#1e293b,#334155)', bar:'rgba(255,255,255,.3)' },
-                  { label:'Played',  value:PLAYED_HOME+PLAYED_AWAY, grad:'linear-gradient(135deg,#1e3a8a,#2563eb)', bar:'#60a5fa' },
-                  { label:'Home 🏠', value:PLAYED_HOME,   grad:'linear-gradient(135deg,#7c2d12,#ea580c)', bar:'#fdba74' },
-                  { label:'Away ✈️', value:PLAYED_AWAY,   grad:'linear-gradient(135deg,#1e3a5f,#2563eb)', bar:'#93c5fd' },
-                ].map(({ label, value, grad, bar }, i) => (
+                  { label:'Season',  value:SEASON_TOTAL, accent:'rgba(255,255,255,.25)' },
+                  { label:'Played',  value:PLAYED_HOME+PLAYED_AWAY, accent:'#60a5fa' },
+                  { label:'Home',    value:PLAYED_HOME,  accent:'#e9a020' },
+                  { label:'Away',    value:PLAYED_AWAY,  accent:'#c084fc' },
+                ].map(({ label, value, accent }, i) => (
                   <motion.div key={label}
                     initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
-                    transition={{ delay:.1+i*.07, duration:.4, ease:EASE }}
-                    style={{ flex:1, background:grad, borderRadius:16, padding:'12px 8px', textAlign:'center', boxShadow:'0 4px 16px rgba(0,0,0,.3)', position:'relative', overflow:'hidden' }}
+                    transition={{ delay:.1+i*.06, duration:.4, ease:EASE }}
+                    style={{
+                      flex:1, borderRadius:18, padding:'14px 8px', textAlign:'center',
+                      background:'rgba(255,255,255,.055)',
+                      border:'1px solid rgba(255,255,255,.08)',
+                      boxShadow:'inset 0 1px 1px rgba(255,255,255,.06)',
+                      position:'relative', overflow:'hidden',
+                    }}
                   >
-                    <div style={{ position:'absolute', bottom:0, left:0, right:0, height:2, background:bar, opacity:.7 }}/>
-                    <div style={{ fontFamily:FONT, fontSize:22, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{value}</div>
-                    <div style={{ fontFamily:FONT, fontSize:9, fontWeight:700, color:'rgba(255,255,255,.6)', marginTop:5, textTransform:'uppercase', letterSpacing:.6 }}>{label}</div>
+                    <div style={{ position:'absolute', bottom:0, left:'15%', right:'15%', height:2, background:accent, borderRadius:99, opacity:.8 }}/>
+                    <div style={{ fontFamily:FONT, fontSize:24, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{value}</div>
+                    <div style={{ fontFamily:FONT, fontSize:9, fontWeight:800, color:'rgba(255,255,255,.4)', marginTop:5, textTransform:'uppercase', letterSpacing:1 }}>{label}</div>
                   </motion.div>
                 ))}
               </div>
@@ -465,23 +540,23 @@ export default function FixturesPage() {
 
         {/* Toolbar */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'#64748b' }}>
+          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(255,255,255,.35)' }}>
             {!loading && `${fixtures.length} upcoming fixtures`}
           </div>
           <motion.button
             onClick={() => load(true)} disabled={refreshing} whileTap={{ scale:.94 }}
-            style={{ display:'flex', alignItems:'center', gap:6, background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'8px 14px', cursor: refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'#475569', opacity: refreshing?.5:1, boxShadow:'0 2px 8px rgba(0,0,0,.06)' }}
+            style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)', borderRadius:10, padding:'8px 14px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(255,255,255,.55)', opacity:refreshing?.5:1, boxShadow:'0 2px 8px rgba(0,0,0,.15)' }}
           >
-            <RotateCw size={13} strokeWidth={2.2} style={{ animation: refreshing?'tucc-spin .65s linear infinite':'none' }}/>
+            <RotateCw size={13} strokeWidth={2.2} style={{ animation:refreshing?'tucc-spin .65s linear infinite':'none' }}/>
             Refresh
           </motion.button>
         </div>
 
         {error && (
-          <div style={{ background:'#fff1f2', border:'1.5px solid #fecaca', borderRadius:16, padding:'16px 20px', marginBottom:20, textAlign:'center', color:'#be123c', fontSize:14, fontWeight:500 }}>
+          <div style={{ background:'rgba(248,113,113,.08)', border:'1px solid rgba(248,113,113,.2)', borderRadius:16, padding:'16px 20px', marginBottom:20, textAlign:'center', color:'#fca5a5', fontSize:14, fontWeight:500 }}>
             Couldn't load fixtures.{' '}
             <button onClick={() => { setError(false); setLoading(true); load(true) }}
-              style={{ color:'#2563eb', background:'none', border:'none', cursor:'pointer', fontWeight:800, fontFamily:FONT, fontSize:14 }}>
+              style={{ color:'#60a5fa', background:'none', border:'none', cursor:'pointer', fontWeight:800, fontFamily:FONT, fontSize:14 }}>
               Try again →
             </button>
           </div>
@@ -492,10 +567,10 @@ export default function FixturesPage() {
             {[0,1,2,3].map(i => <SkeletonCard key={i}/>)}
           </div>
         ) : fixtures.length === 0 ? (
-          <div style={{ textAlign:'center', padding:'64px 20px', background:'#fff', borderRadius:24, border:'1.5px solid #e2e8f0', boxShadow:'0 4px 20px rgba(0,0,0,.06)' }}>
+          <div style={{ textAlign:'center', padding:'64px 20px', background:'rgba(255,255,255,.04)', borderRadius:24, border:'1px solid rgba(255,255,255,.08)' }}>
             <div style={{ fontSize:52, marginBottom:14 }}>📅</div>
-            <div style={{ fontSize:18, fontWeight:800, color:'#1e293b' }}>No fixtures scheduled</div>
-            <div style={{ fontSize:13, color:'#94a3b8', marginTop:6 }}>Check back when the next round is confirmed.</div>
+            <div style={{ fontSize:18, fontWeight:800, color:'rgba(255,255,255,.8)' }}>No fixtures scheduled</div>
+            <div style={{ fontSize:13, color:'rgba(255,255,255,.3)', marginTop:6 }}>Check back when the next round is confirmed.</div>
           </div>
         ) : (
           <AnimatePresence>
@@ -504,33 +579,35 @@ export default function FixturesPage() {
               {/* Next TUCC hero */}
               {nextTucc && <NextMatchBanner fixture={nextTucc} countdown={countdown}/>}
 
-              {/* Divider */}
+              {/* Section divider */}
               {nextTucc && remaining.length > 0 && (
-                <div style={{ display:'flex', alignItems:'center', gap:10, margin:'6px 0' }}>
-                  <div style={{ flex:1, height:1.5, background:'linear-gradient(90deg,transparent,#cbd5e1)' }}/>
-                  <div style={{ display:'flex', alignItems:'center', gap:5, fontFamily:FONT, fontSize:11, fontWeight:700, color:'#64748b', background:'#fff', borderRadius:20, padding:'4px 14px', border:'1.5px solid #e2e8f0', boxShadow:'0 2px 8px rgba(0,0,0,.05)' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10, margin:'4px 0' }}>
+                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,transparent,rgba(255,255,255,.1))' }}/>
+                  <div style={{ display:'flex', alignItems:'center', gap:5, fontFamily:FONT, fontSize:11, fontWeight:700, color:'rgba(255,255,255,.4)', background:'rgba(255,255,255,.05)', borderRadius:20, padding:'5px 14px', border:'1px solid rgba(255,255,255,.08)' }}>
                     <Zap size={10} strokeWidth={2.5} color="#e9a020"/> All Fixtures
                   </div>
-                  <div style={{ flex:1, height:1.5, background:'linear-gradient(90deg,#cbd5e1,transparent)' }}/>
+                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,rgba(255,255,255,.1),transparent)' }}/>
                 </div>
               )}
 
-              {/* All cards */}
+              {/* Cards */}
               {remaining.map((f, i) => <FixtureCard key={i} fixture={f} index={i}/>)}
 
               {/* Footer CTA */}
               <motion.div
-                initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:.4 }}
-                style={{ background:'linear-gradient(145deg, #172554, #1e3a8a, #2563eb)', borderRadius:22, padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, boxShadow:'0 8px 32px rgba(15,23,42,.4)', marginTop:6, border:'1px solid rgba(255,255,255,.06)' }}
+                initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:.4 }}
+                style={{ borderRadius:22, padding:2, background:'rgba(233,160,32,.1)', border:'1px solid rgba(233,160,32,.2)', marginTop:6 }}
               >
-                <div>
-                  <div style={{ fontFamily:FONT, fontSize:14, fontWeight:800, color:'#fff' }}>Full season schedule</div>
-                  <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.35)', marginTop:3 }}>View on play-cricket.com</div>
+                <div style={{ borderRadius:21, background:'linear-gradient(145deg,#060d2e,#0f1e5a)', padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                  <div>
+                    <div style={{ fontFamily:FONT, fontSize:14, fontWeight:800, color:'#fff' }}>Full season schedule</div>
+                    <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.3)', marginTop:3 }}>View on play-cricket.com</div>
+                  </div>
+                  <a href="https://dtucc.play-cricket.com/Matches?tab=Fixture" target="_blank" rel="noopener noreferrer"
+                    style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(233,160,32,.12)', border:'1px solid rgba(233,160,32,.28)', color:'#e9a020', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, textDecoration:'none', flexShrink:0 }}>
+                    Open <ChevronRight size={14} strokeWidth={2.5}/>
+                  </a>
                 </div>
-                <a href="https://dtucc.play-cricket.com/Matches?tab=Fixture" target="_blank" rel="noopener noreferrer"
-                  style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(96,165,250,.15)', border:'1px solid rgba(96,165,250,.3)', color:'#60a5fa', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, textDecoration:'none', flexShrink:0 }}>
-                  Open <ExternalLink size={13} strokeWidth={2.5}/>
-                </a>
               </motion.div>
             </div>
           </AnimatePresence>
