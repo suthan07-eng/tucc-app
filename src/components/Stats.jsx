@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../supabase'
@@ -343,22 +343,67 @@ const fmtBest = (w, r)  => { const n = parseInt(w); return !n ? '—' : `${n}/${
 
 const cellStyle = { fontFamily: FONT, fontSize: 13, color: C.gray5, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }
 
+// ── Player photo lookup (same data as api/potw.js) ───────
+const PHOTO_BASE = 'https://admin.btcluk.com/players/'
+const PLAYER_PHOTOS = {
+  'Mohamed Nafaz':                   '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg',
+  'Gobinath Navaratnam':             '90041.jpg',
+  'Raj Sorna':                       '3615Raj.jpg',
+  'Roshan Thishanthan':              'IMG-20240409-WA0034-removebg-preview.png',
+  'Mahadeva Amaranath':              '8625IMG-20220408-WA0011.jpg',
+  'Abbi Kanthiraj':                  '4321IMG-20220428-WA0009.jpg',
+  'Ajanthan Navaratnam':             '5336IMG-20220411-WA0010.jpg',
+  'Harriharan Aravinthan':           '3635IMG-20220408-WA0018.jpg',
+  'Theepan Rajah Rajasekaran':       'Theepan.jpeg',
+  'Sanjiv Balachandran':             '6916IMG-20220411-WA0018.jpg',
+  'Namasevayam Vipooshanan':         '1660IMG-20220419-WA0009.jpg',
+  'Elankopan Thavalinkam':           '4720IMG-20220420-WA0032.jpg',
+  'Raguvaran Aravinthan':            '3215IMG-20220408-WA0017.jpg',
+  'Kajenth Thanabalasingham':        '237279A25C56-43AC-49FA-B68D-FE810DBA9C4A.jpeg',
+  'Muralitharan Guganeshan':         '4485WhatsApp Image 2022-07-03 at 10.40.58 AM.jpeg',
+  'Krishen Daniel':                  '2304IMG-20220418-WA0030.jpg',
+  'Gaajuran Ganagabalan':            '4971.jpeg',
+  'Eashwaran Aravinthan':            'image0 (3).jpeg',
+  'Hrithisshan Kanendran':           '976Under 15.png',
+  'Abdul Khaliq Hakeem':             '6984886Under 18.png',
+  'Shenal Daniel Anthony':           'bc581ed9-b973-48e3-9e12-52912924f432.jpeg',
+  'Thevakumar Kanagarathinam Anton': '6631.jpeg',
+  'Malindu Maduranga':               '7348.jpeg',
+  'Prayash Singh':                   '7349.jpeg',
+  'Arivu Sasikumar':                 '7358.jpeg',
+  'Dilesh Sangaran':                 '7361.jpeg',
+  'Inthikhab Mazeez':                '7435.jpeg',
+  'Pathmajeyan Asokumar':            '7514.jpeg',
+  'Mihin Sugeeswaran':               '7526.jpeg',
+}
+function photoUrl(name) {
+  const file = PLAYER_PHOTOS[name]
+  return file ? PHOTO_BASE + encodeURIComponent(file) : null
+}
+
 // ── Avatar ────────────────────────────────────────────────
 function Avatar({ name = '', size = 32 }) {
+  const [imgOk, setImgOk] = React.useState(true)
+  const url = photoUrl(name)
   const PALETTE = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9']
   let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
   const bg = PALETTE[Math.abs(h) % PALETTE.length]
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%',
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.2)',
       background: `linear-gradient(135deg, ${bg}, ${bg}cc)`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#fff', fontFamily: FONT, fontWeight: 800,
-      fontSize: Math.round(size * 0.34), flexShrink: 0, userSelect: 'none',
-      boxShadow: '0 2px 8px rgba(0,0,0,.2)',
     }}>
-      {initials}
+      {url && imgOk ? (
+        <img src={url} alt={name} onError={() => setImgOk(false)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+      ) : (
+        <span style={{ color: '#fff', fontFamily: FONT, fontWeight: 800, fontSize: Math.round(size * 0.34), userSelect: 'none' }}>
+          {initials}
+        </span>
+      )}
     </div>
   )
 }
