@@ -551,11 +551,12 @@ export default function FixturesPage() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ flex:1, maxWidth:MAX_WIDTH, margin:'0 auto', padding:'22px 16px 64px', width:'100%' }}>
+      <div style={{ flex:1, width:'100%', background:'linear-gradient(180deg, #0a0e1e 0%, #0d1228 100%)' }}>
+      <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'22px 16px 64px', width:'100%' }}>
 
         {/* Toolbar */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(255,255,255,.35)' }}>
+          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(255,255,255,.55)' }}>
             {!loading && `${fixtures.length} upcoming fixtures`}
           </div>
           <motion.button
@@ -596,12 +597,12 @@ export default function FixturesPage() {
 
               {/* Section divider */}
               {nextTucc && remaining.length > 0 && (
-                <div style={{ display:'flex', alignItems:'center', gap:10, margin:'4px 0' }}>
-                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,transparent,rgba(255,255,255,.1))' }}/>
-                  <div style={{ display:'flex', alignItems:'center', gap:5, fontFamily:FONT, fontSize:11, fontWeight:700, color:'rgba(255,255,255,.4)', background:'rgba(255,255,255,.05)', borderRadius:20, padding:'5px 14px', border:'1px solid rgba(255,255,255,.08)' }}>
-                    <Zap size={10} strokeWidth={2.5} color="#e9a020"/> All Fixtures
+                <div style={{ display:'flex', alignItems:'center', gap:12, margin:'8px 0' }}>
+                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,transparent,rgba(233,160,32,.35))' }}/>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, fontFamily:FONT, fontSize:12, fontWeight:800, color:'#e9a020', background:'rgba(233,160,32,.1)', borderRadius:20, padding:'7px 16px', border:'1px solid rgba(233,160,32,.3)', letterSpacing:.5 }}>
+                    <Zap size={11} strokeWidth={2.5} color="#e9a020"/> All Fixtures
                   </div>
-                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,rgba(255,255,255,.1),transparent)' }}/>
+                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,rgba(233,160,32,.35),transparent)' }}/>
                 </div>
               )}
 
@@ -627,6 +628,7 @@ export default function FixturesPage() {
             </div>
           </AnimatePresence>
         )}
+      </div>
       </div>
 
       <Footer/>
