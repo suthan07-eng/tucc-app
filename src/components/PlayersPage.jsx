@@ -9,6 +9,30 @@ import Footer from './Footer'
 const EASE = [0.23, 1, 0.32, 1]
 const PHOTO_BASE = 'https://admin.btcluk.com/players/'
 const BTCL_PROFILE = 'https://play-cricket.com/player_stats/player/'
+const OUR_NAMES_LG = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
+const isOursLeague = (name = '') => OUR_NAMES_LG.some(t => name.toLowerCase().includes(t.toLowerCase()))
+
+// ── Season stat pill ──────────────────────────────────────────
+function SeasonPill({ label, value, grad, shadow, delay = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14, scale: 0.93 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, duration: 0.45, ease: EASE }}
+      style={{
+        background: grad, borderRadius: 18,
+        padding: '14px 10px', textAlign: 'center',
+        boxShadow: shadow, flex: 1, minWidth: 0,
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      <div style={{ position:'absolute', top:-14, right:-14, width:48, height:48, borderRadius:'50%', background:'rgba(255,255,255,.13)', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', bottom:-10, left:-10, width:32, height:32, borderRadius:'50%', background:'rgba(255,255,255,.07)', pointerEvents:'none' }}/>
+      <div style={{ fontFamily:FONT, fontSize:26, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums', position:'relative', zIndex:1 }}>{value}</div>
+      <div style={{ fontFamily:FONT, fontSize:9, fontWeight:800, color:'rgba(255,255,255,.75)', marginTop:5, textTransform:'uppercase', letterSpacing:1, position:'relative', zIndex:1 }}>{label}</div>
+    </motion.div>
+  )
+}
 
 // ── Role detection ────────────────────────────────────────────
 function detectRole(p) {
@@ -396,6 +420,17 @@ export default function PlayersPage() {
   const [filter, setFilter]     = useState('All')
   const [selected, setSelected] = useState(null)
   const [source, setSource]     = useState(null)
+  const [teamStats, setTeamStats] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/league-table')
+      .then(r => r.json())
+      .then(d => {
+        const ourRow = (d.rows || d.teams || []).find(t => isOursLeague(t.team))
+        if (ourRow) setTeamStats(ourRow)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/players')
@@ -423,50 +458,75 @@ export default function PlayersPage() {
 
       {/* ── Hero ── */}
       <div style={{
-        background: 'radial-gradient(ellipse at 70% -10%, rgba(124,58,237,.3) 0%, transparent 55%), linear-gradient(160deg, #1e1b4b 0%, #312e81 100%)',
-        padding: '24px 20px 32px', position: 'relative', overflow: 'hidden',
+        background: 'linear-gradient(160deg, #020818 0%, #0f1e5a 35%, #1a1060 65%, #0a0730 100%)',
+        padding: '24px 20px 36px', position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(167,139,250,.08)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -30, left: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,.03)', pointerEvents: 'none' }} />
+        {/* Ambient orbs */}
+        <motion.div animate={{ scale:[1,1.2,1], opacity:[.14,.04,.14] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut' }}
+          style={{ position:'absolute', top:-60, right:-60, width:240, height:240, borderRadius:'50%', background:'rgba(124,58,237,.3)', filter:'blur(60px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-30, left:-30, width:160, height:160, borderRadius:'50%', background:'rgba(233,160,32,.08)', filter:'blur(40px)', pointerEvents:'none' }}/>
+        {/* Grid overlay */}
+        <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px)', backgroundSize:'40px 40px' }}/>
 
-        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', position: 'relative' }}>
-          <motion.button onClick={() => nav('/')} whileTap={{ scale: 0.95 }} style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.45)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 20 }}>
+        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <motion.button onClick={() => nav('/')} whileTap={{ scale: 0.95 }} style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.38)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 24 }}>
             <ArrowLeft size={14} strokeWidth={2} /> Home
           </motion.button>
 
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: EASE }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(0,0,0,.3)', flexShrink: 0 }}>
-                <img src="/logo.png" alt="TUCC" style={{ width: 47, height: 47, objectFit: 'contain' }} />
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: EASE }}>
+
+            {/* Title row — bigger circular logo with gold ring */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <motion.div animate={{ scale:[1,1.1,1], opacity:[.4,.1,.4] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
+                  style={{ position:'absolute', inset:-8, borderRadius:'50%', background:'radial-gradient(circle,rgba(233,160,32,.4) 0%,transparent 70%)', pointerEvents:'none' }}/>
+                <div style={{ width:68, height:68, borderRadius:'50%', background:'rgba(255,255,255,.06)', border:'3px solid rgba(233,160,32,.6)', boxShadow:'0 0 0 2px rgba(233,160,32,.15), 0 8px 28px rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', position:'relative', zIndex:1 }}>
+                  <div style={{ width:58, height:58, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <img src="/logo.png" alt="TUCC" style={{ width:50, height:50, objectFit:'contain' }}/>
+                  </div>
+                </div>
               </div>
               <div>
-                <h1 style={{ color: '#fff', fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>Squad</h1>
-                <div style={{ color: 'rgba(255,255,255,.45)', fontSize: 12, marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>Squad</h1>
+                <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 12, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span>Tamil United CC · BTCL 2026</span>
+                  {!loading && (
+                    <span style={{ background:'rgba(167,139,250,.12)', border:'1px solid rgba(167,139,250,.25)', borderRadius:20, padding:'2px 9px', fontFamily:FONT, fontSize:10, fontWeight:700, color:'#c4b5fd' }}>
+                      {players.length} players
+                    </span>
+                  )}
                   {source === 'live' && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#60a5fa', animation: 'pendingPulse 1.8s ease-in-out infinite', display: 'inline-block' }} />
-                      <span style={{ color: '#86efac', fontWeight: 600, fontSize: 11 }}>Live</span>
+                      <motion.span animate={{ opacity:[1,.2,1] }} transition={{ duration:1.8, repeat:Infinity }}
+                        style={{ width:6, height:6, borderRadius:'50%', background:'#67e8f9', boxShadow:'0 0 8px #67e8f9', display:'inline-block' }}/>
+                      <span style={{ color:'#67e8f9', fontWeight:700, fontSize:11 }}>Live</span>
                     </span>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Role stats strip */}
-            {!loading && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {/* Season stats pills — live from league table */}
+            {teamStats && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <SeasonPill delay={0.05} label="Played" value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,#2563eb,#3b82f6)" shadow="0 6px 20px rgba(37,99,235,.4)" />
+                <SeasonPill delay={0.10} label="Won"    value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#22c55e)" shadow="0 6px 20px rgba(21,128,61,.4)" />
+                <SeasonPill delay={0.15} label="Lost"   value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,#be123c,#f43f5e)" shadow="0 6px 20px rgba(190,18,60,.35)" />
+                <SeasonPill delay={0.20} label="Points" value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,#b45309,#f59e0b)" shadow="0 6px 20px rgba(180,83,9,.4)" />
+                <SeasonPill delay={0.25} label="NRR"    value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#22c55e)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.35)" />
+              </div>
+            )}
+
+            {/* Fallback squad role pills if league stats not yet loaded */}
+            {!teamStats && !loading && (
+              <div style={{ display: 'flex', gap: 8 }}>
                 {[
-                  { label: 'Total', value: players.length, grad: 'linear-gradient(135deg,#4338ca,#6366f1)', shadow: '0 4px 14px rgba(67,56,202,.4)' },
-                  { label: 'Batsmen', value: (roleCounts['Batsman'] || 0) + (roleCounts['All-Rounder'] || 0), grad: 'linear-gradient(135deg,#15803d,#3b82f6)', shadow: '0 4px 14px rgba(21,128,61,.35)' },
-                  { label: 'Bowlers', value: (roleCounts['Bowler'] || 0) + (roleCounts['All-Rounder'] || 0), grad: 'linear-gradient(135deg,#be123c,#f43f5e)', shadow: '0 4px 14px rgba(190,18,60,.3)' },
-                  { label: 'WK', value: roleCounts['Wicket-Keeper'] || 0, grad: 'linear-gradient(135deg,#b45309,#f59e0b)', shadow: '0 4px 14px rgba(180,83,9,.35)' },
-                ].map(({ label, value, grad, shadow }) => (
-                  <div key={label} style={{ flex: 1, minWidth: 60, background: grad, borderRadius: 14, padding: '10px 8px', textAlign: 'center', boxShadow: shadow, position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: -8, right: -8, width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
-                    <div style={{ fontFamily: FONT, fontSize: 20, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{value}</div>
-                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.7)', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
-                  </div>
+                  { label:'Squad',   value:players.length,                                              grad:'linear-gradient(135deg,#4338ca,#6366f1)', shadow:'0 6px 20px rgba(67,56,202,.4)' },
+                  { label:'Batsmen', value:(roleCounts['Batsman']||0)+(roleCounts['All-Rounder']||0),   grad:'linear-gradient(135deg,#15803d,#22c55e)', shadow:'0 6px 20px rgba(21,128,61,.4)' },
+                  { label:'Bowlers', value:(roleCounts['Bowler']||0)+(roleCounts['All-Rounder']||0),    grad:'linear-gradient(135deg,#be123c,#f43f5e)', shadow:'0 6px 20px rgba(190,18,60,.35)' },
+                  { label:'WK',      value:roleCounts['Wicket-Keeper']||0,                              grad:'linear-gradient(135deg,#b45309,#f59e0b)', shadow:'0 6px 20px rgba(180,83,9,.4)' },
+                ].map(({ label, value, grad, shadow }, i) => (
+                  <SeasonPill key={label} delay={0.05+i*0.05} label={label} value={value} grad={grad} shadow={shadow}/>
                 ))}
               </div>
             )}
