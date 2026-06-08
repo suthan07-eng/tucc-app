@@ -53,9 +53,30 @@ function AppRoutes() {
   )
 }
 
+// Fixed full-screen texture layer — sits behind all page content
+function TextureBackground() {
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: -1,
+      backgroundColor: '#f8fafc',
+      backgroundImage: `
+        linear-gradient(rgba(99,126,184,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,126,184,0.12) 1px, transparent 1px),
+        linear-gradient(rgba(99,126,184,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,126,184,0.06) 1px, transparent 1px)
+      `,
+      backgroundSize: '80px 80px, 80px 80px, 20px 20px, 20px 20px',
+      backgroundPosition: '-1px -1px, -1px -1px, -1px -1px, -1px -1px',
+    }} />
+  )
+}
+
 export default function App() {
   return (
     <AuthProvider>
+      <TextureBackground />
       <AppRoutes />
     </AuthProvider>
   )

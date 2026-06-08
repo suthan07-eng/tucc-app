@@ -10,7 +10,7 @@ export const C = {
 
   // ─── Neutrals (cool slate — cohesive with blue) ──────────────────────
   white:      '#ffffff',
-  bg:         '#f8fafc',   // neutral-50  — page background                   (was: #f8fafc green-tinted)
+  bg:         'transparent', // page wrappers transparent — texture from App.jsx fixed layer shows through
   gray1:      '#f1f5f9',   // neutral-100 — alt surfaces, zebra rows           (was: #f1f5f2 green-tinted)
   gray2:      '#e2e8f0',   // neutral-200 — borders & dividers                 (was: #dde8e2 green-tinted)
   gray3:      '#94a3b8',   // neutral-400 — placeholder text, muted icons      (was: #8fa898 green-gray)
