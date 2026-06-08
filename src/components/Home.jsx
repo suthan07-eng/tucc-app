@@ -543,7 +543,7 @@ function ResultsTeaser() {
       onClick={() => nav('/results')}
       style={{
         marginTop: 16, cursor: 'pointer',
-        background: `linear-gradient(135deg, ${C.greenDark} 0%, #163d28 100%)`,
+        background: `linear-gradient(135deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
         borderRadius: 16, padding: '16px 18px',
         display: 'flex', alignItems: 'center', gap: 14,
         boxShadow: `0 4px 16px ${C.shadowMd}`,
@@ -743,7 +743,7 @@ export default function Home() {
       <div
         className="hero-parallax"
         style={{
-          background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+          background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
           padding: '36px 20px 60px',
           position: 'relative',
         }}
@@ -1040,7 +1040,7 @@ export default function Home() {
             ['Deadline', deadline],
           ].filter(([, v]) => v)
           return (
-            <div style={{ marginTop: 14, background: `linear-gradient(145deg, ${C.greenDark} 0%, #163d28 100%)`, borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(5,20,10,.35), 0 0 0 1px rgba(255,255,255,.06)' }}>
+            <div style={{ marginTop: 14, background: `linear-gradient(145deg, ${C.greenDark} 0%, #1e3a8a 100%)`, borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(15,23,42,.35), 0 0 0 1px rgba(255,255,255,.06)' }}>
               {/* Gold top bar */}
               <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#e9a020,#f59e0b,transparent)' }}/>
               <div style={{ padding: '16px 18px' }}>

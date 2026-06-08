@@ -216,7 +216,7 @@ export default function Nav() {
             >
               {/* Panel header */}
               <div style={{
-                background: `linear-gradient(135deg, ${C.greenDark}, #163d28)`,
+                background: `linear-gradient(135deg, ${C.greenDark}, #1e3a8a)`,
                 padding: '20px 20px 24px',
                 flexShrink: 0,
               }}>

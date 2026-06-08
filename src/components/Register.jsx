@@ -90,7 +90,7 @@ export default function Register() {
 
       {/* Header */}
       <div style={{
-        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+        background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
         padding: '44px 20px 40px',
         textAlign: 'center',
       }}>

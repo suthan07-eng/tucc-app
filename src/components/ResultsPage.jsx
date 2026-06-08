@@ -543,7 +543,7 @@ export default function ResultsPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
                 style={{
-                  background: `linear-gradient(135deg, ${C.greenDark}, #163d28)`,
+                  background: `linear-gradient(135deg, ${C.greenDark}, #1e3a8a)`,
                   borderRadius: 20, padding: '20px 24px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   gap: 12, boxShadow: '0 6px 24px rgba(37,99,235,.3)',

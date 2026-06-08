@@ -306,7 +306,7 @@ export default function PlayerDashboard() {
         borderRadius: 28, overflow: 'hidden', marginBottom: 16,
         position: 'relative',
         background: 'linear-gradient(145deg, #050e09 0%, #0b2e17 40%, #103d21 75%, #2563eb 100%)',
-        boxShadow: '0 20px 60px rgba(5,20,10,.6), 0 0 0 1px rgba(255,255,255,.06)',
+        boxShadow: '0 20px 60px rgba(15,23,42,.6), 0 0 0 1px rgba(255,255,255,.06)',
         padding: '22px 18px 20px',
       }}
     >

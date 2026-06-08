@@ -60,15 +60,19 @@ function TextureBackground() {
       position: 'fixed',
       inset: 0,
       zIndex: -1,
-      backgroundColor: '#f8fafc',
+      // Soft blue-tinted base — slightly warmer than pure white, cohesive with brand
+      backgroundColor: '#eef2ff',
       backgroundImage: `
-        linear-gradient(rgba(99,126,184,0.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(99,126,184,0.12) 1px, transparent 1px),
-        linear-gradient(rgba(99,126,184,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(99,126,184,0.06) 1px, transparent 1px)
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(37,99,235,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(99,102,241,0.06) 0%, transparent 55%),
+        repeating-linear-gradient(
+          -45deg,
+          transparent 0px,
+          transparent 18px,
+          rgba(37,99,235,0.028) 18px,
+          rgba(37,99,235,0.028) 19px
+        )
       `,
-      backgroundSize: '80px 80px, 80px 80px, 20px 20px, 20px 20px',
-      backgroundPosition: '-1px -1px, -1px -1px, -1px -1px, -1px -1px',
     }} />
   )
 }

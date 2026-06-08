@@ -964,7 +964,7 @@ export default function Stats() {
 
       {/* Hero */}
       <div style={{
-        background: `radial-gradient(ellipse at 80% -10%, ${activeTheme.light}55 0%, transparent 55%), linear-gradient(160deg, ${C.greenDark} 0%, #163d28 100%)`,
+        background: `radial-gradient(ellipse at 80% -10%, ${activeTheme.light}55 0%, transparent 55%), linear-gradient(160deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
         padding: '28px 20px 0', position: 'relative',
         transition: 'background 400ms ease',
       }}>
