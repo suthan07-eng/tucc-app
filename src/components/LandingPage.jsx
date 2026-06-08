@@ -216,7 +216,7 @@ function NextMatchCard({ nav }) {
             <div style={{ fontFamily:FONT, fontSize:12, fontWeight:600, color:'rgba(255,255,255,.8)', lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{fixture.venue}</div>
           </div>
           <a href={mapUrl} target="_blank" rel="noopener noreferrer"
-            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4, background:'rgba(134,239,172,.12)', border:'1px solid rgba(134,239,172,.25)', borderRadius:9, padding:'6px 11px', fontFamily:FONT, fontSize:11, fontWeight:800, color:'#86efac', textDecoration:'none' }}>
+            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4, background:'rgba(99,102,241,.15)', border:'1px solid rgba(99,102,241,.35)', borderRadius:9, padding:'6px 11px', fontFamily:FONT, fontSize:11, fontWeight:800, color:'#a5b4fc', textDecoration:'none' }}>
             Map <ExternalLink size={10} strokeWidth={2.5}/>
           </a>
         </div>
@@ -334,15 +334,16 @@ export default function LandingPage() {
   return (
     <div style={{
       minHeight:'100vh', width:'100%',
-      background:'linear-gradient(160deg, #020a05 0%, #172554 30%, #0c2e18 65%, #0f1f16 100%)',
+      background:'linear-gradient(160deg, #020818 0%, #0f1f5c 28%, #1e1b4b 60%, #0d0a2e 100%)',
       display:'flex', flexDirection:'column', alignItems:'center',
       position:'relative', overflow:'hidden', fontFamily:FONT,
     }}>
       {/* Animated blobs */}
       {[
-        { w:340,h:340,top:'-90px',left:'-90px',color:'rgba(37,99,235,.5)' },
-        { w:260,h:260,bottom:'80px',right:'-60px',color:'rgba(34,116,74,.4)' },
-        { w:180,h:180,top:'45%',left:'65%',color:'rgba(233,160,32,.14)' },
+        { w:380,h:380,top:'-100px',left:'-100px',color:'rgba(37,99,235,.55)' },
+        { w:300,h:300,bottom:'60px',right:'-80px',color:'rgba(109,40,217,.45)' },
+        { w:200,h:200,top:'40%',left:'60%',color:'rgba(233,160,32,.12)' },
+        { w:220,h:220,top:'20%',right:'-40px',color:'rgba(99,102,241,.3)' },
       ].map((b,i)=>(
         <motion.div key={i}
           animate={{ scale:[1,1.14,1], rotate:[0,10,0] }}
