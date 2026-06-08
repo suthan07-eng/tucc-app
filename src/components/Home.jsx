@@ -892,22 +892,69 @@ export default function Home() {
         </div>
 
         {/* ── CTA Button ── */}
-        <motion.button
-          onClick={() => nav('/availability')}
-          whileTap={{ scale: 0.97 }}
-          whileHover={{ scale: 1.01 }}
-          style={{
-            width: '100%',
-            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-            color: '#fff', border: 'none', borderRadius: 16,
-            padding: '16px 20px', fontFamily: FONT, fontSize: 15, fontWeight: 800,
-            cursor: 'pointer', boxShadow: '0 6px 20px rgba(37,99,235,.35)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            marginTop: 4,
-          }}
-        >
-          🏏 Submit My Availability
-        </motion.button>
+        {/* ── Submit Availability CTA ── */}
+        <div style={{ position: 'relative', marginTop: 4 }}>
+          {/* Pulsing glow ring */}
+          <motion.div
+            animate={{ scale: [1, 1.06, 1], opacity: [0.55, 0.15, 0.55] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              position: 'absolute', inset: -4, borderRadius: 20,
+              background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+              filter: 'blur(10px)', zIndex: 0, pointerEvents: 'none',
+            }}
+          />
+          {/* Second slower ring for depth */}
+          <motion.div
+            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.05, 0.3] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+            style={{
+              position: 'absolute', inset: -8, borderRadius: 24,
+              background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+              filter: 'blur(16px)', zIndex: 0, pointerEvents: 'none',
+            }}
+          />
+          <motion.button
+            onClick={() => nav('/availability')}
+            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 10px 36px rgba(37,99,235,.6)' }}
+            style={{
+              position: 'relative', zIndex: 1,
+              width: '100%', overflow: 'hidden',
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #4f46e5 100%)',
+              color: '#fff', border: '1.5px solid rgba(255,255,255,.2)', borderRadius: 16,
+              padding: '17px 20px', fontFamily: FONT, fontSize: 16, fontWeight: 900,
+              cursor: 'pointer', boxShadow: '0 6px 24px rgba(37,99,235,.45)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              letterSpacing: 0.3,
+            }}
+          >
+            {/* Shimmer sweep */}
+            <motion.div
+              animate={{ x: ['-120%', '220%'] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.2 }}
+              style={{
+                position: 'absolute', top: 0, left: 0, width: '45%', height: '100%',
+                background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,.18) 50%, transparent 80%)',
+                pointerEvents: 'none', zIndex: 2,
+              }}
+            />
+            <motion.span
+              animate={{ rotate: [0, -8, 8, 0] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1 }}
+              style={{ fontSize: 20 }}
+            >
+              🏏
+            </motion.span>
+            <span style={{ position: 'relative', zIndex: 3 }}>Submit My Availability</span>
+            {/* Live dot */}
+            <motion.div
+              animate={{ opacity: [1, 0.2, 1], scale: [1, 0.8, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ width: 8, height: 8, borderRadius: '50%', background: '#86efac', boxShadow: '0 0 8px #86efac', flexShrink: 0 }}
+            />
+          </motion.button>
+        </div>
 
         {/* ── Availability Cards Heading ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, marginBottom: 2 }}>
