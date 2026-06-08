@@ -14,6 +14,74 @@ import LeagueTable from './LeagueTable'
 import PlayerDashboard from './PlayerDashboard'
 import PlayerOfWeek from './PlayerOfWeek'
 
+// ── Sponsor Banner ─────────────────────────────────────────
+function SponsorBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.5 }}
+      style={{
+        marginTop: 20,
+        borderRadius: 18,
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+        boxShadow: '0 4px 24px rgba(15,23,42,.18), 0 0 0 1px rgba(233,160,32,.15)',
+        position: 'relative',
+      }}
+    >
+      {/* Gold top accent line */}
+      <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, #e9a020, #f59e0b, transparent)' }} />
+
+      {/* Subtle gold shimmer orb */}
+      <div style={{
+        position: 'absolute', top: -30, right: -30, width: 120, height: 120,
+        borderRadius: '50%', background: 'rgba(233,160,32,.06)', pointerEvents: 'none',
+      }} />
+
+      <div style={{ padding: '14px 20px 16px', position: 'relative', zIndex: 1 }}>
+        {/* Label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+          <div style={{ flex: 1, height: 1, background: 'rgba(233,160,32,.2)' }} />
+          <span style={{
+            fontFamily: FONT, fontSize: 9, fontWeight: 800, letterSpacing: 2,
+            textTransform: 'uppercase', color: 'rgba(233,160,32,.6)',
+          }}>
+            Proud Sponsor
+          </span>
+          <div style={{ flex: 1, height: 1, background: 'rgba(233,160,32,.2)' }} />
+        </div>
+
+        {/* Logo */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: '10px 24px',
+            boxShadow: '0 2px 16px rgba(0,0,0,.25)',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <img
+              src="/sponsor-praba.jpg"
+              alt="Praba Restaurant & Bar — Proud Sponsor"
+              style={{ height: 44, width: 'auto', objectFit: 'contain', display: 'block' }}
+            />
+          </div>
+        </div>
+
+        {/* Tagline */}
+        <div style={{
+          textAlign: 'center', marginTop: 10,
+          fontFamily: FONT, fontSize: 11, fontWeight: 600,
+          color: 'rgba(255,255,255,.3)', letterSpacing: 0.4,
+        }}>
+          Supporting Tamil United CC · BTCL 2026
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 import { ClipboardList, ChevronRight, TrendingUp, Target, BarChart2, Trophy, Users, Zap, MapPin, Clock, Home as HomeIcon, Plane, CalendarDays } from 'lucide-react'
 
 // ── Weather helpers ────────────────────────────────────────
@@ -907,6 +975,7 @@ export default function Home() {
         <motion.div variants={staggerList} initial="hidden" animate="visible">
           <NextFixtureCard />
           <PlayerOfWeek />
+          <SponsorBanner />
           <SeasonSnapshot />
           <TopPerformers />
         </motion.div>

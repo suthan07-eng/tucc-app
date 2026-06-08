@@ -487,6 +487,23 @@ export default function LandingPage() {
           <NextMatchCard nav={nav}/>
         </motion.div>
 
+        {/* ── Sponsor strip ── */}
+        <motion.div
+          initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:1.1, duration:.6 }}
+          style={{ width:'100%', marginTop:20 }}
+        >
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+            <div style={{ flex:1, height:1, background:'rgba(233,160,32,.2)' }}/>
+            <span style={{ fontFamily:FONT, fontSize:9, fontWeight:800, letterSpacing:2, textTransform:'uppercase', color:'rgba(233,160,32,.5)' }}>Proud Sponsor</span>
+            <div style={{ flex:1, height:1, background:'rgba(233,160,32,.2)' }}/>
+          </div>
+          <div style={{ display:'flex', justifyContent:'center' }}>
+            <div style={{ background:'#fff', borderRadius:12, padding:'10px 28px', boxShadow:'0 4px 20px rgba(0,0,0,.35)', display:'inline-flex', alignItems:'center', justifyContent:'center' }}>
+              <img src="/sponsor-praba.jpg" alt="Praba Restaurant & Bar" style={{ height:40, width:'auto', objectFit:'contain', display:'block' }}/>
+            </div>
+          </div>
+        </motion.div>
+
         {/* ── Footer copyright ── */}
         <motion.div
           initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.2, duration:.8 }}
