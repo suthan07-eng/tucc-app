@@ -16,20 +16,26 @@
 
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { background: #f0f6f3; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      body {
+        background-color: #f8fafc;
+        background-image:
+          radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+        background-size: 24px 24px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
       /* Tabular nums for all numeric data */
       .num { font-variant-numeric: tabular-nums; }
       /* Smooth scroll */
       html { scroll-behavior: smooth; }
       /* Skip to content for accessibility */
-      .skip-link { position: absolute; top: -40px; left: 0; background: #0f3825; color: #fff; padding: 8px 16px; z-index: 9999; border-radius: 0 0 8px 0; }
+      .skip-link { position: absolute; top: -40px; left: 0; background: #1e3a8a; color: #fff; padding: 8px 16px; z-index: 9999; border-radius: 0 0 8px 0; }
       .skip-link:focus { top: 0; }
       a { color: inherit; }
       input, select, textarea, button { font-family: inherit; }
       input:focus, select:focus, textarea:focus {
         outline: none;
-        border-color: #1a5c38 !important;
-        box-shadow: 0 0 0 3.5px rgba(26, 92, 56, 0.14), 0 1px 3px rgba(15, 56, 37, 0.08);
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.14), 0 1px 3px rgba(30, 58, 138, 0.08);
       }
       @keyframes shimmer {
         0%   { background-position: 200% 0; }
