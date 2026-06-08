@@ -551,17 +551,17 @@ export default function FixturesPage() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ flex:1, width:'100%', background:'linear-gradient(180deg, #0a0e1e 0%, #0d1228 100%)' }}>
+      <div style={{ flex:1, width:'100%', background: C.bg }}>
       <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'22px 16px 64px', width:'100%' }}>
 
         {/* Toolbar */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(255,255,255,.55)' }}>
+          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(6,13,46,.55)' }}>
             {!loading && `${fixtures.length} upcoming fixtures`}
           </div>
           <motion.button
             onClick={() => load(true)} disabled={refreshing} whileTap={{ scale:.94 }}
-            style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)', borderRadius:10, padding:'8px 14px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(255,255,255,.55)', opacity:refreshing?.5:1, boxShadow:'0 2px 8px rgba(0,0,0,.15)' }}
+            style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(6,13,46,.07)', border:'1px solid rgba(6,13,46,.12)', borderRadius:10, padding:'8px 14px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(6,13,46,.55)', opacity:refreshing?.5:1, boxShadow:'0 2px 8px rgba(0,0,0,.06)' }}
           >
             <RotateCw size={13} strokeWidth={2.2} style={{ animation:refreshing?'tucc-spin .65s linear infinite':'none' }}/>
             Refresh
@@ -583,10 +583,10 @@ export default function FixturesPage() {
             {[0,1,2,3].map(i => <SkeletonCard key={i}/>)}
           </div>
         ) : fixtures.length === 0 ? (
-          <div style={{ textAlign:'center', padding:'64px 20px', background:'rgba(255,255,255,.04)', borderRadius:24, border:'1px solid rgba(255,255,255,.08)' }}>
+          <div style={{ textAlign:'center', padding:'64px 20px', background:'rgba(6,13,46,.04)', borderRadius:24, border:'1px solid rgba(6,13,46,.08)' }}>
             <div style={{ fontSize:52, marginBottom:14 }}>📅</div>
-            <div style={{ fontSize:18, fontWeight:800, color:'rgba(255,255,255,.8)' }}>No fixtures scheduled</div>
-            <div style={{ fontSize:13, color:'rgba(255,255,255,.3)', marginTop:6 }}>Check back when the next round is confirmed.</div>
+            <div style={{ fontSize:18, fontWeight:800, color:'rgba(6,13,46,.8)' }}>No fixtures scheduled</div>
+            <div style={{ fontSize:13, color:'rgba(6,13,46,.4)', marginTop:6 }}>Check back when the next round is confirmed.</div>
           </div>
         ) : (
           <AnimatePresence>
