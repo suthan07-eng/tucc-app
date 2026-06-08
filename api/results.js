@@ -159,6 +159,27 @@ function parseResults(html) {
   return results
 }
 
+// Build a lookup map: scorecard URL → { team1, team2, winner } from FALLBACK (curated correct names)
+const FALLBACK_BY_URL = {}
+for (const f of FALLBACK) {
+  FALLBACK_BY_URL[f.scorecardUrl] = { team1: f.team1, team2: f.team2, winner: f.winner, logo1: f.logo1, logo2: f.logo2 }
+}
+
+// Merge live-parsed result with curated FALLBACK team names (live scraper can't see A/B subtitles)
+function applyFallbackNames(result) {
+  const override = FALLBACK_BY_URL[result.scorecardUrl]
+  if (!override) return result
+  return {
+    ...result,
+    team1:  override.team1  || result.team1,
+    team2:  override.team2  || result.team2,
+    logo1:  override.logo1  || result.logo1,
+    logo2:  override.logo2  || result.logo2,
+    // also fix winner name if fallback has more specific version
+    winner: override.winner || result.winner,
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=60')
@@ -167,9 +188,11 @@ export default async function handler(req, res) {
     const response = await fetch(RESULTS_URL, { headers: HEADERS })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const html = await response.text()
-    const results = parseResults(html)
+    const raw = parseResults(html)
 
-    if (results.length >= 5) {
+    if (raw.length >= 5) {
+      // Apply curated team names (A/B suffixes etc.) from FALLBACK
+      const results = raw.map(applyFallbackNames)
       return res.status(200).json({ results, updatedAt: new Date().toISOString(), source: 'live' })
     }
     return res.status(200).json({ results: FALLBACK, updatedAt: new Date().toISOString(), source: 'fallback' })
