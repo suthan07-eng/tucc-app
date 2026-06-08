@@ -250,9 +250,7 @@ export default function PlayerDashboard() {
   const stats    = myPlayer?.stats
   const hasStats = stats && (stats.matches != null || stats.runs != null || stats.wickets != null)
 
-  const playCricketUrl = myPlayer?.id
-    ? `https://www.play-cricket.com/player_profiles/${myPlayer.id}`
-    : null
+  const playCricketUrl = 'https://dtucc.play-cricket.com/Statistics'
 
   const infoItems = [
     { label: 'Batting',     value: myPlayer?.batStyle,   icon: '🏏' },
@@ -413,7 +411,7 @@ export default function PlayerDashboard() {
                 )}
 
                 {/* Play Cricket CTA */}
-                {playCricketUrl && (
+                {(
                   <motion.a
                     href={playCricketUrl} target="_blank" rel="noopener noreferrer"
                     whileHover={{ scale:1.03, boxShadow:'0 6px 22px rgba(233,160,32,.45)' }}
