@@ -186,40 +186,54 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
     onClose()
   }
 
-  const progress = items.length ? Math.round((items.filter(x=>x.status==='done').length / items.length) * 100) : 0
+  const progress  = items.length ? Math.round((items.filter(x=>x.status==='done').length / items.length) * 100) : 0
   const doneCount = items.filter(x=>x.status==='done').length
+
+  // "Apply title to all" — stamp a master title across every item
+  const [masterTitle, setMasterTitle] = useState('')
+  function applyMasterTitle() {
+    if (!masterTitle.trim()) return
+    setItems(prev => prev.map(x => ({ ...x, title: masterTitle.trim() })))
+  }
+
+  const inputStyle = (active) => ({
+    width:'100%', border:`1.5px solid ${active?'#fde68a':'#e5e7eb'}`, borderRadius:10,
+    padding:'10px 13px', fontFamily:FONT, fontSize:13, color:'#1f2937',
+    outline:'none', boxSizing:'border-box', background:active?'#fffbeb':'#fff',
+    transition:'border .15s, background .15s',
+  })
 
   return (
     <motion.div
       initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-      style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'12px',
-        background:'rgba(6,13,46,.75)', backdropFilter:'blur(8px)' }}
+      style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center',
+        padding:'12px', background:'rgba(6,13,46,.82)', backdropFilter:'blur(10px)' }}
       onClick={e => { if (e.target === e.currentTarget && !uploading) onClose() }}
     >
       <motion.div
-        initial={{ scale:.93, opacity:0, y:20 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:.93, opacity:0, y:20 }}
+        initial={{ scale:.94, opacity:0, y:20 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:.94, opacity:0, y:20 }}
         transition={{ type:'spring', damping:24, stiffness:300 }}
-        style={{ background:'#fff', borderRadius:24, width:'100%', maxWidth:680,
-          maxHeight:'92vh', display:'flex', flexDirection:'column',
-          overflow:'hidden', boxShadow:'0 40px 100px rgba(0,0,0,.5)' }}
+        style={{ background:'#f8fafc', borderRadius:24, width:'100%', maxWidth:860,
+          maxHeight:'94vh', display:'flex', flexDirection:'column',
+          overflow:'hidden', boxShadow:'0 40px 100px rgba(0,0,0,.6)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 22px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
+        {/* ── HEADER ── */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 24px', background:'#fff', borderBottom:'1px solid #e5e7eb', flexShrink:0 }}>
           <div>
-            <div style={{ fontWeight:800, fontSize:15, color:'#060d2e', fontFamily:FONT }}>
-              📸 New Post {items.length > 1 ? `— ${items.length} items` : ''}
+            <div style={{ fontWeight:900, fontSize:16, color:'#060d2e', fontFamily:FONT }}>
+              📸 {items.length > 1 ? `Upload ${items.length} items` : 'New Post'}
             </div>
-            <div style={{ fontSize:11, color:'#9ca3af', fontFamily:FONT, marginTop:1 }}>
-              Select multiple photos & videos at once
+            <div style={{ fontSize:11, color:'#9ca3af', fontFamily:FONT, marginTop:2 }}>
+              {items.length > 0 ? `${doneCount} of ${items.length} done` : 'Drop photos & videos to get started'}
             </div>
           </div>
           <button onClick={onClose} disabled={uploading}
-            style={{ width:32, height:32, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:18, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center', opacity:uploading?.5:1 }}>×</button>
+            style={{ width:34, height:34, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:19, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center', opacity:uploading?0.4:1 }}>×</button>
         </div>
 
-        {/* Scrollable body */}
-        <div style={{ flex:1, overflowY:'auto', padding:'18px 22px', display:'flex', flexDirection:'column', gap:16 }}>
+        {/* ── SCROLLABLE BODY ── */}
+        <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', display:'flex', flexDirection:'column', gap:16 }}>
 
           {/* Drop zone */}
           <div
@@ -228,29 +242,22 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
             onDragLeave={() => setDragging(false)}
             onClick={() => { if(!uploading) inputRef.current?.click() }}
             style={{
-              border:`2px dashed ${dragging?'#e9a020':'#d1d5db'}`,
-              borderRadius:16, padding:items.length?'16px 20px':'36px 20px',
+              border:`2px dashed ${dragging?'#e9a020':'#cbd5e1'}`, borderRadius:16,
+              padding: items.length ? '14px 20px' : '40px 20px',
               cursor: uploading?'default':'pointer', textAlign:'center',
-              background: dragging?'#fffbeb':'#fafafa', transition:'all .2s', flexShrink:0,
+              background: dragging?'#fffbeb':'#fff', transition:'all .2s', flexShrink:0,
             }}
           >
             {items.length === 0 ? (
               <>
-                <div style={{ fontSize:44, marginBottom:8 }}>📷</div>
-                <div style={{ fontWeight:700, fontSize:14, color:'#374151', fontFamily:FONT }}>Drop photos & videos here</div>
-                <div style={{ fontSize:12, color:'#9ca3af', marginTop:4, fontFamily:FONT }}>
-                  or click to browse · select multiple files · up to {MAX_FILES} items
-                </div>
-                <div style={{ fontSize:11, color:'#9ca3af', marginTop:2, fontFamily:FONT }}>
-                  Images up to 20 MB · Videos up to 100 MB each
-                </div>
+                <div style={{ fontSize:48, marginBottom:10 }}>📷</div>
+                <div style={{ fontWeight:800, fontSize:15, color:'#374151', fontFamily:FONT }}>Drop photos & videos here</div>
+                <div style={{ fontSize:12, color:'#9ca3af', marginTop:5, fontFamily:FONT }}>or click to browse · up to {MAX_FILES} items · images 20 MB · videos 100 MB</div>
               </>
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center' }}>
-                <span style={{ fontSize:20 }}>➕</span>
-                <span style={{ fontSize:13, fontWeight:700, color:dragging?'#e9a020':'#6b7280', fontFamily:FONT }}>
-                  Add more files ({items.length}/{MAX_FILES})
-                </span>
+                <span style={{ fontSize:22 }}>➕</span>
+                <span style={{ fontSize:13, fontWeight:700, color:dragging?'#e9a020':'#6b7280', fontFamily:FONT }}>Add more files ({items.length}/{MAX_FILES})</span>
               </div>
             )}
           </div>
@@ -261,144 +268,161 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
             <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:10, padding:'10px 14px', fontSize:12, color:'#dc2626', fontFamily:FONT }}>{globalErr}</div>
           )}
 
-          {/* Item cards */}
-          <AnimatePresence>
-            {items.map((item, idx) => (
-              <motion.div key={item.id}
-                initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, x:-20 }}
-                transition={{ type:'spring', damping:22, stiffness:280 }}
-                style={{
-                  border: item.status==='done'   ? '2px solid #bbf7d0'
-                        : item.status==='error'  ? '2px solid #fecaca'
-                        : item.status==='uploading' ? '2px solid #fde68a'
-                        : '1.5px solid #f0f0f0',
-                  borderRadius:16, overflow:'hidden', background:'#fff',
-                  boxShadow:'0 2px 10px rgba(0,0,0,.06)',
-                }}
-              >
-                <div style={{ display:'flex', gap:0 }}>
-                  {/* Thumbnail */}
-                  <div style={{ width:110, flexShrink:0, position:'relative', background:'#000' }}>
-                    {item.file.type.startsWith('video')
-                      ? <video src={item.preview} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:110 }}/>
-                      : <img src={item.preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:110, display:'block' }}/>
-                    }
-                    {/* Status overlay */}
-                    {(item.status === 'compressing' || item.status === 'uploading') && (
-                      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.55)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6 }}>
-                        <motion.div animate={{ rotate:360 }} transition={{ duration:.9, repeat:Infinity, ease:'linear' }} style={{ width:26, height:26, borderRadius:'50%', border:'3px solid rgba(255,255,255,.25)', borderTopColor:'#fff' }}/>
-                        <span style={{ fontSize:10, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700 }}>
-                          {item.status === 'compressing' ? 'Compressing…' : 'Uploading…'}
-                        </span>
-                      </div>
-                    )}
-                    {item.status === 'done' && (
-                      <div style={{ position:'absolute', inset:0, background:'rgba(21,128,61,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>✅</div>
-                    )}
-                    {item.status === 'error' && (
-                      <div style={{ position:'absolute', inset:0, background:'rgba(220,38,38,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>❌</div>
-                    )}
-                    {/* File type badge */}
-                    <div style={{ position:'absolute', top:6, left:6, background:'rgba(0,0,0,.55)', borderRadius:99, padding:'2px 6px', fontSize:9, color:'#fff', fontFamily:FONT, fontWeight:700 }}>
-                      {item.file.type.startsWith('video') ? '🎬' : '🖼️'} {idx+1}
-                    </div>
-                  </div>
-
-                  {/* Fields */}
-                  <div style={{ flex:1, padding:'12px 14px', display:'flex', flexDirection:'column', gap:8 }}>
-                    {/* Title */}
-                    <div>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:3 }}>
-                        <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:.4, fontFamily:FONT }}>Title</div>
-                        <button
-                          onClick={() => regenTitle(item)}
-                          disabled={item.generating || uploading}
-                          title="Re-generate AI title"
-                          style={{ display:'flex', alignItems:'center', gap:3, background: item.generating ? '#f3f4f6' : '#fef9c3', border:'none', borderRadius:6, padding:'2px 7px', cursor: item.generating||uploading ? 'default':'pointer', opacity: uploading?0.4:1, transition:'all .15s' }}
-                        >
-                          {item.generating
-                            ? <motion.span animate={{ rotate:360 }} transition={{ duration:.9, repeat:Infinity, ease:'linear' }} style={{ display:'inline-block', fontSize:11 }}>⟳</motion.span>
-                            : <span style={{ fontSize:11 }}>✨</span>
-                          }
-                          <span style={{ fontSize:10, fontWeight:700, color: item.generating ? '#9ca3af' : '#92400e', fontFamily:FONT }}>
-                            {item.generating ? 'Generating…' : 'AI Title'}
-                          </span>
-                        </button>
-                      </div>
-                      <input
-                        value={item.title}
-                        onChange={e => updateItem(item.id, { title:e.target.value })}
-                        placeholder={item.generating ? 'Generating AI title…' : 'e.g. Match Day vs West 3 CC 🏏'}
-                        disabled={uploading}
-                        maxLength={80}
-                        style={{ width:'100%', border: item.generating ? '1.5px solid #fde68a' : '1.5px solid #e5e7eb', borderRadius:8, padding:'6px 10px', fontFamily:FONT, fontSize:12, color:'#374151', outline:'none', boxSizing:'border-box', fontWeight:600, background: item.generating ? '#fffbeb' : '#fff', transition:'all .2s' }}
-                      />
-                    </div>
-                    {/* Caption */}
-                    <div>
-                      <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', marginBottom:3, textTransform:'uppercase', letterSpacing:.4, fontFamily:FONT }}>Caption</div>
-                      <textarea
-                        value={item.caption}
-                        onChange={e => updateItem(item.id, { caption:e.target.value })}
-                        placeholder="Describe the moment…"
-                        disabled={uploading}
-                        maxLength={300}
-                        rows={2}
-                        style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:8, padding:'6px 10px', fontFamily:FONT, fontSize:12, color:'#374151', resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4 }}
-                      />
-                    </div>
-                    {item.error && <div style={{ fontSize:11, color:'#dc2626', fontFamily:FONT }}>{item.error}</div>}
-                  </div>
-
-                  {/* Remove */}
-                  {!uploading && (
-                    <button onClick={() => removeItem(item.id)}
-                      style={{ width:36, background:'transparent', border:'none', cursor:'pointer', color:'#d1d5db', fontSize:18, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'12px 8px 0', flexShrink:0 }}
-                      onMouseEnter={e=>e.currentTarget.style.color='#ef4444'}
-                      onMouseLeave={e=>e.currentTarget.style.color='#d1d5db'}
-                    >×</button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* Footer */}
-        <div style={{ padding:'14px 22px', borderTop:'1px solid #f0f0f0', flexShrink:0, display:'flex', flexDirection:'column', gap:10 }}>
-          {/* Overall progress */}
-          {uploading && (
-            <div>
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
-                <span style={{ fontSize:12, fontWeight:700, color:'#374151', fontFamily:FONT }}>
-                  Uploading {items.filter(x=>x.status==='done').length} of {items.length}…
-                </span>
-                <span style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT }}>{progress}%</span>
+          {/* Apply-to-all strip */}
+          {items.length > 1 && !uploading && (
+            <div style={{ background:'#eff6ff', border:'1.5px solid #bfdbfe', borderRadius:14, padding:'14px 16px', display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
+              <span style={{ fontSize:14, flexShrink:0 }}>📌</span>
+              <div style={{ flex:1, minWidth:180 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'#1d4ed8', fontFamily:FONT, marginBottom:5 }}>APPLY SAME TITLE TO ALL</div>
+                <input
+                  value={masterTitle}
+                  onChange={e => setMasterTitle(e.target.value)}
+                  onKeyDown={e => { if(e.key==='Enter') applyMasterTitle() }}
+                  placeholder="e.g. DTU CC Dinner & Dance 2023"
+                  maxLength={80}
+                  style={{ width:'100%', border:'1.5px solid #bfdbfe', borderRadius:8, padding:'8px 12px', fontFamily:FONT, fontSize:13, color:'#1e3a8a', outline:'none', boxSizing:'border-box', fontWeight:600, background:'#fff' }}
+                />
               </div>
-              <div style={{ background:'#f3f4f6', borderRadius:99, height:6, overflow:'hidden' }}>
-                <motion.div animate={{ width:`${progress}%` }} transition={{ duration:.3 }}
-                  style={{ height:'100%', background:'linear-gradient(90deg,#e9a020,#f59e0b)', borderRadius:99 }}/>
-              </div>
+              <button onClick={applyMasterTitle} disabled={!masterTitle.trim()}
+                style={{ background: masterTitle.trim()?'#2563eb':'#93c5fd', color:'#fff', border:'none', borderRadius:10, padding:'9px 18px', fontFamily:FONT, fontSize:12, fontWeight:800, cursor:masterTitle.trim()?'pointer':'default', flexShrink:0, whiteSpace:'nowrap' }}>
+                Apply to all →
+              </button>
             </div>
           )}
 
-          <button
-            onClick={submitAll}
-            disabled={uploading || !items.length}
+          {/* ── ITEM GRID ── */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(340px, 1fr))', gap:16 }}>
+            <AnimatePresence>
+              {items.map((item, idx) => {
+                const active = item.status==='compressing'||item.status==='uploading'
+                const borderCol = item.status==='done'?'#86efac':item.status==='error'?'#fca5a5':active?'#fde68a':'#e2e8f0'
+                return (
+                  <motion.div key={item.id}
+                    initial={{ opacity:0, scale:.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:.9 }}
+                    transition={{ type:'spring', damping:22, stiffness:280 }}
+                    style={{ background:'#fff', border:`2px solid ${borderCol}`, borderRadius:18,
+                      overflow:'hidden', boxShadow:'0 2px 16px rgba(0,0,0,.07)', transition:'border-color .2s' }}
+                  >
+                    {/* Thumbnail */}
+                    <div style={{ position:'relative', aspectRatio:'16/9', background:'#0f172a', overflow:'hidden' }}>
+                      {item.file.type.startsWith('video')
+                        ? <video src={item.preview} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+                        : <img src={item.preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+                      }
+                      {/* Status overlay */}
+                      {active && (
+                        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.6)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
+                          <motion.div animate={{ rotate:360 }} transition={{ duration:.85, repeat:Infinity, ease:'linear' }}
+                            style={{ width:32, height:32, borderRadius:'50%', border:'3px solid rgba(255,255,255,.2)', borderTopColor:'#fff' }}/>
+                          <span style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:700 }}>
+                            {item.status==='compressing'?'⚡ Compressing…':'⬆️ Uploading…'}
+                          </span>
+                        </div>
+                      )}
+                      {item.status==='done' && (
+                        <div style={{ position:'absolute', inset:0, background:'rgba(21,128,61,.45)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>✅</div>
+                      )}
+                      {item.status==='error' && (
+                        <div style={{ position:'absolute', inset:0, background:'rgba(220,38,38,.45)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>❌</div>
+                      )}
+                      {/* Badges */}
+                      <div style={{ position:'absolute', top:8, left:8, background:'rgba(0,0,0,.6)', borderRadius:99, padding:'3px 8px', fontSize:10, color:'#fff', fontFamily:FONT, fontWeight:800 }}>
+                        {item.file.type.startsWith('video')?'🎬':'🖼️'} {idx+1}
+                      </div>
+                      {!uploading && (
+                        <button onClick={() => removeItem(item.id)}
+                          style={{ position:'absolute', top:8, right:8, width:28, height:28, borderRadius:'50%', border:'none', background:'rgba(0,0,0,.55)', color:'#fff', cursor:'pointer', fontSize:16, fontWeight:900, display:'flex', alignItems:'center', justifyContent:'center', lineHeight:1 }}
+                          onMouseEnter={e=>e.currentTarget.style.background='rgba(220,38,38,.85)'}
+                          onMouseLeave={e=>e.currentTarget.style.background='rgba(0,0,0,.55)'}
+                        >×</button>
+                      )}
+                    </div>
+
+                    {/* Fields */}
+                    <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:12 }}>
+                      {/* Title row */}
+                      <div>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
+                          <label style={{ fontSize:11, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT }}>Title</label>
+                          <button
+                            onClick={() => regenTitle(item)}
+                            disabled={item.generating || uploading}
+                            style={{ display:'flex', alignItems:'center', gap:4, background:item.generating?'#f1f5f9':'#fef9c3', border:`1px solid ${item.generating?'#e2e8f0':'#fde68a'}`, borderRadius:8, padding:'4px 10px', cursor:item.generating||uploading?'default':'pointer', transition:'all .15s' }}
+                          >
+                            {item.generating
+                              ? <motion.span animate={{ rotate:360 }} transition={{ duration:.8, repeat:Infinity, ease:'linear' }} style={{ display:'inline-block', fontSize:12 }}>⟳</motion.span>
+                              : <span style={{ fontSize:13 }}>✨</span>}
+                            <span style={{ fontSize:11, fontWeight:700, color:item.generating?'#94a3b8':'#92400e', fontFamily:FONT }}>
+                              {item.generating?'Generating…':'AI Title'}
+                            </span>
+                          </button>
+                        </div>
+                        <input
+                          value={item.title}
+                          onChange={e => updateItem(item.id, { title:e.target.value })}
+                          placeholder={item.generating?'Generating…':'e.g. Match Day 🏏 or Dinner & Dance 2023'}
+                          disabled={uploading}
+                          maxLength={80}
+                          style={inputStyle(item.generating)}
+                          onFocus={e => { if(!item.generating) e.target.style.borderColor='#6366f1' }}
+                          onBlur={e => { e.target.style.borderColor = item.generating?'#fde68a':'#e5e7eb' }}
+                        />
+                      </div>
+                      {/* Caption */}
+                      <div>
+                        <label style={{ fontSize:11, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT, display:'block', marginBottom:6 }}>Caption</label>
+                        <textarea
+                          value={item.caption}
+                          onChange={e => updateItem(item.id, { caption:e.target.value })}
+                          placeholder="Describe the moment… (optional)"
+                          disabled={uploading}
+                          maxLength={300}
+                          rows={2}
+                          style={{ ...inputStyle(false), resize:'vertical', lineHeight:1.5, minHeight:60 }}
+                          onFocus={e => e.target.style.borderColor='#6366f1'}
+                          onBlur={e => e.target.style.borderColor='#e5e7eb'}
+                        />
+                      </div>
+                      {item.error && (
+                        <div style={{ fontSize:11, color:'#dc2626', background:'#fef2f2', borderRadius:8, padding:'6px 10px', fontFamily:FONT }}>⚠️ {item.error}</div>
+                      )}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* ── FOOTER ── */}
+        <div style={{ padding:'16px 24px', background:'#fff', borderTop:'1px solid #e5e7eb', flexShrink:0, display:'flex', flexDirection:'column', gap:10 }}>
+          {uploading && (
+            <div>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                <span style={{ fontSize:12, fontWeight:700, color:'#374151', fontFamily:FONT }}>
+                  {items.some(x=>x.status==='compressing') ? '⚡ Compressing images…' : '⬆️ Uploading to gallery…'}
+                  &nbsp;{doneCount}/{items.length} done
+                </span>
+                <span style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, fontWeight:700 }}>{progress}%</span>
+              </div>
+              <div style={{ background:'#f1f5f9', borderRadius:99, height:7, overflow:'hidden' }}>
+                <motion.div animate={{ width:`${progress}%` }} transition={{ duration:.3 }}
+                  style={{ height:'100%', background:'linear-gradient(90deg,#6366f1,#e9a020)', borderRadius:99 }}/>
+              </div>
+            </div>
+          )}
+          <button onClick={submitAll} disabled={uploading||!items.length}
             style={{
-              background: items.length ? 'linear-gradient(135deg,#e9a020,#f59e0b)' : '#e5e7eb',
-              color: items.length ? '#fff' : '#9ca3af',
-              border:'none', borderRadius:14, padding:'14px', fontFamily:FONT, fontSize:15, fontWeight:800,
-              cursor: items.length && !uploading ? 'pointer' : 'default',
-              transition:'all .2s', boxShadow: items.length ? '0 4px 16px rgba(233,160,32,.4)' : 'none',
-            }}
-          >
+              background: items.length?'linear-gradient(135deg,#e9a020,#f59e0b)':'#e2e8f0',
+              color: items.length?'#fff':'#94a3b8',
+              border:'none', borderRadius:14, padding:'15px', fontFamily:FONT, fontSize:15, fontWeight:900,
+              cursor: items.length&&!uploading?'pointer':'default', transition:'all .2s',
+              boxShadow: items.length?'0 4px 20px rgba(233,160,32,.45)':'none',
+            }}>
             {uploading
-              ? items.some(x=>x.status==='compressing')
-                ? `⚡ Compressing… (${doneCount}/${items.length} done)`
-                : `⬆️ Uploading… (${doneCount}/${items.length} done)`
-              : items.length === 0 ? '📷 Select files to post'
-              : items.length === 1 ? '🚀 Share Post'
+              ? items.some(x=>x.status==='compressing') ? `⚡ Compressing… (${doneCount}/${items.length} done)` : `⬆️ Uploading… (${doneCount}/${items.length} done)`
+              : items.length===0 ? '📷 Select files to post'
+              : items.length===1 ? '🚀 Share Post'
               : `🚀 Share All ${items.length} Posts`}
           </button>
         </div>
