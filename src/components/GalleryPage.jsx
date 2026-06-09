@@ -610,6 +610,7 @@ export default function GalleryPage() {
   const [selectedPost, setSelectedPost] = useState(null)
   const [showUpload,   setShowUpload]   = useState(false)
   const [sortBy,       setSortBy]       = useState('newest') // newest | popular
+  const [mediaTab,     setMediaTab]     = useState('photos') // photos | videos
 
   // Load player info for logged-in user
   useEffect(() => {
@@ -678,10 +679,13 @@ export default function GalleryPage() {
     setPosts(ps => ps.filter(p => p.id !== postId))
   }
 
-  const sortedPosts = [...posts].sort((a,b) => {
+  const sorted = [...posts].sort((a,b) => {
     if (sortBy === 'popular') return (b._likeCount - a._likeCount) || (b._commentCount - a._commentCount)
     return new Date(b.created_at) - new Date(a.created_at)
   })
+  const photos = sorted.filter(p => p.media_type === 'image')
+  const videos = sorted.filter(p => p.media_type === 'video')
+  const visiblePosts = mediaTab === 'photos' ? photos : videos
 
   const canPost = !!user
 
@@ -724,7 +728,7 @@ export default function GalleryPage() {
                   onClick={() => setShowUpload(true)}
                   style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:7, boxShadow:'0 4px 16px rgba(233,160,32,.5)' }}
                 >
-                  <span style={{ fontSize:16 }}>+</span> Post Photo
+                  <span style={{ fontSize:16 }}>+</span> {mediaTab === 'videos' ? 'Post Video' : 'Post Photo'}
                 </motion.button>
               )}
             </div>
@@ -733,9 +737,10 @@ export default function GalleryPage() {
           {/* Stats strip */}
           <div style={{ display:'flex', gap:20, marginTop:18, flexWrap:'wrap' }}>
             {[
-              { label:'Posts',    value:posts.length,                                emoji:'🖼️' },
-              { label:'Likes',    value:posts.reduce((s,p)=>s+p._likeCount,0),       emoji:'❤️' },
-              { label:'Comments', value:posts.reduce((s,p)=>s+p._commentCount,0),    emoji:'💬' },
+              { label:'Photos',   value:posts.filter(p=>p.media_type==='image').length, emoji:'🖼️' },
+              { label:'Videos',   value:posts.filter(p=>p.media_type==='video').length, emoji:'🎬' },
+              { label:'Likes',    value:posts.reduce((s,p)=>s+p._likeCount,0),          emoji:'❤️' },
+              { label:'Comments', value:posts.reduce((s,p)=>s+p._commentCount,0),       emoji:'💬' },
             ].map(s => (
               <div key={s.label} style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <span style={{ fontSize:16 }}>{s.emoji}</span>
@@ -744,6 +749,38 @@ export default function GalleryPage() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── Media Tabs ──────────────────────────────────────── */}
+      <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', position:'sticky', top:56, zIndex:50 }}>
+        <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'0 16px', display:'flex', gap:0 }}>
+          {[
+            { id:'photos', label:'🖼️ Photos', count: posts.filter(p=>p.media_type==='image').length },
+            { id:'videos', label:'🎬 Videos', count: posts.filter(p=>p.media_type==='video').length },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setMediaTab(tab.id)}
+              style={{
+                padding:'14px 22px', border:'none', background:'transparent', cursor:'pointer',
+                fontFamily:FONT, fontSize:13, fontWeight: mediaTab===tab.id ? 800 : 500,
+                color: mediaTab===tab.id ? '#060d2e' : '#9ca3af',
+                borderBottom: `2px solid ${mediaTab===tab.id ? '#e9a020' : 'transparent'}`,
+                transition:'all .18s', display:'flex', alignItems:'center', gap:7,
+              }}
+            >
+              {tab.label}
+              <span style={{
+                background: mediaTab===tab.id ? '#e9a020' : '#f3f4f6',
+                color: mediaTab===tab.id ? '#fff' : '#9ca3af',
+                borderRadius:99, padding:'1px 8px', fontSize:11, fontWeight:700, fontFamily:FONT,
+                transition:'all .18s',
+              }}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -756,30 +793,40 @@ export default function GalleryPage() {
                 style={{ aspectRatio:'1', borderRadius:16, background:'#e5e7eb' }}/>
             ))}
           </div>
-        ) : sortedPosts.length === 0 ? (
+        ) : visiblePosts.length === 0 ? (
           <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ textAlign:'center', padding:'60px 20px' }}>
-            <div style={{ fontSize:60, marginBottom:16 }}>📷</div>
-            <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>No posts yet!</div>
-            <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>Be the first to share a team moment 🏏</div>
+            <div style={{ fontSize:60, marginBottom:16 }}>{mediaTab === 'videos' ? '🎬' : '📷'}</div>
+            <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>
+              No {mediaTab === 'videos' ? 'videos' : 'photos'} yet!
+            </div>
+            <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>
+              {mediaTab === 'videos' ? 'Share a match or training video 🎥' : 'Be the first to share a team moment 🏏'}
+            </div>
             {canPost && (
               <motion.button whileTap={{ scale:.96 }} onClick={() => setShowUpload(true)}
                 style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 20px rgba(233,160,32,.4)' }}>
-                📸 Share First Post
+                {mediaTab === 'videos' ? '🎬 Upload First Video' : '📸 Share First Photo'}
               </motion.button>
             )}
           </motion.div>
         ) : (
-          <motion.div
-            initial="hidden" animate="visible"
-            variants={{ visible:{ transition:{ staggerChildren:.04 } } }}
-            style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:10 }}
-          >
-            {sortedPosts.map(post => (
-              <motion.div key={post.id} variants={{ hidden:{ opacity:0, scale:.9 }, visible:{ opacity:1, scale:1, transition:{ type:'spring', damping:20 } } }}>
-                <PostCard post={post} onClick={() => setSelectedPost(post)}/>
-              </motion.div>
-            ))}
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mediaTab}
+              initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }}
+              transition={{ duration:.22, ease:'easeOut' }}
+              style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:10 }}
+            >
+              {visiblePosts.map((post, i) => (
+                <motion.div key={post.id}
+                  initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
+                  transition={{ type:'spring', damping:20, delay: Math.min(i * .04, .3) }}
+                >
+                  <PostCard post={post} onClick={() => setSelectedPost(post)}/>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
 
