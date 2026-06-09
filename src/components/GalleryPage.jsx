@@ -1145,12 +1145,15 @@ export default function GalleryPage() {
   const allPhotos = sorted.filter(p => p.media_type === 'image')
   const allVideos = sorted.filter(p => p.media_type === 'video')
 
-  // Posts inside open album
-  const albumPosts = selectedAlbum
-    ? (albumMap[selectedAlbum] || [])
-    : []
+  // Posts inside open album (handles the special '__uncategorised__' virtual album)
+  const albumPosts = selectedAlbum === '__uncategorised__'
+    ? noAlbum
+    : selectedAlbum
+      ? (albumMap[selectedAlbum] || [])
+      : []
   const albumPhotos = albumPosts.filter(p => p.media_type === 'image')
   const albumVideos = albumPosts.filter(p => p.media_type === 'video')
+  const albumDisplayName = selectedAlbum === '__uncategorised__' ? 'Uncategorised' : selectedAlbum
 
   const canPost = !!user
 
@@ -1221,7 +1224,7 @@ export default function GalleryPage() {
       <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', position:'sticky', top:56, zIndex:50 }}>
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'0 16px', display:'flex', gap:0 }}>
           {[
-            { id:'albums', label:'📁 Albums',   count: albumNames.length + (noAlbum.length > 0 ? 1 : 0) },
+            { id:'albums', label:'📁 Albums',   count: albumNames.length + (noAlbum.length > 0 ? 1 : 0), },
             { id:'photos', label:'🖼️ Photos',   count: allPhotos.length },
             { id:'videos', label:'🎬 Videos',   count: allVideos.length },
           ].map(tab => (
@@ -1258,7 +1261,7 @@ export default function GalleryPage() {
         ) : selectedAlbum ? (
           /* ── ALBUM DETAIL VIEW ── */
           <AnimatePresence mode="wait">
-            <motion.div key={selectedAlbum} initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-30 }} transition={{ duration:.22 }}>
+            <motion.div key={selectedAlbum||'none'} initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-30 }} transition={{ duration:.22 }}>
               {/* Back + album header */}
               <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20, flexWrap:'wrap' }}>
                 <button onClick={() => setSelectedAlbum(null)}
@@ -1267,7 +1270,7 @@ export default function GalleryPage() {
                   ← Back
                 </button>
                 <div>
-                  <div style={{ fontSize:20, fontWeight:900, color:'#060d2e', fontFamily:FONT }}>📁 {selectedAlbum}</div>
+                  <div style={{ fontSize:20, fontWeight:900, color:'#060d2e', fontFamily:FONT }}>📁 {albumDisplayName}</div>
                   <div style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, marginTop:2 }}>
                     {albumPhotos.length} photo{albumPhotos.length!==1?'s':''} · {albumVideos.length} video{albumVideos.length!==1?'s':''}
                   </div>
@@ -1343,19 +1346,23 @@ export default function GalleryPage() {
                       </div>
                     </>
                   )}
-                  {/* Unorganised */}
+                  {/* Unorganised — shown as a single album card, not a flat dump */}
                   {noAlbum.length > 0 && (
                     <>
-                      <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14 }}>
-                        Recent Uploads — {noAlbum.length} item{noAlbum.length!==1?'s':''}
-                      </div>
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:10 }}>
-                        {noAlbum.filter(p=>p.media_type==='image').map((post, i) => (
-                          <motion.div key={post.id} initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
-                            transition={{ type:'spring', damping:20, delay:Math.min(i*.03,.25) }}>
-                            <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i<8}/>
-                          </motion.div>
-                        ))}
+                      {albumNames.length > 0 && (
+                        <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14, marginTop: albumNames.length > 0 ? 0 : 0 }}>
+                          Other
+                        </div>
+                      )}
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16 }}>
+                        <motion.div initial={{ opacity:0, scale:.93 }} animate={{ opacity:1, scale:1 }}
+                          transition={{ type:'spring', damping:20, delay:Math.min(albumNames.length*.06,.3) }}>
+                          <AlbumCard
+                            albumName="Uncategorised"
+                            posts={noAlbum}
+                            onClick={() => { setSelectedAlbum('__uncategorised__'); setAlbumInnerTab('photos') }}
+                          />
+                        </motion.div>
                       </div>
                     </>
                   )}
