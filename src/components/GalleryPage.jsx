@@ -23,6 +23,34 @@ function isVideo(url) {
   return /\.(mp4|mov|webm|ogg)$/i.test(url)
 }
 
+function fmtDateTime(d) {
+  if (!d) return ''
+  return new Date(d).toLocaleString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true,
+  })
+}
+
+function fmtDateShort(d) {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+async function fetchAITitle({ fileName, mediaType, playerName }) {
+  try {
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    const res = await fetch('/api/generate-title', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName, mediaType, playerName, dateStr }),
+    })
+    const data = await res.json()
+    return data.title || null
+  } catch {
+    return null
+  }
+}
+
 // ── Upload Modal (bulk) ─────────────────────────────────────────
 function UploadModal({ user, playerInfo, onClose, onPosted }) {
   // items: [{ file, preview, title, caption, status, error }]
@@ -35,7 +63,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
 
   const MAX_IMAGE_MB = 20, MAX_VIDEO_MB = 100, MAX_FILES = 20
 
-  function addFiles(fileList) {
+  async function addFiles(fileList) {
     const newFiles = Array.from(fileList)
     const errors = []
     const valid = []
@@ -46,15 +74,41 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
     })
     if (errors.length) setGlobalErr(errors.join(' · '))
     const toAdd = valid.slice(0, MAX_FILES - items.length)
-    setItems(prev => [...prev, ...toAdd.map(f => ({
+    const newItems = toAdd.map(f => ({
       id: Math.random().toString(36).slice(2),
       file: f,
       preview: URL.createObjectURL(f),
       title: '',
       caption: '',
-      status: 'pending', // pending | uploading | done | error
+      status: 'pending',
+      generating: true,  // AI title in progress
       error: '',
-    }))])
+    }))
+    setItems(prev => [...prev, ...newItems])
+    // Auto-generate AI titles in parallel
+    newItems.forEach(item => {
+      fetchAITitle({
+        fileName: item.file.name,
+        mediaType: item.file.type.startsWith('video') ? 'video' : 'image',
+        playerName: playerInfo?.name || user?.email || '',
+      }).then(title => {
+        setItems(prev => prev.map(x =>
+          x.id === item.id ? { ...x, title: title || x.title, generating: false } : x
+        ))
+      })
+    })
+  }
+
+  async function regenTitle(item) {
+    setItems(prev => prev.map(x => x.id === item.id ? { ...x, generating: true } : x))
+    const title = await fetchAITitle({
+      fileName: item.file.name,
+      mediaType: item.file.type.startsWith('video') ? 'video' : 'image',
+      playerName: playerInfo?.name || user?.email || '',
+    })
+    setItems(prev => prev.map(x =>
+      x.id === item.id ? { ...x, title: title ?? x.title, generating: false } : x
+    ))
   }
 
   function removeItem(id) { setItems(prev => prev.filter(x => x.id !== id)) }
@@ -217,14 +271,30 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
                   <div style={{ flex:1, padding:'12px 14px', display:'flex', flexDirection:'column', gap:8 }}>
                     {/* Title */}
                     <div>
-                      <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', marginBottom:3, textTransform:'uppercase', letterSpacing:.4, fontFamily:FONT }}>Title</div>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:3 }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:.4, fontFamily:FONT }}>Title</div>
+                        <button
+                          onClick={() => regenTitle(item)}
+                          disabled={item.generating || uploading}
+                          title="Re-generate AI title"
+                          style={{ display:'flex', alignItems:'center', gap:3, background: item.generating ? '#f3f4f6' : '#fef9c3', border:'none', borderRadius:6, padding:'2px 7px', cursor: item.generating||uploading ? 'default':'pointer', opacity: uploading?0.4:1, transition:'all .15s' }}
+                        >
+                          {item.generating
+                            ? <motion.span animate={{ rotate:360 }} transition={{ duration:.9, repeat:Infinity, ease:'linear' }} style={{ display:'inline-block', fontSize:11 }}>⟳</motion.span>
+                            : <span style={{ fontSize:11 }}>✨</span>
+                          }
+                          <span style={{ fontSize:10, fontWeight:700, color: item.generating ? '#9ca3af' : '#92400e', fontFamily:FONT }}>
+                            {item.generating ? 'Generating…' : 'AI Title'}
+                          </span>
+                        </button>
+                      </div>
                       <input
                         value={item.title}
                         onChange={e => updateItem(item.id, { title:e.target.value })}
-                        placeholder="e.g. Match Day vs West 3 CC 🏏"
+                        placeholder={item.generating ? 'Generating AI title…' : 'e.g. Match Day vs West 3 CC 🏏'}
                         disabled={uploading}
                         maxLength={80}
-                        style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:8, padding:'6px 10px', fontFamily:FONT, fontSize:12, color:'#374151', outline:'none', boxSizing:'border-box', fontWeight:600 }}
+                        style={{ width:'100%', border: item.generating ? '1.5px solid #fde68a' : '1.5px solid #e5e7eb', borderRadius:8, padding:'6px 10px', fontFamily:FONT, fontSize:12, color:'#374151', outline:'none', boxSizing:'border-box', fontWeight:600, background: item.generating ? '#fffbeb' : '#fff', transition:'all .2s' }}
                       />
                     </div>
                     {/* Caption */}
@@ -429,7 +499,10 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
             <Avatar name={post.player_name} size={38}/>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontWeight:800, fontSize:14, color:'#060d2e', fontFamily:FONT }}>{post.player_name}</div>
-              <div style={{ fontSize:11, color:'#9ca3af', fontFamily:FONT }}>{timeAgo(post.created_at)}</div>
+              <div style={{ fontSize:11, color:'#9ca3af', fontFamily:FONT }}>
+                {fmtDateTime(post.created_at)}
+                <span style={{ marginLeft:6, background:'#f3f4f6', borderRadius:99, padding:'1px 7px', fontSize:10, color:'#6b7280', fontWeight:700 }}>{timeAgo(post.created_at)}</span>
+              </div>
             </div>
             {(isOwner) && (
               <button
@@ -581,21 +654,22 @@ function PostCard({ post, onClick }) {
         )}
       </AnimatePresence>
 
-      {/* Player badge */}
-      <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'24px 10px 10px', background:'linear-gradient(transparent,rgba(0,0,0,.7))' }}>
+      {/* Bottom info overlay */}
+      <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'28px 10px 10px', background:'linear-gradient(transparent,rgba(0,0,0,.82))' }}>
         {post.title && (
-          <div style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:2 }}>
+          <div style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>
             {post.title}
           </div>
         )}
-        <div style={{ fontSize:10, color:'rgba(255,255,255,.8)', fontFamily:FONT, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-          {post.player_name}
-        </div>
-        {post.caption && !post.title && (
-          <div style={{ fontSize:10, color:'rgba(255,255,255,.65)', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:1 }}>
-            {post.caption}
+        <div style={{ display:'flex', alignItems:'center', gap:5, overflow:'hidden' }}>
+          <div style={{ fontSize:10, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flexShrink:0, maxWidth:'55%' }}>
+            {post.player_name}
           </div>
-        )}
+          <span style={{ fontSize:9, color:'rgba(255,255,255,.4)', flexShrink:0 }}>·</span>
+          <div style={{ fontSize:9, color:'rgba(255,255,255,.6)', fontFamily:FONT, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+            {fmtDateShort(post.created_at)}
+          </div>
+        </div>
       </div>
     </motion.div>
   )
