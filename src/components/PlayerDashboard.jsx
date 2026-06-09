@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
@@ -209,12 +209,58 @@ function ChangePasswordModal({ onClose }) {
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function PlayerDashboard() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, updateProfile } = useAuth()
   const [myPlayer, setMyPlayer]         = useState(null)
   const [loaded, setLoaded]             = useState(false)
   const [greeting, setGreeting]         = useState('Welcome back')
-  const [showChangePw, setShowChangePw] = useState(false)
-  const [imgOk, setImgOk]               = useState(true)
+  const [showChangePw, setShowChangePw]   = useState(false)
+  const [imgOk, setImgOk]                 = useState(true)
+  const [photoHover, setPhotoHover]       = useState(false)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoMsg, setPhotoMsg]           = useState(null) // { type: 'ok'|'err', text }
+  const fileInputRef = useRef(null)
+
+  async function handlePhotoChange(e) {
+    const file = e.target.files?.[0]
+    if (!fileInputRef.current) return
+    fileInputRef.current.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setPhotoMsg({ type:'err', text:'Please choose an image file (JPG, PNG, WebP).' })
+      setTimeout(() => setPhotoMsg(null), 3500)
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoMsg({ type:'err', text:'Photo must be under 5 MB.' })
+      setTimeout(() => setPhotoMsg(null), 3500)
+      return
+    }
+    const ext = file.name.split('.').pop().toLowerCase() || 'jpg'
+    const path = `player-photos/${user.id}/profile.${ext}`
+    setPhotoUploading(true)
+    setPhotoMsg(null)
+    const { error: upErr } = await supabase.storage
+      .from('team-media')
+      .upload(path, file, { cacheControl: '60', upsert: true })
+    if (upErr) {
+      setPhotoUploading(false)
+      setPhotoMsg({ type:'err', text: 'Upload failed — ' + upErr.message })
+      setTimeout(() => setPhotoMsg(null), 4000)
+      return
+    }
+    const { data: { publicUrl } } = supabase.storage.from('team-media').getPublicUrl(path)
+    // Bust cache by appending a timestamp query param
+    const bustedUrl = `${publicUrl}?t=${Date.now()}`
+    try {
+      await updateProfile({ avatar_url: bustedUrl })
+      setImgOk(true)
+      setPhotoMsg({ type:'ok', text:'Photo updated! 🎉' })
+    } catch {
+      setPhotoMsg({ type:'err', text:'Saved photo but could not update profile.' })
+    }
+    setPhotoUploading(false)
+    setTimeout(() => setPhotoMsg(null), 3000)
+  }
 
   useEffect(() => {
     const h = new Date().getHours()
@@ -367,25 +413,108 @@ export default function PlayerDashboard() {
               >
                 {/* Photo */}
                 <div style={{ position:'relative' }}>
+                  {/* Ambient glow ring */}
                   <motion.div animate={{ scale:[1,1.1,1], opacity:[.4,.1,.4] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
                     style={{ position:'absolute', inset:-8, borderRadius:'50%', background:'radial-gradient(circle, rgba(233,160,32,.4) 0%, transparent 70%)', pointerEvents:'none' }}/>
-                  <div style={{
-                    width:100, height:100, borderRadius:'50%', overflow:'hidden',
-                    border:'3px solid rgba(233,160,32,.65)',
-                    boxShadow:'0 0 0 2px rgba(233,160,32,.15), 0 12px 36px rgba(0,0,0,.5)',
-                    background:'rgba(255,255,255,.06)',
-                    display:'flex', alignItems:'center', justifyContent:'center',
-                    position:'relative', zIndex:1,
-                  }}>
-                    {myPlayer?.photoUrl && imgOk
-                      ? <img src={myPlayer.photoUrl} alt={displayName}
-                          style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition: myPlayer.photoPos || 'center 35%' }}
-                          onError={() => setImgOk(false)}/>
-                      : <span style={{ fontSize:32, fontWeight:900, color:'#fff', fontFamily:FONT }}>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display:'none' }}
+                    onChange={handlePhotoChange}
+                  />
+
+                  {/* Photo circle with hover overlay */}
+                  <div
+                    onMouseEnter={() => setPhotoHover(true)}
+                    onMouseLeave={() => setPhotoHover(false)}
+                    onClick={() => !photoUploading && fileInputRef.current?.click()}
+                    title="Change profile photo"
+                    style={{
+                      width:100, height:100, borderRadius:'50%', overflow:'hidden',
+                      border:`3px solid ${photoHover ? 'rgba(99,102,241,.9)' : 'rgba(233,160,32,.65)'}`,
+                      boxShadow: photoHover
+                        ? '0 0 0 4px rgba(99,102,241,.25), 0 12px 36px rgba(0,0,0,.5)'
+                        : '0 0 0 2px rgba(233,160,32,.15), 0 12px 36px rgba(0,0,0,.5)',
+                      background:'rgba(255,255,255,.06)',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                      position:'relative', zIndex:1,
+                      cursor: photoUploading ? 'not-allowed' : 'pointer',
+                      transition:'border-color .2s, box-shadow .2s',
+                    }}
+                  >
+                    {/* Actual photo — profile.photo_url takes priority over BTCL photo */}
+                    {(profile?.avatar_url || (myPlayer?.photoUrl && imgOk))
+                      ? <img
+                          src={profile?.avatar_url || myPlayer.photoUrl}
+                          alt={displayName}
+                          style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition: myPlayer?.photoPos || 'center 35%', transition:'filter .2s', filter: photoHover ? 'brightness(0.45)' : 'none' }}
+                          onError={() => setImgOk(false)}
+                        />
+                      : <span style={{ fontSize:32, fontWeight:900, color:'#fff', fontFamily:FONT, filter: photoHover ? 'brightness(0.3)' : 'none', transition:'filter .2s' }}>
                           {(forename[0]||'?').toUpperCase()}{(surname[0]||'').toUpperCase()}
                         </span>
                     }
+
+                    {/* Hover overlay */}
+                    <AnimatePresence>
+                      {(photoHover || photoUploading) && (
+                        <motion.div
+                          initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+                          transition={{ duration:0.18 }}
+                          style={{
+                            position:'absolute', inset:0, borderRadius:'50%',
+                            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4,
+                            background: photoUploading ? 'rgba(0,0,0,.65)' : 'rgba(15,23,42,.6)',
+                            backdropFilter:'blur(2px)',
+                            pointerEvents:'none',
+                          }}
+                        >
+                          {photoUploading
+                            ? (
+                              <motion.div
+                                animate={{ rotate:360 }} transition={{ duration:0.9, repeat:Infinity, ease:'linear' }}
+                                style={{ width:22, height:22, borderRadius:'50%', border:'2.5px solid rgba(255,255,255,.15)', borderTopColor:'#fff' }}
+                              />
+                            ) : (
+                              <>
+                                {/* Camera icon */}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                  <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                <span style={{ fontFamily:FONT, fontSize:8, fontWeight:800, color:'rgba(255,255,255,.8)', letterSpacing:.5, textTransform:'uppercase' }}>Change</span>
+                              </>
+                            )
+                          }
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
+
+                  {/* Status message pill */}
+                  <AnimatePresence>
+                    {photoMsg && (
+                      <motion.div
+                        initial={{ opacity:0, y:6, scale:0.9 }}
+                        animate={{ opacity:1, y:0, scale:1 }}
+                        exit={{ opacity:0, y:4, scale:0.9 }}
+                        transition={{ duration:0.22 }}
+                        style={{
+                          position:'absolute', bottom:-36, left:'50%', transform:'translateX(-50%)',
+                          whiteSpace:'nowrap', zIndex:10,
+                          background: photoMsg.type === 'ok' ? 'rgba(22,163,74,.92)' : 'rgba(220,38,38,.92)',
+                          borderRadius:20, padding:'5px 12px',
+                          fontFamily:FONT, fontSize:11, fontWeight:700, color:'#fff',
+                          boxShadow:'0 4px 16px rgba(0,0,0,.3)',
+                        }}
+                      >
+                        {photoMsg.text}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Name */}
