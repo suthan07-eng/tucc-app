@@ -23,6 +23,32 @@ function timeAgo(d) {
 
 function isVideo(url) { return /\.(mp4|mov|webm|ogg)$/i.test(url||'') }
 
+function compressImage(file) {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return Promise.resolve(file)
+  return new Promise(resolve => {
+    const MAX = 1920, QUALITY = 0.82
+    const img = new Image()
+    const objUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objUrl)
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width >= height) { height = Math.round(height * MAX / width); width = MAX }
+        else                 { width  = Math.round(width  * MAX / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      canvas.toBlob(blob => {
+        if (!blob || blob.size >= file.size) { resolve(file); return }
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type:'image/jpeg' }))
+      }, 'image/jpeg', QUALITY)
+    }
+    img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(file) }
+    img.src = objUrl
+  })
+}
+
 // ── Admin Upload Modal (bulk) ─────────────────────────────────
 function AdminUploadModal({ onClose, onPosted }) {
   const [items,     setItems]     = useState([])
@@ -54,11 +80,13 @@ function AdminUploadModal({ onClose, onPosted }) {
   function updateItem(id, patch) { setItems(prev => prev.map(x => x.id===id ? {...x,...patch} : x)) }
 
   async function uploadOne(item) {
-    updateItem(item.id, { status:'uploading' })
     try {
-      const ext  = item.file.name.split('.').pop()
+      updateItem(item.id, { status:'compressing' })
+      const file = await compressImage(item.file)
+      updateItem(item.id, { status:'uploading' })
+      const ext  = file.name.split('.').pop()
       const path = `posts/${Date.now()}-admin-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, item.file, { cacheControl:'3600', upsert:false })
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { cacheControl:'3600', upsert:false })
       if (upErr) throw upErr
       const { data:{ publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
       const { error: dbErr } = await supabase.from('posts').insert({
@@ -140,7 +168,7 @@ function AdminUploadModal({ onClose, onPosted }) {
             {items.map((item, idx) => (
               <motion.div key={item.id}
                 initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, x:-20 }}
-                style={{ border: item.status==='done'?'2px solid #bbf7d0':item.status==='error'?'2px solid #fecaca':item.status==='uploading'?'2px solid #fde68a':'1.5px solid #f0f0f0', borderRadius:14, overflow:'hidden', background:'#fff', boxShadow:'0 1px 6px rgba(0,0,0,.06)' }}
+                style={{ border: item.status==='done'?'2px solid #bbf7d0':item.status==='error'?'2px solid #fecaca':(item.status==='uploading'||item.status==='compressing')?'2px solid #fde68a':'1.5px solid #f0f0f0', borderRadius:14, overflow:'hidden', background:'#fff', boxShadow:'0 1px 6px rgba(0,0,0,.06)' }}
               >
                 <div style={{ display:'flex' }}>
                   <div style={{ width:100, flexShrink:0, position:'relative', background:'#000' }}>
@@ -148,7 +176,12 @@ function AdminUploadModal({ onClose, onPosted }) {
                       ? <video src={item.preview} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:100 }}/>
                       : <img src={item.preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:100, display:'block' }}/>
                     }
-                    {item.status==='uploading' && <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center' }}><motion.div animate={{rotate:360}} transition={{duration:1,repeat:Infinity,ease:'linear'}} style={{width:22,height:22,borderRadius:'50%',border:'3px solid rgba(255,255,255,.3)',borderTopColor:'#fff'}}/></div>}
+                    {(item.status==='compressing'||item.status==='uploading') && (
+                      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.55)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5 }}>
+                        <motion.div animate={{rotate:360}} transition={{duration:.9,repeat:Infinity,ease:'linear'}} style={{width:22,height:22,borderRadius:'50%',border:'3px solid rgba(255,255,255,.25)',borderTopColor:'#fff'}}/>
+                        <span style={{ fontSize:9, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700 }}>{item.status==='compressing'?'Compressing…':'Uploading…'}</span>
+                      </div>
+                    )}
                     {item.status==='done'  && <div style={{ position:'absolute', inset:0, background:'rgba(21,128,61,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>✅</div>}
                     {item.status==='error' && <div style={{ position:'absolute', inset:0, background:'rgba(220,38,38,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>❌</div>}
                     <div style={{ position:'absolute', top:5, left:5, background:'rgba(0,0,0,.55)', borderRadius:99, padding:'2px 6px', fontSize:9, color:'#fff', fontFamily:FONT, fontWeight:700 }}>

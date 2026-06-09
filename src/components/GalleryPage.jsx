@@ -36,6 +36,38 @@ function fmtDateShort(d) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+// Compress an image file to max 1920px / JPEG 0.82 before uploading.
+// A 12 MP phone photo goes from ~8 MB → ~350 KB — 20× faster to upload.
+// Videos and GIFs are returned unchanged.
+function compressImage(file) {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+    return Promise.resolve(file)
+  }
+  return new Promise(resolve => {
+    const MAX = 1920
+    const QUALITY = 0.82
+    const img = new Image()
+    const objUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objUrl)
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width >= height) { height = Math.round(height * MAX / width); width = MAX }
+        else                 { width  = Math.round(width  * MAX / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      canvas.toBlob(blob => {
+        if (!blob || blob.size >= file.size) { resolve(file); return }  // keep original if canvas made it bigger
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type:'image/jpeg' }))
+      }, 'image/jpeg', QUALITY)
+    }
+    img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(file) }
+    img.src = objUrl
+  })
+}
+
 async function fetchAITitle({ fileName, mediaType, playerName }) {
   try {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -114,12 +146,18 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
   function updateItem(id, patch) { setItems(prev => prev.map(x => x.id === id ? {...x, ...patch} : x)) }
 
   async function uploadItem(item) {
-    updateItem(item.id, { status:'uploading' })
     try {
-      const ext  = item.file.name.split('.').pop()
+      // Step 1 — compress image in-browser (videos pass through unchanged)
+      updateItem(item.id, { status:'compressing' })
+      const file = await compressImage(item.file)
+
+      // Step 2 — upload to Supabase Storage
+      updateItem(item.id, { status:'uploading' })
+      const ext  = file.name.split('.').pop()
       const path = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, item.file, { cacheControl:'3600', upsert:false })
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { cacheControl:'3600', upsert:false })
       if (upErr) throw upErr
+
       const { data:{ publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
       const { error: dbErr } = await supabase.from('posts').insert({
         player_id:    playerInfo?.id   || null,
@@ -148,8 +186,8 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
     onClose()
   }
 
-  const allDone = items.length > 0 && items.every(x => x.status === 'done')
   const progress = items.length ? Math.round((items.filter(x=>x.status==='done').length / items.length) * 100) : 0
+  const doneCount = items.filter(x=>x.status==='done').length
 
   return (
     <motion.div
@@ -246,9 +284,12 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
                       : <img src={item.preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:110, display:'block' }}/>
                     }
                     {/* Status overlay */}
-                    {item.status === 'uploading' && (
-                      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <motion.div animate={{ rotate:360 }} transition={{ duration:1, repeat:Infinity, ease:'linear' }} style={{ width:24, height:24, borderRadius:'50%', border:'3px solid rgba(255,255,255,.3)', borderTopColor:'#fff' }}/>
+                    {(item.status === 'compressing' || item.status === 'uploading') && (
+                      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.55)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6 }}>
+                        <motion.div animate={{ rotate:360 }} transition={{ duration:.9, repeat:Infinity, ease:'linear' }} style={{ width:26, height:26, borderRadius:'50%', border:'3px solid rgba(255,255,255,.25)', borderTopColor:'#fff' }}/>
+                        <span style={{ fontSize:10, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700 }}>
+                          {item.status === 'compressing' ? 'Compressing…' : 'Uploading…'}
+                        </span>
                       </div>
                     )}
                     {item.status === 'done' && (
@@ -353,7 +394,9 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
             }}
           >
             {uploading
-              ? `Uploading ${items.filter(x=>x.status==='done').length} of ${items.length}…`
+              ? items.some(x=>x.status==='compressing')
+                ? `⚡ Compressing… (${doneCount}/${items.length} done)`
+                : `⬆️ Uploading… (${doneCount}/${items.length} done)`
               : items.length === 0 ? '📷 Select files to post'
               : items.length === 1 ? '🚀 Share Post'
               : `🚀 Share All ${items.length} Posts`}
