@@ -380,8 +380,13 @@ export default function TabActivity() {
               </button>
             ))}
           </div>
-          <input type="text" placeholder="🔍 Filter by player…" value={playerFilter} onChange={e => setPlayerFilter(e.target.value)}
-            style={{ border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:C.dark, outline:'none', minWidth:180 }}/>
+          <select value={playerFilter} onChange={e => setPlayerFilter(e.target.value)}
+            style={{ border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:playerFilter?C.dark:C.gray3, outline:'none', minWidth:180, background:'#fff', cursor:'pointer' }}>
+            <option value="">👤 All players</option>
+            {players.map(p => (
+              <option key={p.id} value={p.name}>{p.name}</option>
+            ))}
+          </select>
         </div>
 
         <Card style={{ padding:0, overflow:'hidden' }}>
