@@ -51,8 +51,7 @@ const BROWSER_ICONS = { Chrome:'🌐', Safari:'🧭', Firefox:'🦊', Edge:'🌀
 const OS_ICONS = { Windows:'🪟', macOS:'🍎', iOS:'📱', Android:'🤖', Linux:'🐧', Unknown:'💻' }
 
 // ── Last Login card ────────────────────────────────────────────
-function PlayerLoginCard({ player, authUser, lastLog }) {
-  const lastLogin  = authUser?.last_sign_in_at
+function PlayerLoginCard({ player, lastLogin, lastLog }) {
   const isRecent   = lastLogin && (Date.now() - new Date(lastLogin).getTime()) < 24 * 3600000
   const deviceIcon = lastLog ? (DEVICE_ICONS[lastLog.device_type] || '💻') : ''
   const browserIcon= lastLog ? (BROWSER_ICONS[lastLog.browser]   || '🌐') : ''
@@ -206,10 +205,11 @@ async function fetchWithServiceRole(path) {
 }
 
 export default function TabActivity() {
-  const [players,      setPlayers]      = useState([])
-  const [authUsers,    setAuthUsers]    = useState({})  // email → authUser
-  const [lastLogByEmail, setLastLogByEmail] = useState({}) // email → most recent log (for device info)
-  const [logs,         setLogs]         = useState([])
+  const [players,         setPlayers]         = useState([])
+  const [authUsers,       setAuthUsers]       = useState({})  // email → authUser
+  const [lastLogByEmail,  setLastLogByEmail]  = useState({})  // email → most recent log row (any event, for device info)
+  const [loginTimeByEmail,setLoginTimeByEmail]= useState({})  // email → most recent LOGIN timestamp from activity_logs
+  const [logs,            setLogs]            = useState([])
   const [loadingTop,   setLoadingTop]   = useState(true)
   const [loadingLogs,  setLoadingLogs]  = useState(true)
   const [filter,       setFilter]       = useState('all')
@@ -246,13 +246,17 @@ export default function TabActivity() {
       const allLogs = logsData.logs || []
       setLogs(allLogs)
 
-      // Build per-player "last log" map (for device info on the login cards)
-      const lastMap = {}
+      // Build per-player maps from activity_logs (sorted desc → first match = most recent)
+      const lastMap      = {}  // email → most recent log row (any event, for device info)
+      const loginTimeMap = {}  // email → most recent LOGIN event created_at
       allLogs.forEach(l => {
         const key = l.player_email?.toLowerCase()
-        if (key && !lastMap[key]) lastMap[key] = l  // already sorted desc
+        if (!key) return
+        if (!lastMap[key]) lastMap[key] = l
+        if (l.event_type === 'login' && !loginTimeMap[key]) loginTimeMap[key] = l.created_at
       })
       setLastLogByEmail(lastMap)
+      setLoginTimeByEmail(loginTimeMap)
 
     } finally {
       setLoadingTop(false)
@@ -269,22 +273,33 @@ export default function TabActivity() {
     return () => clearInterval(id)
   }, [load])
 
-  // Sort players: most recently logged in first
+  // Merge both login sources — use whichever is more recent
+  function getLastLogin(email) {
+    const key      = email?.toLowerCase()
+    const fromAuth = authUsers[key]?.last_sign_in_at
+    const fromLogs = loginTimeByEmail[key]
+    if (!fromAuth && !fromLogs) return null
+    if (!fromAuth) return fromLogs
+    if (!fromLogs) return fromAuth
+    return new Date(fromLogs) > new Date(fromAuth) ? fromLogs : fromAuth
+  }
+
+  // Sort players: most recently logged in first (using merged timestamp)
   const sortedPlayers = [...players].sort((a, b) => {
-    const aT = authUsers[a.email?.toLowerCase()]?.last_sign_in_at
-    const bT = authUsers[b.email?.toLowerCase()]?.last_sign_in_at
+    const aT = getLastLogin(a.email)
+    const bT = getLastLogin(b.email)
     if (!aT && !bT) return 0
     if (!aT) return 1
     if (!bT) return -1
     return new Date(bT) - new Date(aT)
   })
 
-  // Summary stats
+  // Summary stats (using merged timestamp)
   const activeToday   = players.filter(p => {
-    const t = authUsers[p.email?.toLowerCase()]?.last_sign_in_at
+    const t = getLastLogin(p.email)
     return t && (Date.now() - new Date(t).getTime()) < 86400000
   }).length
-  const neverLoggedIn = players.filter(p => !authUsers[p.email?.toLowerCase()]?.last_sign_in_at).length
+  const neverLoggedIn = players.filter(p => !getLastLogin(p.email)).length
   const totalDuration = logs.reduce((sum, l) => sum + (l.duration_secs || 0), 0)
 
   // Filtered logs
@@ -354,7 +369,7 @@ export default function TabActivity() {
           ) : sortedPlayers.map(p => (
             <PlayerLoginCard
               key={p.id} player={p}
-              authUser={authUsers[p.email?.toLowerCase()]}
+              lastLogin={getLastLogin(p.email)}
               lastLog={lastLogByEmail[p.email?.toLowerCase()]}
             />
           ))}
@@ -415,11 +430,4 @@ export default function TabActivity() {
 
     </div>
   )
-}
-
-function fmtDuration(secs) {
-  if (!secs || secs < 1) return null
-  if (secs < 60) return `${secs}s`
-  const m = Math.floor(secs / 60), s = secs % 60
-  return s > 0 ? `${m}m ${s}s` : `${m}m`
 }
