@@ -23,156 +23,274 @@ function isVideo(url) {
   return /\.(mp4|mov|webm|ogg)$/i.test(url)
 }
 
-// ── Upload Modal ────────────────────────────────────────────────
+// ── Upload Modal (bulk) ─────────────────────────────────────────
 function UploadModal({ user, playerInfo, onClose, onPosted }) {
-  const [file,       setFile]       = useState(null)
-  const [preview,    setPreview]    = useState(null)
-  const [caption,    setCaption]    = useState('')
-  const [uploading,  setUploading]  = useState(false)
-  const [progress,   setProgress]   = useState(0)
-  const [error,      setError]      = useState('')
-  const [dragging,   setDragging]   = useState(false)
+  // items: [{ file, preview, title, caption, status, error }]
+  const [items,     setItems]     = useState([])
+  const [dragging,  setDragging]  = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [doneCount, setDoneCount] = useState(0)
+  const [globalErr, setGlobalErr] = useState('')
   const inputRef = useRef()
 
-  const handleFile = f => {
-    if (!f) return
-    const maxMB = f.type.startsWith('video') ? 100 : 20
-    if (f.size > maxMB * 1024 * 1024) { setError(`File too large (max ${maxMB} MB)`); return }
-    setFile(f)
-    setError('')
-    setPreview(URL.createObjectURL(f))
+  const MAX_IMAGE_MB = 20, MAX_VIDEO_MB = 100, MAX_FILES = 20
+
+  function addFiles(fileList) {
+    const newFiles = Array.from(fileList)
+    const errors = []
+    const valid = []
+    newFiles.forEach(f => {
+      const maxMB = f.type.startsWith('video') ? MAX_VIDEO_MB : MAX_IMAGE_MB
+      if (f.size > maxMB * 1024 * 1024) { errors.push(`${f.name} exceeds ${maxMB} MB`); return }
+      valid.push(f)
+    })
+    if (errors.length) setGlobalErr(errors.join(' · '))
+    const toAdd = valid.slice(0, MAX_FILES - items.length)
+    setItems(prev => [...prev, ...toAdd.map(f => ({
+      id: Math.random().toString(36).slice(2),
+      file: f,
+      preview: URL.createObjectURL(f),
+      title: '',
+      caption: '',
+      status: 'pending', // pending | uploading | done | error
+      error: '',
+    }))])
   }
 
-  const handleDrop = e => {
-    e.preventDefault(); setDragging(false)
-    handleFile(e.dataTransfer.files[0])
-  }
+  function removeItem(id) { setItems(prev => prev.filter(x => x.id !== id)) }
+  function updateItem(id, patch) { setItems(prev => prev.map(x => x.id === id ? {...x, ...patch} : x)) }
 
-  async function submit() {
-    if (!file) { setError('Please select a photo or video'); return }
-    setUploading(true); setError(''); setProgress(10)
+  async function uploadItem(item) {
+    updateItem(item.id, { status:'uploading' })
     try {
-      const ext  = file.name.split('.').pop()
+      const ext  = item.file.name.split('.').pop()
       const path = `posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      setProgress(30)
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { cacheControl:'3600', upsert:false })
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, item.file, { cacheControl:'3600', upsert:false })
       if (upErr) throw upErr
-      setProgress(70)
-      const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
-      const mediaType = file.type.startsWith('video') ? 'video' : 'image'
+      const { data:{ publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
       const { error: dbErr } = await supabase.from('posts').insert({
         player_id:    playerInfo?.id   || null,
         player_name:  playerInfo?.name || user.email,
         player_email: user.email,
         media_url:    publicUrl,
-        media_type:   mediaType,
-        caption:      caption.trim() || null,
+        media_type:   item.file.type.startsWith('video') ? 'video' : 'image',
+        title:        item.title.trim()   || null,
+        caption:      item.caption.trim() || null,
       })
       if (dbErr) throw dbErr
-      setProgress(100)
-      onPosted()
-      onClose()
+      updateItem(item.id, { status:'done' })
     } catch (e) {
-      setError(e.message || 'Upload failed')
-    } finally {
-      setUploading(false)
+      updateItem(item.id, { status:'error', error: e.message || 'Upload failed' })
     }
   }
+
+  async function submitAll() {
+    if (!items.length) { setGlobalErr('Please add at least one photo or video'); return }
+    setUploading(true); setDoneCount(0); setGlobalErr('')
+    // Upload sequentially so we can show per-item progress
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].status === 'done') continue
+      await uploadItem(items[i])
+      setDoneCount(i + 1)
+    }
+    setUploading(false)
+    onPosted()
+    onClose()
+  }
+
+  const allDone = items.length > 0 && items.every(x => x.status === 'done')
+  const progress = items.length ? Math.round((items.filter(x=>x.status==='done').length / items.length) * 100) : 0
 
   return (
     <motion.div
       initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-      style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:16,
-        background:'rgba(6,13,46,.72)', backdropFilter:'blur(8px)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'12px',
+        background:'rgba(6,13,46,.75)', backdropFilter:'blur(8px)' }}
+      onClick={e => { if (e.target === e.currentTarget && !uploading) onClose() }}
     >
       <motion.div
-        initial={{ scale:.92, opacity:0, y:20 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:.92, opacity:0, y:20 }}
+        initial={{ scale:.93, opacity:0, y:20 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:.93, opacity:0, y:20 }}
         transition={{ type:'spring', damping:24, stiffness:300 }}
-        style={{ background:'#fff', borderRadius:24, width:'100%', maxWidth:480, overflow:'hidden', boxShadow:'0 32px 80px rgba(0,0,0,.4)' }}
+        style={{ background:'#fff', borderRadius:24, width:'100%', maxWidth:680,
+          maxHeight:'92vh', display:'flex', flexDirection:'column',
+          overflow:'hidden', boxShadow:'0 40px 100px rgba(0,0,0,.5)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 22px', borderBottom:'1px solid #f0f0f0' }}>
-          <div style={{ fontWeight:800, fontSize:15, color:'#060d2e', fontFamily:FONT }}>📸 New Post</div>
-          <button onClick={onClose} style={{ width:32, height:32, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:18, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 22px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
+          <div>
+            <div style={{ fontWeight:800, fontSize:15, color:'#060d2e', fontFamily:FONT }}>
+              📸 New Post {items.length > 1 ? `— ${items.length} items` : ''}
+            </div>
+            <div style={{ fontSize:11, color:'#9ca3af', fontFamily:FONT, marginTop:1 }}>
+              Select multiple photos & videos at once
+            </div>
+          </div>
+          <button onClick={onClose} disabled={uploading}
+            style={{ width:32, height:32, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:18, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center', opacity:uploading?.5:1 }}>×</button>
         </div>
 
-        <div style={{ padding:'20px 22px', display:'flex', flexDirection:'column', gap:16 }}>
-          {/* Drop zone / preview */}
-          {!preview ? (
-            <div
-              onDrop={handleDrop}
-              onDragOver={e => { e.preventDefault(); setDragging(true) }}
-              onDragLeave={() => setDragging(false)}
-              onClick={() => inputRef.current?.click()}
-              style={{
-                border: `2px dashed ${dragging ? '#e9a020' : '#d1d5db'}`,
-                borderRadius:16, padding:'40px 20px', cursor:'pointer',
-                textAlign:'center', background: dragging ? '#fffbeb' : '#fafafa',
-                transition:'all .2s',
-              }}
-            >
-              <div style={{ fontSize:40, marginBottom:10 }}>📷</div>
-              <div style={{ fontWeight:700, fontSize:14, color:'#374151', fontFamily:FONT }}>Drop photo or video here</div>
-              <div style={{ fontSize:12, color:'#9ca3af', marginTop:4, fontFamily:FONT }}>or click to browse · images up to 20 MB · video up to 100 MB</div>
-            </div>
-          ) : (
-            <div style={{ position:'relative', borderRadius:16, overflow:'hidden', aspectRatio:'1', background:'#000' }}>
-              {isVideo(file?.name || preview)
-                ? <video src={preview} style={{ width:'100%', height:'100%', objectFit:'contain' }} controls/>
-                : <img src={preview} alt="preview" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-              }
-              <button
-                onClick={() => { setFile(null); setPreview(null) }}
-                style={{ position:'absolute', top:10, right:10, width:30, height:30, borderRadius:'50%', border:'none', background:'rgba(0,0,0,.6)', color:'#fff', cursor:'pointer', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700 }}
-              >×</button>
-              <button
-                onClick={() => inputRef.current?.click()}
-                style={{ position:'absolute', bottom:10, right:10, background:'rgba(0,0,0,.6)', color:'#fff', border:'none', borderRadius:20, padding:'5px 12px', cursor:'pointer', fontSize:11, fontFamily:FONT, fontWeight:700 }}
-              >Change</button>
-            </div>
-          )}
-          <input ref={inputRef} type="file" accept="image/*,video/*" style={{ display:'none' }} onChange={e => handleFile(e.target.files[0])}/>
+        {/* Scrollable body */}
+        <div style={{ flex:1, overflowY:'auto', padding:'18px 22px', display:'flex', flexDirection:'column', gap:16 }}>
 
-          {/* Caption */}
-          <div>
-            <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT }}>Caption (optional)</div>
-            <textarea
-              value={caption}
-              onChange={e => setCaption(e.target.value)}
-              placeholder="Share what's happening… 🏏"
-              maxLength={400}
-              style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:12, padding:'10px 12px', fontFamily:FONT, fontSize:14, color:'#374151', resize:'none', minHeight:80, outline:'none', boxSizing:'border-box', lineHeight:1.5 }}
-            />
-            <div style={{ textAlign:'right', fontSize:11, color:'#9ca3af', marginTop:3 }}>{caption.length}/400</div>
+          {/* Drop zone */}
+          <div
+            onDrop={e => { e.preventDefault(); setDragging(false); if(!uploading) addFiles(e.dataTransfer.files) }}
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onClick={() => { if(!uploading) inputRef.current?.click() }}
+            style={{
+              border:`2px dashed ${dragging?'#e9a020':'#d1d5db'}`,
+              borderRadius:16, padding:items.length?'16px 20px':'36px 20px',
+              cursor: uploading?'default':'pointer', textAlign:'center',
+              background: dragging?'#fffbeb':'#fafafa', transition:'all .2s', flexShrink:0,
+            }}
+          >
+            {items.length === 0 ? (
+              <>
+                <div style={{ fontSize:44, marginBottom:8 }}>📷</div>
+                <div style={{ fontWeight:700, fontSize:14, color:'#374151', fontFamily:FONT }}>Drop photos & videos here</div>
+                <div style={{ fontSize:12, color:'#9ca3af', marginTop:4, fontFamily:FONT }}>
+                  or click to browse · select multiple files · up to {MAX_FILES} items
+                </div>
+                <div style={{ fontSize:11, color:'#9ca3af', marginTop:2, fontFamily:FONT }}>
+                  Images up to 20 MB · Videos up to 100 MB each
+                </div>
+              </>
+            ) : (
+              <div style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center' }}>
+                <span style={{ fontSize:20 }}>➕</span>
+                <span style={{ fontSize:13, fontWeight:700, color:dragging?'#e9a020':'#6b7280', fontFamily:FONT }}>
+                  Add more files ({items.length}/{MAX_FILES})
+                </span>
+              </div>
+            )}
           </div>
+          <input ref={inputRef} type="file" accept="image/*,video/*" multiple style={{ display:'none' }}
+            onChange={e => { addFiles(e.target.files); e.target.value='' }}/>
 
-          {error && <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:10, padding:'10px 14px', fontSize:13, color:'#dc2626', fontFamily:FONT }}>{error}</div>}
+          {globalErr && (
+            <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:10, padding:'10px 14px', fontSize:12, color:'#dc2626', fontFamily:FONT }}>{globalErr}</div>
+          )}
 
-          {/* Progress bar */}
+          {/* Item cards */}
+          <AnimatePresence>
+            {items.map((item, idx) => (
+              <motion.div key={item.id}
+                initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, x:-20 }}
+                transition={{ type:'spring', damping:22, stiffness:280 }}
+                style={{
+                  border: item.status==='done'   ? '2px solid #bbf7d0'
+                        : item.status==='error'  ? '2px solid #fecaca'
+                        : item.status==='uploading' ? '2px solid #fde68a'
+                        : '1.5px solid #f0f0f0',
+                  borderRadius:16, overflow:'hidden', background:'#fff',
+                  boxShadow:'0 2px 10px rgba(0,0,0,.06)',
+                }}
+              >
+                <div style={{ display:'flex', gap:0 }}>
+                  {/* Thumbnail */}
+                  <div style={{ width:110, flexShrink:0, position:'relative', background:'#000' }}>
+                    {item.file.type.startsWith('video')
+                      ? <video src={item.preview} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:110 }}/>
+                      : <img src={item.preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:110, display:'block' }}/>
+                    }
+                    {/* Status overlay */}
+                    {item.status === 'uploading' && (
+                      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <motion.div animate={{ rotate:360 }} transition={{ duration:1, repeat:Infinity, ease:'linear' }} style={{ width:24, height:24, borderRadius:'50%', border:'3px solid rgba(255,255,255,.3)', borderTopColor:'#fff' }}/>
+                      </div>
+                    )}
+                    {item.status === 'done' && (
+                      <div style={{ position:'absolute', inset:0, background:'rgba(21,128,61,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>✅</div>
+                    )}
+                    {item.status === 'error' && (
+                      <div style={{ position:'absolute', inset:0, background:'rgba(220,38,38,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>❌</div>
+                    )}
+                    {/* File type badge */}
+                    <div style={{ position:'absolute', top:6, left:6, background:'rgba(0,0,0,.55)', borderRadius:99, padding:'2px 6px', fontSize:9, color:'#fff', fontFamily:FONT, fontWeight:700 }}>
+                      {item.file.type.startsWith('video') ? '🎬' : '🖼️'} {idx+1}
+                    </div>
+                  </div>
+
+                  {/* Fields */}
+                  <div style={{ flex:1, padding:'12px 14px', display:'flex', flexDirection:'column', gap:8 }}>
+                    {/* Title */}
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', marginBottom:3, textTransform:'uppercase', letterSpacing:.4, fontFamily:FONT }}>Title</div>
+                      <input
+                        value={item.title}
+                        onChange={e => updateItem(item.id, { title:e.target.value })}
+                        placeholder="e.g. Match Day vs West 3 CC 🏏"
+                        disabled={uploading}
+                        maxLength={80}
+                        style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:8, padding:'6px 10px', fontFamily:FONT, fontSize:12, color:'#374151', outline:'none', boxSizing:'border-box', fontWeight:600 }}
+                      />
+                    </div>
+                    {/* Caption */}
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', marginBottom:3, textTransform:'uppercase', letterSpacing:.4, fontFamily:FONT }}>Caption</div>
+                      <textarea
+                        value={item.caption}
+                        onChange={e => updateItem(item.id, { caption:e.target.value })}
+                        placeholder="Describe the moment…"
+                        disabled={uploading}
+                        maxLength={300}
+                        rows={2}
+                        style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:8, padding:'6px 10px', fontFamily:FONT, fontSize:12, color:'#374151', resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4 }}
+                      />
+                    </div>
+                    {item.error && <div style={{ fontSize:11, color:'#dc2626', fontFamily:FONT }}>{item.error}</div>}
+                  </div>
+
+                  {/* Remove */}
+                  {!uploading && (
+                    <button onClick={() => removeItem(item.id)}
+                      style={{ width:36, background:'transparent', border:'none', cursor:'pointer', color:'#d1d5db', fontSize:18, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'12px 8px 0', flexShrink:0 }}
+                      onMouseEnter={e=>e.currentTarget.style.color='#ef4444'}
+                      onMouseLeave={e=>e.currentTarget.style.color='#d1d5db'}
+                    >×</button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding:'14px 22px', borderTop:'1px solid #f0f0f0', flexShrink:0, display:'flex', flexDirection:'column', gap:10 }}>
+          {/* Overall progress */}
           {uploading && (
-            <div style={{ background:'#f3f4f6', borderRadius:99, height:6, overflow:'hidden' }}>
-              <motion.div
-                animate={{ width:`${progress}%` }}
-                transition={{ duration:.3 }}
-                style={{ height:'100%', background:'linear-gradient(90deg,#e9a020,#f59e0b)', borderRadius:99 }}
-              />
+            <div>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                <span style={{ fontSize:12, fontWeight:700, color:'#374151', fontFamily:FONT }}>
+                  Uploading {items.filter(x=>x.status==='done').length} of {items.length}…
+                </span>
+                <span style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT }}>{progress}%</span>
+              </div>
+              <div style={{ background:'#f3f4f6', borderRadius:99, height:6, overflow:'hidden' }}>
+                <motion.div animate={{ width:`${progress}%` }} transition={{ duration:.3 }}
+                  style={{ height:'100%', background:'linear-gradient(90deg,#e9a020,#f59e0b)', borderRadius:99 }}/>
+              </div>
             </div>
           )}
 
           <button
-            onClick={submit}
-            disabled={uploading || !file}
+            onClick={submitAll}
+            disabled={uploading || !items.length}
             style={{
-              background: file ? 'linear-gradient(135deg,#e9a020,#f59e0b)' : '#e5e7eb',
-              color: file ? '#fff' : '#9ca3af',
+              background: items.length ? 'linear-gradient(135deg,#e9a020,#f59e0b)' : '#e5e7eb',
+              color: items.length ? '#fff' : '#9ca3af',
               border:'none', borderRadius:14, padding:'14px', fontFamily:FONT, fontSize:15, fontWeight:800,
-              cursor: file && !uploading ? 'pointer' : 'default',
-              transition:'all .2s', boxShadow: file ? '0 4px 16px rgba(233,160,32,.4)' : 'none',
+              cursor: items.length && !uploading ? 'pointer' : 'default',
+              transition:'all .2s', boxShadow: items.length ? '0 4px 16px rgba(233,160,32,.4)' : 'none',
             }}
           >
-            {uploading ? `Uploading… ${progress}%` : '🚀 Share Post'}
+            {uploading
+              ? `Uploading ${items.filter(x=>x.status==='done').length} of ${items.length}…`
+              : items.length === 0 ? '📷 Select files to post'
+              : items.length === 1 ? '🚀 Share Post'
+              : `🚀 Share All ${items.length} Posts`}
           </button>
         </div>
       </motion.div>
@@ -321,11 +439,20 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
             )}
           </div>
 
-          {/* Caption */}
-          {post.caption && (
+          {/* Title + Caption */}
+          {(post.title || post.caption) && (
             <div style={{ padding:'12px 18px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
-              <span style={{ fontWeight:700, fontSize:13, color:'#060d2e', fontFamily:FONT }}>{post.player_name} </span>
-              <span style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.5 }}>{post.caption}</span>
+              {post.title && (
+                <div style={{ fontWeight:900, fontSize:15, color:'#060d2e', fontFamily:FONT, marginBottom: post.caption ? 5 : 0 }}>
+                  {post.title}
+                </div>
+              )}
+              {post.caption && (
+                <div style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.6 }}>
+                  <span style={{ fontWeight:700, color:'#060d2e' }}>{post.player_name} </span>
+                  {post.caption}
+                </div>
+              )}
             </div>
           )}
 
@@ -455,12 +582,17 @@ function PostCard({ post, onClick }) {
       </AnimatePresence>
 
       {/* Player badge */}
-      <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'20px 10px 10px', background:'linear-gradient(transparent,rgba(0,0,0,.65))' }}>
-        <div style={{ fontSize:11, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+      <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'24px 10px 10px', background:'linear-gradient(transparent,rgba(0,0,0,.7))' }}>
+        {post.title && (
+          <div style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:2 }}>
+            {post.title}
+          </div>
+        )}
+        <div style={{ fontSize:10, color:'rgba(255,255,255,.8)', fontFamily:FONT, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
           {post.player_name}
         </div>
-        {post.caption && (
-          <div style={{ fontSize:10, color:'rgba(255,255,255,.7)', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:1 }}>
+        {post.caption && !post.title && (
+          <div style={{ fontSize:10, color:'rgba(255,255,255,.65)', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:1 }}>
             {post.caption}
           </div>
         )}

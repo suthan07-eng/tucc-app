@@ -23,103 +23,173 @@ function timeAgo(d) {
 
 function isVideo(url) { return /\.(mp4|mov|webm|ogg)$/i.test(url||'') }
 
-// ── Admin Upload Modal ─────────────────────────────────────────
+// ── Admin Upload Modal (bulk) ─────────────────────────────────
 function AdminUploadModal({ onClose, onPosted }) {
-  const [file,      setFile]      = useState(null)
-  const [preview,   setPreview]   = useState(null)
-  const [caption,   setCaption]   = useState('')
-  const [uploading, setUploading] = useState(false)
-  const [progress,  setProgress]  = useState(0)
-  const [error,     setError]     = useState('')
+  const [items,     setItems]     = useState([])
   const [dragging,  setDragging]  = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [globalErr, setGlobalErr] = useState('')
   const inputRef = useRef()
 
-  const handleFile = f => {
-    if (!f) return
-    const maxMB = f.type.startsWith('video') ? 100 : 20
-    if (f.size > maxMB * 1024 * 1024) { setError(`File too large (max ${maxMB} MB)`); return }
-    setFile(f); setError('')
-    setPreview(URL.createObjectURL(f))
+  const MAX_FILES = 20
+
+  function addFiles(fileList) {
+    const newFiles = Array.from(fileList)
+    const errors = [], valid = []
+    newFiles.forEach(f => {
+      const maxMB = f.type.startsWith('video') ? 100 : 20
+      if (f.size > maxMB * 1024 * 1024) { errors.push(`${f.name} exceeds ${maxMB} MB`); return }
+      valid.push(f)
+    })
+    if (errors.length) setGlobalErr(errors.join(' · '))
+    const toAdd = valid.slice(0, MAX_FILES - items.length)
+    setItems(prev => [...prev, ...toAdd.map(f => ({
+      id: Math.random().toString(36).slice(2),
+      file: f, preview: URL.createObjectURL(f),
+      title:'', caption:'', status:'pending', error:'',
+    }))])
   }
 
-  async function submit() {
-    if (!file) { setError('Select a file first'); return }
-    setUploading(true); setError(''); setProgress(10)
+  function removeItem(id) { setItems(prev => prev.filter(x => x.id !== id)) }
+  function updateItem(id, patch) { setItems(prev => prev.map(x => x.id===id ? {...x,...patch} : x)) }
+
+  async function uploadOne(item) {
+    updateItem(item.id, { status:'uploading' })
     try {
-      const ext  = file.name.split('.').pop()
-      const path = `posts/${Date.now()}-admin.${ext}`
-      setProgress(30)
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { cacheControl:'3600', upsert:false })
+      const ext  = item.file.name.split('.').pop()
+      const path = `posts/${Date.now()}-admin-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, item.file, { cacheControl:'3600', upsert:false })
       if (upErr) throw upErr
-      setProgress(70)
       const { data:{ publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
       const { error: dbErr } = await supabase.from('posts').insert({
-        player_id:    null,
-        player_name:  ADMIN_NAME,
-        player_email: ADMIN_EMAIL,
-        media_url:    publicUrl,
-        media_type:   file.type.startsWith('video') ? 'video' : 'image',
-        caption:      caption.trim() || null,
+        player_id:null, player_name:ADMIN_NAME, player_email:ADMIN_EMAIL,
+        media_url:publicUrl, media_type:item.file.type.startsWith('video')?'video':'image',
+        title:item.title.trim()||null, caption:item.caption.trim()||null,
       })
       if (dbErr) throw dbErr
-      setProgress(100)
-      onPosted()
-      onClose()
-    } catch (e) {
-      setError(e.message || 'Upload failed')
-    } finally {
-      setUploading(false)
+      updateItem(item.id, { status:'done' })
+    } catch(e) {
+      updateItem(item.id, { status:'error', error:e.message||'Upload failed' })
     }
   }
+
+  async function submitAll() {
+    if (!items.length) { setGlobalErr('Select files first'); return }
+    setUploading(true); setGlobalErr('')
+    for (const item of items) {
+      if (item.status === 'done') continue
+      await uploadOne(item)
+    }
+    setUploading(false)
+    onPosted()
+    onClose()
+  }
+
+  const progress = items.length ? Math.round((items.filter(x=>x.status==='done').length / items.length)*100) : 0
 
   return (
     <motion.div
       initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-      style={{ position:'fixed', inset:0, zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', padding:16,
+      style={{ position:'fixed', inset:0, zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', padding:12,
         background:'rgba(0,0,0,.65)', backdropFilter:'blur(8px)' }}
-      onClick={e => { if(e.target===e.currentTarget) onClose() }}
+      onClick={e => { if(e.target===e.currentTarget && !uploading) onClose() }}
     >
       <motion.div
         initial={{ scale:.9, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:.9, opacity:0 }}
         transition={{ type:'spring', damping:24, stiffness:300 }}
-        style={{ background:'#fff', borderRadius:20, width:'100%', maxWidth:440, overflow:'hidden', boxShadow:'0 24px 60px rgba(0,0,0,.4)' }}
+        style={{ background:'#fff', borderRadius:20, width:'100%', maxWidth:640, maxHeight:'90vh', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 24px 60px rgba(0,0,0,.4)' }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid #f0f0f0' }}>
-          <div style={{ fontWeight:800, fontSize:14, color:C.dark, fontFamily:FONT }}>📤 Upload as Admin</div>
-          <button onClick={onClose} style={{ width:30, height:30, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:16, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+        {/* Header */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
+          <div>
+            <div style={{ fontWeight:800, fontSize:14, color:C.dark, fontFamily:FONT }}>📤 Upload as Admin {items.length>1?`— ${items.length} items`:''}</div>
+            <div style={{ fontSize:11, color:C.gray3, fontFamily:FONT, marginTop:1 }}>Select multiple photos & videos at once</div>
+          </div>
+          <button onClick={onClose} disabled={uploading} style={{ width:30, height:30, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:16, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center', opacity:uploading?.5:1 }}>×</button>
         </div>
-        <div style={{ padding:'18px 20px', display:'flex', flexDirection:'column', gap:14 }}>
-          {!preview ? (
-            <div
-              onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]) }}
-              onDragOver={e => { e.preventDefault(); setDragging(true) }}
-              onDragLeave={() => setDragging(false)}
-              onClick={() => inputRef.current?.click()}
-              style={{ border:`2px dashed ${dragging?'#e9a020':'#d1d5db'}`, borderRadius:14, padding:'32px 16px', cursor:'pointer', textAlign:'center', background:dragging?'#fffbeb':'#fafafa', transition:'all .2s' }}
-            >
-              <div style={{ fontSize:32, marginBottom:8 }}>📷</div>
-              <div style={{ fontSize:13, fontWeight:700, color:'#374151', fontFamily:FONT }}>Drop or click to select</div>
-              <div style={{ fontSize:11, color:'#9ca3af', marginTop:3, fontFamily:FONT }}>Images · Videos · up to 100 MB</div>
-            </div>
-          ) : (
-            <div style={{ position:'relative', borderRadius:14, overflow:'hidden', aspectRatio:'1', background:'#000' }}>
-              {isVideo(file?.name) ? <video src={preview} controls style={{ width:'100%', height:'100%', objectFit:'contain' }}/> : <img src={preview} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>}
-              <button onClick={() => { setFile(null); setPreview(null) }} style={{ position:'absolute', top:8, right:8, width:28, height:28, borderRadius:'50%', border:'none', background:'rgba(0,0,0,.55)', color:'#fff', cursor:'pointer', fontSize:15, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700 }}>×</button>
-            </div>
-          )}
-          <input ref={inputRef} type="file" accept="image/*,video/*" style={{ display:'none' }} onChange={e => handleFile(e.target.files[0])}/>
-          <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Add a caption…" maxLength={400}
-            style={{ border:'1.5px solid #e5e7eb', borderRadius:10, padding:'10px 12px', fontFamily:FONT, fontSize:13, resize:'none', minHeight:70, outline:'none', boxSizing:'border-box' }}/>
-          {error && <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:8, padding:'8px 12px', fontSize:12, color:'#dc2626', fontFamily:FONT }}>{error}</div>}
+
+        {/* Scrollable body */}
+        <div style={{ flex:1, overflowY:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:14 }}>
+          {/* Drop zone */}
+          <div
+            onDrop={e=>{ e.preventDefault(); setDragging(false); if(!uploading) addFiles(e.dataTransfer.files) }}
+            onDragOver={e=>{ e.preventDefault(); setDragging(true) }}
+            onDragLeave={()=>setDragging(false)}
+            onClick={()=>{ if(!uploading) inputRef.current?.click() }}
+            style={{ border:`2px dashed ${dragging?'#e9a020':'#d1d5db'}`, borderRadius:14, padding:items.length?'14px 16px':'28px 16px', cursor:uploading?'default':'pointer', textAlign:'center', background:dragging?'#fffbeb':'#fafafa', transition:'all .2s', flexShrink:0 }}
+          >
+            {items.length===0 ? (
+              <>
+                <div style={{ fontSize:32, marginBottom:6 }}>📷</div>
+                <div style={{ fontSize:13, fontWeight:700, color:'#374151', fontFamily:FONT }}>Drop or click to select files</div>
+                <div style={{ fontSize:11, color:'#9ca3af', marginTop:3, fontFamily:FONT }}>Multiple files supported · Images & Videos · up to {MAX_FILES} items</div>
+              </>
+            ) : (
+              <div style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center' }}>
+                <span style={{ fontSize:18 }}>➕</span>
+                <span style={{ fontSize:13, fontWeight:700, color:dragging?'#e9a020':C.gray4, fontFamily:FONT }}>Add more files ({items.length}/{MAX_FILES})</span>
+              </div>
+            )}
+          </div>
+          <input ref={inputRef} type="file" accept="image/*,video/*" multiple style={{ display:'none' }} onChange={e=>{ addFiles(e.target.files); e.target.value='' }}/>
+
+          {globalErr && <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:8, padding:'8px 12px', fontSize:12, color:'#dc2626', fontFamily:FONT }}>{globalErr}</div>}
+
+          {/* Item cards */}
+          <AnimatePresence>
+            {items.map((item, idx) => (
+              <motion.div key={item.id}
+                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, x:-20 }}
+                style={{ border: item.status==='done'?'2px solid #bbf7d0':item.status==='error'?'2px solid #fecaca':item.status==='uploading'?'2px solid #fde68a':'1.5px solid #f0f0f0', borderRadius:14, overflow:'hidden', background:'#fff', boxShadow:'0 1px 6px rgba(0,0,0,.06)' }}
+              >
+                <div style={{ display:'flex' }}>
+                  <div style={{ width:100, flexShrink:0, position:'relative', background:'#000' }}>
+                    {item.file.type.startsWith('video')
+                      ? <video src={item.preview} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:100 }}/>
+                      : <img src={item.preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:100, display:'block' }}/>
+                    }
+                    {item.status==='uploading' && <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center' }}><motion.div animate={{rotate:360}} transition={{duration:1,repeat:Infinity,ease:'linear'}} style={{width:22,height:22,borderRadius:'50%',border:'3px solid rgba(255,255,255,.3)',borderTopColor:'#fff'}}/></div>}
+                    {item.status==='done'  && <div style={{ position:'absolute', inset:0, background:'rgba(21,128,61,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>✅</div>}
+                    {item.status==='error' && <div style={{ position:'absolute', inset:0, background:'rgba(220,38,38,.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>❌</div>}
+                    <div style={{ position:'absolute', top:5, left:5, background:'rgba(0,0,0,.55)', borderRadius:99, padding:'2px 6px', fontSize:9, color:'#fff', fontFamily:FONT, fontWeight:700 }}>
+                      {item.file.type.startsWith('video')?'🎬':'🖼️'} {idx+1}
+                    </div>
+                  </div>
+                  <div style={{ flex:1, padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
+                    <input value={item.title} onChange={e=>updateItem(item.id,{title:e.target.value})} placeholder="Title (e.g. Match Day 🏏)" disabled={uploading} maxLength={80}
+                      style={{ border:'1.5px solid #e5e7eb', borderRadius:7, padding:'5px 9px', fontFamily:FONT, fontSize:12, color:C.dark, outline:'none', boxSizing:'border-box', fontWeight:700 }}/>
+                    <textarea value={item.caption} onChange={e=>updateItem(item.id,{caption:e.target.value})} placeholder="Caption…" disabled={uploading} maxLength={300} rows={2}
+                      style={{ border:'1.5px solid #e5e7eb', borderRadius:7, padding:'5px 9px', fontFamily:FONT, fontSize:12, color:C.dark, resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4 }}/>
+                    {item.error && <div style={{ fontSize:11, color:'#dc2626', fontFamily:FONT }}>{item.error}</div>}
+                  </div>
+                  {!uploading && <button onClick={()=>removeItem(item.id)} style={{ width:32, background:'transparent', border:'none', cursor:'pointer', color:'#d1d5db', fontSize:17, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'10px 6px 0', flexShrink:0 }}
+                    onMouseEnter={e=>e.currentTarget.style.color='#ef4444'} onMouseLeave={e=>e.currentTarget.style.color='#d1d5db'}>×</button>}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding:'12px 20px', borderTop:'1px solid #f0f0f0', flexShrink:0, display:'flex', flexDirection:'column', gap:8 }}>
           {uploading && (
-            <div style={{ background:'#f3f4f6', borderRadius:99, height:5, overflow:'hidden' }}>
-              <motion.div animate={{ width:`${progress}%` }} transition={{ duration:.3 }} style={{ height:'100%', background:'linear-gradient(90deg,#e9a020,#f59e0b)', borderRadius:99 }}/>
+            <div>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                <span style={{ fontSize:12, fontWeight:700, color:C.dark, fontFamily:FONT }}>Uploading {items.filter(x=>x.status==='done').length} of {items.length}…</span>
+                <span style={{ fontSize:12, color:C.gray3, fontFamily:FONT }}>{progress}%</span>
+              </div>
+              <div style={{ background:'#f3f4f6', borderRadius:99, height:5, overflow:'hidden' }}>
+                <motion.div animate={{width:`${progress}%`}} transition={{duration:.3}} style={{height:'100%',background:'linear-gradient(90deg,#e9a020,#f59e0b)',borderRadius:99}}/>
+              </div>
             </div>
           )}
-          <button onClick={submit} disabled={uploading||!file}
-            style={{ background:file?'linear-gradient(135deg,#e9a020,#f59e0b)':'#e5e7eb', color:file?'#fff':'#9ca3af', border:'none', borderRadius:12, padding:'12px', fontFamily:FONT, fontSize:14, fontWeight:800, cursor:file&&!uploading?'pointer':'default' }}>
-            {uploading ? `Uploading… ${progress}%` : '🚀 Publish Post'}
+          <button onClick={submitAll} disabled={uploading||!items.length}
+            style={{ background:items.length?'linear-gradient(135deg,#e9a020,#f59e0b)':'#e5e7eb', color:items.length?'#fff':'#9ca3af', border:'none', borderRadius:12, padding:'12px', fontFamily:FONT, fontSize:14, fontWeight:800, cursor:items.length&&!uploading?'pointer':'default' }}>
+            {uploading ? `Uploading ${items.filter(x=>x.status==='done').length} of ${items.length}…`
+              : items.length===0 ? '📷 Select files'
+              : items.length===1 ? '🚀 Publish Post'
+              : `🚀 Publish All ${items.length} Posts`}
           </button>
         </div>
       </motion.div>
@@ -195,6 +265,7 @@ function AdminPostCard({ post, onDelete, onViewComments }) {
           <span style={{ fontSize:11, fontWeight:700, color:C.dark, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1 }}>{post.player_name}</span>
           <span style={{ fontSize:9, color:C.gray3, fontFamily:FONT, flexShrink:0 }}>{timeAgo(post.created_at)}</span>
         </div>
+        {post.title && <div style={{ fontSize:12, fontWeight:800, color:C.dark, fontFamily:FONT, marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{post.title}</div>}
         {post.caption && <div style={{ fontSize:11, color:'#374151', fontFamily:FONT, lineHeight:1.4, marginBottom:8, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{post.caption}</div>}
 
         {/* Counts */}
