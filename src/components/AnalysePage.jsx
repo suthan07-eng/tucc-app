@@ -52,7 +52,23 @@ function ScoreRing({ score, size = 52 }) {
   )
 }
 
-function Avatar({ initials, size = 42, color = C.green }) {
+function Avatar({ initials, photoUrl, size = 42, color = C.green }) {
+  const [imgError, setImgError] = useState(false)
+  if (photoUrl && !imgError) {
+    return (
+      <div style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
+        overflow: 'hidden', boxShadow: `0 4px 14px ${color}50`,
+        border: `2px solid ${color}30`,
+      }}>
+        <img
+          src={photoUrl} alt={initials}
+          onError={() => setImgError(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      </div>
+    )
+  }
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
@@ -93,7 +109,7 @@ function BatCard({ a, bat }) {
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
-          <Avatar initials={initials} size={40} color={a.tag==='AVOID'?'#dc2626':a.tag==='TARGET'?'#16a34a':C.green}/>
+          <Avatar initials={initials} photoUrl={a.opponent_players?.photo_url} size={40} color={a.tag==='AVOID'?'#dc2626':a.tag==='TARGET'?'#16a34a':C.green}/>
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
@@ -160,7 +176,7 @@ function BowlCard({ a, bowl }) {
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
-          <Avatar initials={initials} size={40} color={a.tag==='AVOID'?'#dc2626':a.tag==='TARGET'?'#16a34a':'#7c3aed'}/>
+          <Avatar initials={initials} photoUrl={a.opponent_players?.photo_url} size={40} color={a.tag==='AVOID'?'#dc2626':a.tag==='TARGET'?'#16a34a':'#7c3aed'}/>
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
@@ -226,7 +242,7 @@ function ArCard({ a, bat, bowl }) {
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
-          <Avatar initials={initials} size={40} color="#7c3aed"/>
+          <Avatar initials={initials} photoUrl={a.opponent_players?.photo_url} size={40} color="#7c3aed"/>
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
@@ -460,13 +476,13 @@ export default function AnalysePage() {
     if (!selectedId) return
     setLoadingData(true)
     Promise.all([
-      supabase.from('opponent_batting_stats').select('*, opponent_players(player_name)').eq('opponent_id', selectedId),
-      supabase.from('opponent_bowling_stats').select('*, opponent_players(player_name)').eq('opponent_id', selectedId),
-      supabase.from('opponent_analysis').select('*, opponent_players(player_name)')
+      supabase.from('opponent_batting_stats').select('*, opponent_players(player_name, photo_url)').eq('opponent_id', selectedId),
+      supabase.from('opponent_bowling_stats').select('*, opponent_players(player_name, photo_url)').eq('opponent_id', selectedId),
+      supabase.from('opponent_analysis').select('*, opponent_players(player_name, photo_url)')
         .eq('opponent_id', selectedId).eq('category', 'batting').order('rank'),
-      supabase.from('opponent_analysis').select('*, opponent_players(player_name)')
+      supabase.from('opponent_analysis').select('*, opponent_players(player_name, photo_url)')
         .eq('opponent_id', selectedId).eq('category', 'bowling').order('rank'),
-      supabase.from('opponent_analysis').select('*, opponent_players(player_name)')
+      supabase.from('opponent_analysis').select('*, opponent_players(player_name, photo_url)')
         .eq('opponent_id', selectedId).eq('category', 'allrounder').order('rank'),
     ]).then(([b, bw, ba, boa, ara]) => {
       setBatStats(b.data || [])
