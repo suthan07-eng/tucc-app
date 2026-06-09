@@ -292,9 +292,12 @@ function CommentRow({ comment, onDelete }) {
 }
 
 // ── Admin Post Card ────────────────────────────────────────────
-function AdminPostCard({ post, onDelete, onViewComments }) {
-  const [showComments, setShowComments] = useState(false)
-  const [comments,     setComments]     = useState(null)
+function AdminPostCard({ post, onDelete, onAlbumChange, albumNames }) {
+  const [showComments,  setShowComments]  = useState(false)
+  const [comments,      setComments]      = useState(null)
+  const [editingAlbum,  setEditingAlbum]  = useState(false)
+  const [albumInput,    setAlbumInput]    = useState(post.album_name || '')
+  const [savingAlbum,   setSavingAlbum]   = useState(false)
 
   async function loadComments() {
     if (comments !== null) { setShowComments(v => !v); return }
@@ -306,6 +309,15 @@ function AdminPostCard({ post, onDelete, onViewComments }) {
   async function deleteComment(cId) {
     await supabase.from('post_comments').delete().eq('id', cId)
     setComments(c => c.filter(x => x.id !== cId))
+  }
+
+  async function saveAlbum() {
+    setSavingAlbum(true)
+    const newAlbum = albumInput.trim() || null
+    await supabase.from('posts').update({ album_name: newAlbum }).eq('id', post.id)
+    setSavingAlbum(false)
+    setEditingAlbum(false)
+    onAlbumChange(post.id, newAlbum)
   }
 
   return (
@@ -337,10 +349,61 @@ function AdminPostCard({ post, onDelete, onViewComments }) {
           <span style={{ fontSize:11, fontWeight:700, color:C.dark, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1 }}>{post.player_name}</span>
           <span style={{ fontSize:9, color:C.gray3, fontFamily:FONT, flexShrink:0 }}>{timeAgo(post.created_at)}</span>
         </div>
-        {post.album_name && (
-          <div style={{ display:'inline-flex', alignItems:'center', gap:4, background:'#eff6ff', borderRadius:99, padding:'2px 8px', marginBottom:4 }}>
-            <span style={{ fontSize:9 }}>📁</span>
-            <span style={{ fontSize:10, fontWeight:700, color:'#2563eb', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:120 }}>{post.album_name}</span>
+        {/* Album badge — click to edit */}
+        {!editingAlbum ? (
+          <div style={{ marginBottom:6 }}>
+            <button onClick={() => { setAlbumInput(post.album_name||''); setEditingAlbum(true) }}
+              style={{ display:'inline-flex', alignItems:'center', gap:4,
+                background: post.album_name ? '#eff6ff' : '#f3f4f6',
+                borderRadius:99, padding:'3px 9px', border:'none', cursor:'pointer',
+                transition:'background .15s' }}
+              title="Click to change album">
+              <span style={{ fontSize:9 }}>📁</span>
+              <span style={{ fontSize:10, fontWeight:700, color: post.album_name ? '#2563eb' : '#9ca3af',
+                fontFamily:FONT, maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                {post.album_name || 'Add to album…'}
+              </span>
+              <span style={{ fontSize:9, color:'#9ca3af' }}>✏️</span>
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginBottom:6 }}>
+            <div style={{ fontSize:10, fontWeight:700, color:'#0369a1', fontFamily:FONT, marginBottom:4 }}>📁 Change Album</div>
+            {/* Quick-pick existing albums */}
+            {albumNames.length > 0 && (
+              <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:5 }}>
+                {albumNames.map(n => (
+                  <button key={n} onClick={() => setAlbumInput(n)}
+                    style={{ padding:'2px 8px', borderRadius:99, border:`1px solid ${albumInput===n?'#0369a1':'#bae6fd'}`,
+                      background:albumInput===n?'#0369a1':'#eff6ff', color:albumInput===n?'#fff':'#0369a1',
+                      fontFamily:FONT, fontSize:10, fontWeight:700, cursor:'pointer' }}>
+                    {n}
+                  </button>
+                ))}
+                <button onClick={() => setAlbumInput('')}
+                  style={{ padding:'2px 8px', borderRadius:99, border:`1px solid ${albumInput===''?'#dc2626':'#fecaca'}`,
+                    background:albumInput===''?'#dc2626':'#fef2f2', color:albumInput===''?'#fff':'#dc2626',
+                    fontFamily:FONT, fontSize:10, fontWeight:700, cursor:'pointer' }}>
+                  None
+                </button>
+              </div>
+            )}
+            <input value={albumInput} onChange={e => setAlbumInput(e.target.value)}
+              placeholder="Type album name…" maxLength={80}
+              style={{ width:'100%', border:'1.5px solid #bae6fd', borderRadius:7, padding:'5px 9px',
+                fontFamily:FONT, fontSize:11, outline:'none', boxSizing:'border-box', marginBottom:5 }}/>
+            <div style={{ display:'flex', gap:5 }}>
+              <button onClick={saveAlbum} disabled={savingAlbum}
+                style={{ flex:1, background:'#0369a1', color:'#fff', border:'none', borderRadius:7,
+                  padding:'5px', fontFamily:FONT, fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                {savingAlbum ? 'Saving…' : '✓ Save'}
+              </button>
+              <button onClick={() => setEditingAlbum(false)}
+                style={{ background:'#f3f4f6', color:'#6b7280', border:'none', borderRadius:7,
+                  padding:'5px 10px', fontFamily:FONT, fontSize:11, cursor:'pointer' }}>
+                ✕
+              </button>
+            </div>
           </div>
         )}
         {post.title && <div style={{ fontSize:12, fontWeight:800, color:C.dark, fontFamily:FONT, marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{post.title}</div>}
@@ -532,7 +595,12 @@ export default function TabGallery() {
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:12 }}>
           {filtered.map(post => (
-            <AdminPostCard key={post.id} post={post} onDelete={handleDelete}/>
+            <AdminPostCard key={post.id} post={post} onDelete={handleDelete}
+              albumNames={albumNames}
+              onAlbumChange={(id, newAlbum) => {
+                setPosts(ps => ps.map(p => p.id === id ? { ...p, album_name: newAlbum } : p))
+              }}
+            />
           ))}
         </div>
       )}
