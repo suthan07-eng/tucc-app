@@ -3,11 +3,11 @@
 
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'suthan07@gmail.com'
 
-async function sendEmail({ to, subject, html, cc, reply_to }) {
+async function sendEmail({ to, subject, html, cc, reply_to, attachments }) {
   const res = await fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to, subject, html, cc, reply_to }),
+    body: JSON.stringify({ to, subject, html, cc, reply_to, attachments }),
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
@@ -141,9 +141,19 @@ export async function sendAdminAlert(match, player, available, reason) {
 }
 
 // FIX 3 — sendMessageToPlayer also sends an admin copy.
-export async function sendMessageToPlayer(player, messageText, match, senderName, ccEmails = []) {
+export async function sendMessageToPlayer(player, messageText, match, senderName, ccEmails = [], attachments = []) {
   const from = senderName || 'Tamil United CC'
   const subject = `Message from ${from} — Tamil United CC`
+
+  // Format attachments list for email body (so recipients know what's attached)
+  const attachmentNote = attachments.length
+    ? `<div style="margin-top:16px;padding:12px 16px;background:#f3f4f6;border-radius:8px;font-size:13px;color:#374151">
+        <strong>📎 Attachments (${attachments.length}):</strong>
+        <ul style="margin:6px 0 0;padding-left:18px">
+          ${attachments.map(a => `<li>${a.filename}</li>`).join('')}
+        </ul>
+       </div>`
+    : ''
 
   const playerBody = `
     <p style="color:#374151;font-size:15px">Hi <strong>${player.name}</strong>,</p>
@@ -151,15 +161,21 @@ export async function sendMessageToPlayer(player, messageText, match, senderName
     <blockquote style="border-left:4px solid #2563eb;margin:0 0 20px;padding:14px 18px;background:#e8f5ee;border-radius:0 8px 8px 0;color:#1e3a8a;font-size:15px;font-style:italic">
       ${messageText}
     </blockquote>
+    ${attachmentNote}
     ${match ? matchBox(match) : ''}
+    <p style="color:#9ca3af;font-size:12px;margin-top:24px">
+      💬 To reply, simply reply to this email — your message will go directly to the team manager.
+    </p>
   `
 
-  // 1. Player email
+  // 1. Player email — set reply_to so their replies land in the admin inbox
   await sendEmail({
     to: player.email,
     subject,
     html: wrap(playerBody),
     cc: ccEmails.length ? ccEmails : undefined,
+    reply_to: ADMIN_EMAIL,
+    attachments: attachments.length ? attachments : undefined,
   })
 
   // 2. Admin copy (separate call)
@@ -170,12 +186,14 @@ export async function sendMessageToPlayer(player, messageText, match, senderName
       <div style="background:#f3f4f6;border-radius:8px;padding:12px 16px;margin-bottom:20px;color:#374151;font-size:13px">
         📋 This is a copy of a message sent to <strong>${player.name}</strong>
         ${ccEmails.length ? `<div style="margin-top:4px">CC: ${ccEmails.join(', ')}</div>` : ''}
+        ${attachments.length ? `<div style="margin-top:4px">📎 ${attachments.length} attachment(s): ${attachments.map(a => a.filename).join(', ')}</div>` : ''}
       </div>
       ${playerBody}
     `),
+    attachments: attachments.length ? attachments : undefined,
   })
 }
 
-export async function sendBulkMessage(players, messageText, match, senderName, ccEmails = []) {
-  await Promise.all(players.map((p) => sendMessageToPlayer(p, messageText, match, senderName, ccEmails)))
+export async function sendBulkMessage(players, messageText, match, senderName, ccEmails = [], attachments = []) {
+  await Promise.all(players.map((p) => sendMessageToPlayer(p, messageText, match, senderName, ccEmails, attachments)))
 }
