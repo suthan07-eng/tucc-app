@@ -1,6 +1,7 @@
 /**
  * useActivityLog
  * Tracks page visits (with duration), button clicks, and auth events.
+ * All writes go through /api/log-activity (service role) — never direct Supabase inserts.
  */
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -23,169 +24,167 @@ function getLabel(path) { return PAGE_LABELS[path] || path }
 // ── Device detection ────────────────────────────────────────────
 function getDeviceInfo() {
   const ua = navigator.userAgent || ''
-
-  // Device type
   let deviceType = 'Desktop'
-  if (/tablet|ipad|playbook|silk/i.test(ua)) deviceType = 'Tablet'
-  else if (/mobile|iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua)) deviceType = 'Mobile'
+  if (/tablet|ipad|playbook|silk/i.test(ua))                                            deviceType = 'Tablet'
+  else if (/mobile|iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua))     deviceType = 'Mobile'
 
-  // Browser
   let browser = 'Unknown'
-  if (/edg\//i.test(ua))        browser = 'Edge'
-  else if (/opr\//i.test(ua))   browser = 'Opera'
-  else if (/chrome/i.test(ua))  browser = 'Chrome'
-  else if (/safari/i.test(ua))  browser = 'Safari'
-  else if (/firefox/i.test(ua)) browser = 'Firefox'
+  if      (/edg\//i.test(ua))        browser = 'Edge'
+  else if (/opr\//i.test(ua))        browser = 'Opera'
+  else if (/chrome/i.test(ua))       browser = 'Chrome'
+  else if (/safari/i.test(ua))       browser = 'Safari'
+  else if (/firefox/i.test(ua))      browser = 'Firefox'
   else if (/msie|trident/i.test(ua)) browser = 'IE'
 
-  // OS
   let os = 'Unknown'
-  if (/windows nt/i.test(ua))   os = 'Windows'
-  else if (/mac os x/i.test(ua) && !/mobile/i.test(ua)) os = 'macOS'
-  else if (/iphone|ipad|ipod/i.test(ua)) os = 'iOS'
-  else if (/android/i.test(ua)) os = 'Android'
-  else if (/linux/i.test(ua))   os = 'Linux'
+  if      (/windows nt/i.test(ua))                              os = 'Windows'
+  else if (/mac os x/i.test(ua) && !/mobile/i.test(ua))        os = 'macOS'
+  else if (/iphone|ipad|ipod/i.test(ua))                        os = 'iOS'
+  else if (/android/i.test(ua))                                 os = 'Android'
+  else if (/linux/i.test(ua))                                   os = 'Linux'
 
   return { deviceType, browser, os }
 }
 
-// ── Core insert ─────────────────────────────────────────────────
-async function insertLog(user, fields) {
-  if (!user) return
+// ── Core: POST to serverless endpoint ───────────────────────────
+async function postLog(row) {
+  try {
+    await fetch('/api/log-activity', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'insert', row }),
+    })
+  } catch { /* best-effort */ }
+}
+
+async function patchDuration(id, duration_secs) {
+  try {
+    await fetch('/api/log-activity', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'update_duration', update_id: id, duration_secs }),
+    })
+  } catch { /* best-effort */ }
+}
+
+// ── Build row ────────────────────────────────────────────────────
+async function buildRow(user, fields) {
+  if (!user) return null
   const email = user.email || ''
+
+  // Look up the player row (best-effort — don't block on failure)
+  let playerName = user.user_metadata?.full_name || email
+  let playerId   = null
   try {
     const { data: player } = await supabase
       .from('players')
       .select('id, name')
       .eq('email', email)
       .maybeSingle()
+    if (player) { playerName = player.name; playerId = player.id }
+  } catch { /* ignore */ }
 
-    const { deviceType, browser, os } = getDeviceInfo()
+  const { deviceType, browser, os } = getDeviceInfo()
 
-    await supabase.from('activity_logs').insert({
-      player_id:    player?.id   || null,
-      player_name:  player?.name || user.user_metadata?.full_name || email,
-      player_email: email,
-      device_type:  deviceType,
-      browser,
-      os,
-      ...fields,
-    })
-  } catch { /* best-effort — never throw */ }
+  return {
+    player_id:    playerId,
+    player_name:  playerName,
+    player_email: email,
+    device_type:  deviceType,
+    browser,
+    os,
+    ...fields,
+  }
 }
 
-// ── Page-view hook ──────────────────────────────────────────────
+// ── Page-view + duration hook ─────────────────────────────────
 export function useActivityLog(user) {
   const location   = useLocation()
   const lastPath   = useRef(null)
   const enterTime  = useRef(null)
+  const lastLogId  = useRef(null)   // ID returned from last page_view insert (for duration patch)
 
   useEffect(() => {
     if (!user) return
     const path = location.pathname
 
-    // Skip admin / auth routes
     const skip = ['/login', '/admin', '/reset-password']
     if (skip.some(s => path.startsWith(s))) return
 
     const now = Date.now()
 
-    // Log duration on the PREVIOUS page before switching
-    if (lastPath.current && lastPath.current !== path && enterTime.current) {
-      const duration = Math.round((now - enterTime.current) / 1000)
-      // Update the last log for the previous path with duration
-      supabase
-        .from('activity_logs')
-        .select('id')
-        .eq('player_email', user.email)
-        .eq('page', lastPath.current)
-        .eq('event_type', 'page_view')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .then(({ data }) => {
-          if (data?.[0]) {
-            supabase
-              .from('activity_logs')
-              .update({ duration_secs: duration })
-              .eq('id', data[0].id)
-              .then(() => {})
-          }
-        })
+    // Patch duration on the previous page
+    if (lastLogId.current && lastPath.current !== path && enterTime.current) {
+      const secs = Math.round((now - enterTime.current) / 1000)
+      patchDuration(lastLogId.current, secs)
+      lastLogId.current = null
     }
 
     if (path === lastPath.current) return
     lastPath.current = path
     enterTime.current = now
 
-    insertLog(user, {
-      event_type:  'page_view',
-      page:        path,
-      page_label:  getLabel(path),
-    })
+    // Insert new page_view — capture the ID so we can patch duration later
+    ;(async () => {
+      const row = await buildRow(user, {
+        event_type: 'page_view',
+        page:       path,
+        page_label: getLabel(path),
+      })
+      if (!row) return
+
+      try {
+        // Insert via REST directly so we can get the ID back
+        const r = await fetch('/api/log-activity', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ action: 'insert', row }),
+        })
+        const data = await r.json()
+        if (data?.id) lastLogId.current = data.id
+      } catch { /* best-effort */ }
+    })()
   }, [location.pathname, user])
 
-  // Log duration when tab/window closes
+  // Duration on tab close
   useEffect(() => {
     if (!user) return
-    const handleUnload = () => {
-      if (!lastPath.current || !enterTime.current) return
-      const duration = Math.round((Date.now() - enterTime.current) / 1000)
-      // Use sendBeacon for reliability on page unload
-      const email = user.email || ''
-      navigator.sendBeacon?.('/api/log-unload', JSON.stringify({
-        player_email: email, page: lastPath.current, duration_secs: duration,
-      }))
+    const onUnload = () => {
+      if (!lastLogId.current || !enterTime.current) return
+      const secs = Math.round((Date.now() - enterTime.current) / 1000)
+      patchDuration(lastLogId.current, secs)
     }
-    window.addEventListener('beforeunload', handleUnload)
-    return () => window.removeEventListener('beforeunload', handleUnload)
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') onUnload()
+    })
+    window.addEventListener('beforeunload', onUnload)
+    return () => {
+      window.removeEventListener('visibilitychange', onUnload)
+      window.removeEventListener('beforeunload', onUnload)
+    }
   }, [user])
 }
 
-// ── Button click tracker ────────────────────────────────────────
-// Call this wherever you want to track a specific button interaction
-export async function logButtonClick(user, buttonLabel, page) {
-  if (!user) return
-  await insertLog(user, {
-    event_type:   'button_click',
-    page:         page || window.location.pathname,
-    page_label:   getLabel(page || window.location.pathname),
-    button_label: buttonLabel,
-  })
-}
-
-// ── Global click listener (auto-tracks important buttons) ───────
+// ── Button click auto-tracker ────────────────────────────────
 export function useButtonTracking(user) {
   useEffect(() => {
     if (!user) return
 
-    // Buttons/links we want to auto-track (by their visible text content)
-    const TRACKED_LABELS = [
-      'Submit My Availability',
-      'Login to Club Portal',
-      'Submit Availability',
-      'Play Cricket Profile',
-      'View Fixtures',
-      'View Results',
-      'View Players',
-      'Refresh',
-    ]
+    const KEYWORDS = /availability|submit|login|logout|refresh|profile|fixture|result|squad|player/i
 
-    function handleClick(e) {
+    async function handleClick(e) {
       const el = e.target.closest('button, a[href]')
       if (!el) return
       const text = el.textContent?.trim().replace(/\s+/g, ' ').slice(0, 60)
-      if (!text) return
-      // Only track if it matches our list OR contains key words
-      const shouldTrack = TRACKED_LABELS.some(l => text.includes(l))
-        || /availability|submit|login|logout|refresh|profile|fixture|result|player/i.test(text)
-      if (!shouldTrack) return
+      if (!text || !KEYWORDS.test(text)) return
 
-      insertLog(user, {
+      const row = await buildRow(user, {
         event_type:   'button_click',
         page:         window.location.pathname,
         page_label:   getLabel(window.location.pathname),
         button_label: text,
       })
+      if (row) postLog(row)
     }
 
     document.addEventListener('click', handleClick, { capture: true, passive: true })
@@ -193,20 +192,13 @@ export function useButtonTracking(user) {
   }, [user])
 }
 
-// ── Login event ─────────────────────────────────────────────────
+// ── Auth events ───────────────────────────────────────────────
 export async function logLogin(user) {
-  await insertLog(user, {
-    event_type:  'login',
-    page:        '/login',
-    page_label:  'Logged In',
-  })
+  const row = await buildRow(user, { event_type:'login', page:'/login', page_label:'Logged In' })
+  if (row) await postLog(row)
 }
 
-// ── Logout event ────────────────────────────────────────────────
 export async function logLogout(user) {
-  await insertLog(user, {
-    event_type:  'logout',
-    page:        '/',
-    page_label:  'Logged Out',
-  })
+  const row = await buildRow(user, { event_type:'logout', page:'/', page_label:'Logged Out' })
+  if (row) await postLog(row)
 }
