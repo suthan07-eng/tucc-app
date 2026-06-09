@@ -30,7 +30,6 @@ function compressImage(file) {
     const img = new Image()
     const objUrl = URL.createObjectURL(file)
     img.onload = () => {
-      URL.revokeObjectURL(objUrl)
       let { width, height } = img
       if (width > MAX || height > MAX) {
         if (width >= height) { height = Math.round(height * MAX / width); width = MAX }
@@ -40,6 +39,7 @@ function compressImage(file) {
       canvas.width = width; canvas.height = height
       canvas.getContext('2d').drawImage(img, 0, 0, width, height)
       canvas.toBlob(blob => {
+        URL.revokeObjectURL(objUrl)  // revoke AFTER drawing — revoking before causes black images on iOS Safari
         if (!blob || blob.size >= file.size) { resolve(file); return }
         resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type:'image/jpeg' }))
       }, 'image/jpeg', QUALITY)

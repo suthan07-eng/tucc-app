@@ -49,7 +49,6 @@ function compressImage(file) {
     const img = new Image()
     const objUrl = URL.createObjectURL(file)
     img.onload = () => {
-      URL.revokeObjectURL(objUrl)
       let { width, height } = img
       if (width > MAX || height > MAX) {
         if (width >= height) { height = Math.round(height * MAX / width); width = MAX }
@@ -59,6 +58,7 @@ function compressImage(file) {
       canvas.width = width; canvas.height = height
       canvas.getContext('2d').drawImage(img, 0, 0, width, height)
       canvas.toBlob(blob => {
+        URL.revokeObjectURL(objUrl)  // revoke AFTER drawing — revoking before causes black images on iOS Safari
         if (!blob || blob.size >= file.size) { resolve(file); return }  // keep original if canvas made it bigger
         resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type:'image/jpeg' }))
       }, 'image/jpeg', QUALITY)
@@ -66,6 +66,20 @@ function compressImage(file) {
     img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(file) }
     img.src = objUrl
   })
+}
+
+// Local fallback used when AI API is unavailable (no API key set)
+function localSuggestions(fileName, mediaType) {
+  const clean = (fileName || '')
+    .replace(/\.[^.]+$/, '')
+    .replace(/[-_]/g, ' ')
+    .replace(/\b(IMG|VID|DSC|MOV|mp4|jpeg|jpg|png|\d{8,})\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const month = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' })
+  const title = clean.length > 3 ? clean : `Team ${mediaType === 'video' ? 'Video' : 'Photo'} — ${month}`
+  const caption = `A great moment captured by Tamil United CC 🏏`
+  return { title, caption }
 }
 
 async function fetchAISuggestions({ fileName, mediaType, playerName }) {
@@ -77,9 +91,10 @@ async function fetchAISuggestions({ fileName, mediaType, playerName }) {
       body: JSON.stringify({ fileName, mediaType, playerName, dateStr }),
     })
     const data = await res.json()
-    return { title: data.title || null, caption: data.caption || null }
+    const fallback = localSuggestions(fileName, mediaType)
+    return { title: data.title || fallback.title, caption: data.caption || fallback.caption }
   } catch {
-    return { title: null, caption: null }
+    return localSuggestions(fileName, mediaType)
   }
 }
 
@@ -825,9 +840,9 @@ function PostCard({ post, onClick, eager }) {
       onClick={onClick}
       style={{ position:'relative', borderRadius:16, overflow:'hidden', cursor:'pointer', background:'#e2e8f0', boxShadow:'0 2px 12px rgba(0,0,0,.12)' }}
     >
-      {/* Aspect-ratio box — paddingTop trick works on all browsers including old iOS Safari */}
+      {/* Aspect-ratio box — paddingTop trick + explicit TRBL (not inset shorthand) for max iOS Safari compat */}
       <div style={{ paddingTop:'100%', position:'relative' }}>
-        <div style={{ position:'absolute', inset:0 }}>
+        <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0 }}>
           {post.media_type === 'video'
             ? <video src={post.media_url} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
             : <img
@@ -850,7 +865,7 @@ function PostCard({ post, onClick, eager }) {
             {hovered && (
               <motion.div
                 initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-                style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.42)', display:'flex', alignItems:'center', justifyContent:'center', gap:22 }}
+                style={{ position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,.42)', display:'flex', alignItems:'center', justifyContent:'center', gap:22 }}
               >
                 <div style={{ display:'flex', alignItems:'center', gap:6, color:'#fff', fontFamily:FONT }}>
                   <span style={{ fontSize:20 }}>❤️</span>
