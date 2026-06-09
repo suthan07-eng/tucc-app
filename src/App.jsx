@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { useActivityLog } from './hooks/useActivityLog'
+import { useActivityLog, useButtonTracking } from './hooks/useActivityLog'
 import LandingPage from './components/LandingPage'
 import Home from './components/Home'
 import Register from './components/Register'
@@ -31,6 +31,7 @@ function RequireAdmin({ children }) {
 function ActivityTracker() {
   const { user } = useAuth()
   useActivityLog(user)
+  useButtonTracking(user)
   return null
 }
 
