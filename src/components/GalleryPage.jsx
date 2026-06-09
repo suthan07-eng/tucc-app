@@ -887,13 +887,112 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
   )
 }
 
-// ── Album Card ─────────────────────────────────────────────────
+// ── Grouped media section (used by Photos & Videos tabs) ───────
+// Shows each album as a header + 6-photo preview row + "View all N →"
+function GroupedMediaView({ mediaType, sorted, albumMap, albumNames, noAlbum, onOpenAlbum, onOpenPost }) {
+  // Build sections: named albums first (newest first), then uncategorised
+  const sections = []
+
+  albumNames.forEach(name => {
+    const posts = albumMap[name].filter(p => p.media_type === (mediaType === 'photos' ? 'image' : 'video'))
+    if (posts.length > 0) sections.push({ name, posts, key: name })
+  })
+
+  const uncatPosts = noAlbum.filter(p => p.media_type === (mediaType === 'photos' ? 'image' : 'video'))
+  if (uncatPosts.length > 0) sections.push({ name: 'Uncategorised', posts: uncatPosts, key: '__uncategorised__' })
+
+  if (sections.length === 0) return null
+
+  const PREVIEW = 6  // photos shown per section before "View all"
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:32 }}>
+      {sections.map((section, si) => {
+        const preview  = section.posts.slice(0, PREVIEW)
+        const overflow = section.posts.length - PREVIEW
+        return (
+          <motion.div key={section.key}
+            initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+            transition={{ type:'spring', damping:22, delay: Math.min(si * .08, .3) }}>
+            {/* Section header */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12, gap:10 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+                <span style={{ fontSize:15 }}>📁</span>
+                <span style={{ fontSize:15, fontWeight:800, color:'#060d2e', fontFamily:FONT,
+                  overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  {section.name}
+                </span>
+                <span style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, flexShrink:0 }}>
+                  {section.posts.length}
+                </span>
+              </div>
+              {section.posts.length > PREVIEW && (
+                <button
+                  onClick={() => onOpenAlbum(section.key)}
+                  style={{ flexShrink:0, background:'#f3f4f6', border:'none', borderRadius:99, padding:'6px 14px',
+                    cursor:'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'#374151',
+                    display:'flex', alignItems:'center', gap:5, transition:'all .15s',
+                    whiteSpace:'nowrap' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='#e9a020'; e.currentTarget.style.color='#fff' }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='#f3f4f6'; e.currentTarget.style.color='#374151' }}
+                >
+                  View all {section.posts.length} →
+                </button>
+              )}
+            </div>
+
+            {/* Photo grid (max 6) */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:8 }}>
+              {preview.map((post, i) => {
+                const isLast = i === PREVIEW - 1 && overflow > 0
+                return (
+                  <motion.div key={post.id} style={{ position:'relative' }}
+                    initial={{ opacity:0, scale:.93 }} animate={{ opacity:1, scale:1 }}
+                    transition={{ type:'spring', damping:20, delay: Math.min(i*.03,.18) }}>
+                    <PostCard post={post} onClick={() => isLast ? onOpenAlbum(section.key) : onOpenPost(post)} eager={si===0 && i<6}/>
+                    {/* "+N more" overlay on the last visible tile */}
+                    {isLast && (
+                      <div onClick={() => onOpenAlbum(section.key)}
+                        style={{ position:'absolute', top:0, left:0, right:0, bottom:0, borderRadius:16,
+                          background:'rgba(0,0,0,.62)', display:'flex', flexDirection:'column',
+                          alignItems:'center', justifyContent:'center', cursor:'pointer',
+                          backdropFilter:'blur(2px)' }}>
+                        <span style={{ fontSize:22, fontWeight:900, color:'#fff', fontFamily:FONT }}>+{overflow}</span>
+                        <span style={{ fontSize:11, color:'rgba(255,255,255,.75)', fontFamily:FONT, marginTop:2 }}>more</span>
+                      </div>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </div>
+          </motion.div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Album Card (3-photo collage) ───────────────────────────────
 function AlbumCard({ albumName, posts, onClick }) {
   const [hovered, setHovered] = useState(false)
-  const cover   = posts.find(p => p.media_type === 'image') || posts[0]
-  const nPhotos = posts.filter(p => p.media_type === 'image').length
+  // Pick up to 3 images for the collage (prefer images over videos)
+  const images = posts.filter(p => p.media_type === 'image')
+  const covers = images.length >= 3 ? images.slice(0, 3)
+    : images.length > 0 ? [...images, ...posts.filter(p=>p.media_type==='video')].slice(0, 3)
+    : posts.slice(0, 3)
+  const nPhotos = images.length
   const nVideos = posts.filter(p => p.media_type === 'video').length
   const latest  = posts.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b, posts[0])
+
+  function Thumb({ post, style }) {
+    return post?.media_type === 'video'
+      ? <video src={post.media_url} muted playsInline preload="metadata"
+          style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', ...style }}/>
+      : post
+        ? <img src={post.media_url} alt="" loading="lazy"
+            style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', ...style }}/>
+        : <div style={{ width:'100%', height:'100%', background:'#334155' }}/>
+  }
 
   return (
     <motion.div
@@ -902,64 +1001,64 @@ function AlbumCard({ albumName, posts, onClick }) {
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onClick}
-      style={{ position:'relative', borderRadius:18, overflow:'hidden', cursor:'pointer',
-        background:'#1e293b', boxShadow:'0 4px 24px rgba(0,0,0,.18)' }}
+      style={{ borderRadius:18, overflow:'hidden', cursor:'pointer',
+        background:'#1e293b', boxShadow:'0 4px 24px rgba(0,0,0,.18)', position:'relative' }}
     >
-      {/* 4:3 aspect ratio */}
-      <div style={{ paddingTop:'75%', position:'relative' }}>
-        <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0 }}>
-          {cover && (
-            cover.media_type === 'video'
-              ? <video src={cover.media_url} muted playsInline preload="metadata"
-                  style={{ width:'100%', height:'100%', objectFit:'cover', display:'block',
-                    transition:'transform .4s', transform:hovered?'scale(1.07)':'scale(1)' }}/>
-              : <img src={cover.media_url} alt={albumName} loading="lazy"
-                  style={{ width:'100%', height:'100%', objectFit:'cover', display:'block',
-                    transition:'transform .4s', transform:hovered?'scale(1.07)':'scale(1)' }}/>
-          )}
-          {/* Full gradient */}
-          <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0,
-            background:'linear-gradient(to bottom, rgba(0,0,0,.08) 0%, rgba(0,0,0,.75) 100%)' }}/>
-          {/* Count badges top-right */}
-          <div style={{ position:'absolute', top:10, right:10, display:'flex', gap:5 }}>
-            {nPhotos > 0 && (
-              <div style={{ background:'rgba(0,0,0,.6)', borderRadius:99, padding:'3px 9px',
-                display:'flex', alignItems:'center', gap:4, backdropFilter:'blur(4px)' }}>
-                <span style={{ fontSize:10 }}>🖼️</span>
-                <span style={{ fontSize:11, color:'#fff', fontFamily:FONT, fontWeight:700 }}>{nPhotos}</span>
-              </div>
-            )}
-            {nVideos > 0 && (
-              <div style={{ background:'rgba(0,0,0,.6)', borderRadius:99, padding:'3px 9px',
-                display:'flex', alignItems:'center', gap:4, backdropFilter:'blur(4px)' }}>
-                <span style={{ fontSize:10 }}>🎬</span>
-                <span style={{ fontSize:11, color:'#fff', fontFamily:FONT, fontWeight:700 }}>{nVideos}</span>
-              </div>
-            )}
-          </div>
-          {/* Bottom info */}
-          <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'22px 14px 14px' }}>
-            <div style={{ fontSize:15, color:'#fff', fontFamily:FONT, fontWeight:900, marginBottom:3,
-              overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-              {albumName}
+      {/* Collage: 1 big left + 2 stacked right */}
+      <div style={{ display:'flex', gap:2, height:200, transition:'transform .4s', transform:hovered?'scale(1.03)':'scale(1)' }}>
+        {/* Left — big */}
+        <div style={{ flex:2, overflow:'hidden', position:'relative' }}>
+          <Thumb post={covers[0]}/>
+        </div>
+        {/* Right — 2 stacked */}
+        {covers.length > 1 && (
+          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:2 }}>
+            <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
+              <Thumb post={covers[1]}/>
+              {/* +N overlay on last tile if more than 3 */}
+              {covers.length < 3 && posts.length > 2 && (
+                <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,.55)',
+                  display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <span style={{ color:'#fff', fontFamily:FONT, fontWeight:900, fontSize:16 }}>+{posts.length - 2}</span>
+                </div>
+              )}
             </div>
-            <div style={{ fontSize:11, color:'rgba(255,255,255,.6)', fontFamily:FONT }}>
-              {posts.length} item{posts.length!==1?'s':''} · {fmtDateShort(latest?.created_at)}
+            <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
+              <Thumb post={covers[2]}/>
+              {posts.length > 3 && (
+                <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,.55)',
+                  display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <span style={{ color:'#fff', fontFamily:FONT, fontWeight:900, fontSize:16 }}>+{posts.length - 3}</span>
+                </div>
+              )}
             </div>
           </div>
-          {/* Hover open icon */}
-          <AnimatePresence>
-            {hovered && (
-              <motion.div initial={{ opacity:0, scale:.8 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:.8 }}
-                style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
-                  background:'rgba(255,255,255,.22)', borderRadius:'50%', width:56, height:56,
-                  display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(6px)' }}>
-                <span style={{ fontSize:24, color:'#fff' }}>→</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        )}
+      </div>
+
+      {/* Bottom info bar */}
+      <div style={{ padding:'12px 14px', background:'#1e293b' }}>
+        <div style={{ fontSize:14, color:'#fff', fontFamily:FONT, fontWeight:800,
+          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>
+          {albumName}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          {nPhotos > 0 && <span style={{ fontSize:11, color:'rgba(255,255,255,.55)', fontFamily:FONT }}>🖼️ {nPhotos}</span>}
+          {nVideos > 0 && <span style={{ fontSize:11, color:'rgba(255,255,255,.55)', fontFamily:FONT }}>🎬 {nVideos}</span>}
+          <span style={{ fontSize:10, color:'rgba(255,255,255,.35)', fontFamily:FONT }}>· {fmtDateShort(latest?.created_at)}</span>
         </div>
       </div>
+
+      {/* Hover open icon */}
+      <AnimatePresence>
+        {hovered && (
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+            style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,.22)', borderRadius:99,
+              padding:'5px 12px', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', gap:5 }}>
+            <span style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:700 }}>Open →</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
@@ -1372,7 +1471,7 @@ export default function GalleryPage() {
           </AnimatePresence>
 
         ) : (
-          /* ── FLAT PHOTOS / VIDEOS GRID ── */
+          /* ── GROUPED PHOTOS / VIDEOS BY ALBUM ── */
           <AnimatePresence mode="wait">
             <motion.div key={view} initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:.22 }}>
               {(view==='photos'?allPhotos:allVideos).length === 0 ? (
@@ -1392,14 +1491,15 @@ export default function GalleryPage() {
                   )}
                 </motion.div>
               ) : (
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:10 }}>
-                  {(view==='photos'?allPhotos:allVideos).map((post, i) => (
-                    <motion.div key={post.id} initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
-                      transition={{ type:'spring', damping:20, delay:Math.min(i*.04,.3) }}>
-                      <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i<8}/>
-                    </motion.div>
-                  ))}
-                </div>
+                <GroupedMediaView
+                  mediaType={view}
+                  sorted={sorted}
+                  albumMap={albumMap}
+                  albumNames={albumNames}
+                  noAlbum={noAlbum}
+                  onOpenAlbum={(name) => { setSelectedAlbum(name); setAlbumInnerTab(view==='videos'?'videos':'photos') }}
+                  onOpenPost={setSelectedPost}
+                />
               )}
             </motion.div>
           </AnimatePresence>
