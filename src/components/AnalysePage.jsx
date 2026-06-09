@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ScatterChart, Scatter, RadarChart, Radar, PolarGrid, PolarAngleAxis,
-  PolarRadiusAxis, Legend,
+  PolarRadiusAxis, Legend, ReferenceLine,
 } from 'recharts'
 import { supabase } from '../supabase'
 import Nav from './Nav'
@@ -359,66 +359,235 @@ function TabBar({ tabs, active, onChange }) {
 }
 
 // ── Generated match plan from DB data ─────────────────────────────────────
-function MatchPlan({ batAnalysis, bowlAnalysis, opp }) {
-  const avoidBowlers = bowlAnalysis.filter(a => a.tag === 'AVOID').slice(0,2)
-  const targetBowlers = bowlAnalysis.filter(a => a.tag === 'TARGET')
-  const avoidBatters = batAnalysis.filter(a => a.tag === 'AVOID').slice(0,2)
-  const targetBatters = batAnalysis.filter(a => a.tag === 'TARGET')
+function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats, opp }) {
+  const fn = a => a?.opponent_players?.player_name?.split(' ')[0] || '?'
+  const fullFn = a => a?.opponent_players?.player_name || '?'
 
-  const whenBat = [
-    avoidBowlers.length > 0
-      ? { icon:'🛡️', p:1, text:`Survive ${avoidBowlers.map(a=>a.opponent_players?.player_name?.split(' ')[0]).join(' and ')}'s opening spells. No attacking shots — rotate strike, take singles, no heroes.` }
-      : { icon:'🏏', p:1, text:'Identify their strike bowlers from the first over and play them with patience.' },
-    targetBowlers.length > 0
-      ? { icon:'⚔️', p:2, text:`Attack ${targetBowlers.map(a=>a.opponent_players?.player_name?.split(' ')[0]).join(', ')} when they bowl — their economy rates are exploitable. Look for 10+ per over.` }
-      : null,
-    { icon:'📊', p:3, text:'Rotate the strike consistently in the first 8 overs to build a platform before accelerating.' },
-    { icon:'⚡', p:4, text:'Set a target of at least 150+ to give your bowlers something to defend.' },
-  ].filter(Boolean)
+  const avoidBowlers  = bowlAnalysis.filter(a => a.tag === 'AVOID')
+  const containBowlers = bowlAnalysis.filter(a => a.tag === 'CONTAIN')
+  const targetBowlers  = bowlAnalysis.filter(a => a.tag === 'TARGET')
+  const avoidBatters   = batAnalysis.filter(a => a.tag === 'AVOID')
+  const containBatters = batAnalysis.filter(a => a.tag === 'CONTAIN')
+  const targetBatters  = batAnalysis.filter(a => a.tag === 'TARGET')
 
-  const whenBowl = [
-    avoidBatters.length > 0
-      ? { icon:'🎯', p:1, text:`Get ${avoidBatters.map(a=>a.opponent_players?.player_name?.split(' ')[0]).join(' and ')} early — they are their most dangerous batters. Post your strike bowler vs them.` }
-      : { icon:'🎯', p:1, text:'Identify their best batters from the analysis cards and target their early wickets.' },
-    targetBatters.length > 0
-      ? { icon:'⚔️', p:2, text:`${targetBatters.map(a=>a.opponent_players?.player_name?.split(' ')[0]).join(', ')} can be exploited — their averages suggest they give their wickets away under pressure.` }
-      : null,
-    { icon:'🛡️', p:3, text:'Bowl tight lines in the first 6 overs to restrict the powerplay score to under 50.' },
-    { icon:'📍', p:4, text:'Change the bowling end every 3-4 overs in the middle to break any settled partnerships.' },
-  ].filter(Boolean)
+  const bowlStatMap = Object.fromEntries(bowlStats.map(b => [b.opponent_players?.player_name || '', b]))
+  const batStatMap  = Object.fromEntries(batStats.map(b => [b.opponent_players?.player_name || '', b]))
+
+  const avoidBowlNames   = avoidBowlers.map(fn)
+  const targetBowlNames  = targetBowlers.map(fn)
+  const avoidBatterNames = avoidBatters.map(fn)
+  const targetBatterNames= targetBatters.map(fn)
+
+  // Phase-based batting plan
+  const ppNote = avoidBowlers.length > 0
+    ? `${avoidBowlNames.slice(0,2).join(' and ')} likely open the bowling — these are elite, dangerous spells. Play straight, take what's there, no reckless shots.`
+    : 'Assess the openers in the first 2 overs. Play out their best deliveries and build from over 3.'
+  const midNote = targetBowlers.length > 0
+    ? `Middle overs (7–15) are your scoring phase. ${targetBowlNames.join(', ')} ${targetBowlers.length === 1 ? 'is exploitable' : 'are exploitable'} — look to score 9–11 per over when they bowl. Don't give them dot balls to build confidence.`
+    : containBowlers.length > 0
+    ? `Middle overs: ${containBowlers.map(fn).join(', ')} will try to contain — manufacture singles, rotate the strike, and wait for the loose ball. Don't give your wicket cheaply.`
+    : 'Middle overs: build the platform with a run-a-ball rate, looking for 2s and 3s. Acceleration in overs 16–20.'
+  const deathNote = targetBowlers.length > 0
+    ? `Death overs (16–20): if ${targetBowlNames[0]}${targetBowlers.length > 1 ? ` or ${targetBowlNames[1]}` : ''} returns, target them aggressively. Any economy above 7 in this phase is your cue to attack every ball.`
+    : 'Death overs: commit to a shot every delivery. Back your hitter to stay in — one over of 15+ can win a game.'
+
+  // Phase-based bowling plan
+  const ppBowlNote = avoidBatters.length > 0
+    ? `${avoidBatterNames.slice(0,2).join(' and ')} will likely open or bat high — they are their most dangerous. Post your best bowler against them and don't give them a free hit in the powerplay.`
+    : 'Identify their in-form batters quickly. Tight lines in the powerplay — keep them under 45 in the first 6.'
+  const midBowlNote = targetBatters.length > 0
+    ? `Middle overs: ${targetBatterNames.join(', ')} ${targetBatters.length === 1 ? 'has a weakness under pressure' : 'have weaknesses under pressure'}. Attack with short-pitched bowling or change of pace — they tend to give wickets away.`
+    : 'Middle overs: maintain tight dot-ball pressure, vary your pace, and rotate ends every 3 overs to break any partnership.'
+  const deathBowlNote = avoidBatters.length > 0
+    ? `Prevent ${avoidBatterNames[0]} from facing the final 2 overs at all costs — keep fielders in attacking positions and rotate your most experienced bowler for overs 19–20.`
+    : 'Death overs: keep two fielders inside the circle, back yourself with slower balls, and don\'t go full until you have to.'
+
+  // Top all-rounders
+  const topAR = arAnalysis.slice(0,3)
+  const arAvoidList = arAnalysis.filter(a => a.tag === 'AVOID')
+  const arContainList = arAnalysis.filter(a => a.tag === 'CONTAIN')
+
+  const SectionHeader = ({ icon, title, sub, color = C.green }) => (
+    <div style={{ marginBottom:14 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:2 }}>
+        <div style={{ width:34, height:34, borderRadius:10, background: color === C.green ? C.blueBg : '#fef3c7', border:`1.5px solid ${color === C.green ? '#bfdbfe' : '#fcd34d'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{icon}</div>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark }}>{title}</div>
+      </div>
+      <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginLeft:44 }}>{sub}</div>
+    </div>
+  )
+
+  const PhaseCard = ({ phase, overs, desc, color = '#2563eb', delay = 0 }) => (
+    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay, duration:0.28, ease:EASE }}
+      style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'13px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:C.dark }}>{phase}</div>
+        <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:color, background:`${color}15`, padding:'3px 8px', borderRadius:20 }}>{overs}</div>
+      </div>
+      <div style={{ fontFamily:FONT, fontSize:13, color:'#374151', lineHeight:1.65 }}>{desc}</div>
+    </motion.div>
+  )
+
+  const ThreatCard = ({ a, statObj, mode }) => {
+    const nm = fullFn(a)
+    const st = statObj || {}
+    const isBowl = mode === 'bowl'
+    const stat1 = isBowl
+      ? `${st.wickets ?? '—'} wkts`
+      : `${st.runs ?? '—'} runs`
+    const stat2 = isBowl
+      ? `Econ ${parseFloat(st.economy_rate)?.toFixed(2) ?? '—'}`
+      : `SR ${parseFloat(st.strike_rate)?.toFixed(1) ?? '—'}`
+    const tagColor = a.tag === 'AVOID' ? '#dc2626' : a.tag === 'TARGET' ? '#16a34a' : '#d97706'
+    const tactics = a.scouting_notes || (isBowl
+      ? (a.tag === 'AVOID' ? 'This bowler is dangerous — defend their deliveries, take singles, don\'t take risks.' : a.tag === 'TARGET' ? 'Their economy is exploitable — attack from ball one, go over the top if needed.' : 'Steady performer — rotate the strike and look for boundary opportunities.')
+      : (a.tag === 'AVOID' ? 'Do not give cheap runs — bowl full and straight, use yorkers at the death.' : a.tag === 'TARGET' ? 'Can be dismissed under pressure — vary pace, bowl short, change angles.' : 'Solid batter — keep the pressure on, bowl tight lines, no loose deliveries.')
+    )
+    return (
+      <motion.div initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.28, ease:EASE }}
+        style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'12px 14px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+          {a.opponent_players?.photo_url
+            ? <div style={{ width:38, height:38, borderRadius:'50%', overflow:'hidden', flexShrink:0, border:`2px solid ${tagColor}40` }}><img src={a.opponent_players.photo_url} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover' }}/></div>
+            : <div style={{ width:38, height:38, borderRadius:'50%', flexShrink:0, background:`linear-gradient(135deg,${tagColor}30,${tagColor}10)`, border:`2px solid ${tagColor}30`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:FONT, fontWeight:800, fontSize:13, color:tagColor }}>{nm.slice(0,2).toUpperCase()}</div>
+          }
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:C.dark }}>{nm}</div>
+            <div style={{ display:'flex', gap:6, marginTop:3, flexWrap:'wrap' }}>
+              <Badge label={a.tag}/>
+              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'#f1f5f9', borderRadius:6, padding:'2px 7px' }}>{stat1}</span>
+              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'#f1f5f9', borderRadius:6, padding:'2px 7px' }}>{stat2}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ fontFamily:FONT, fontSize:12.5, color:'#374151', lineHeight:1.6, paddingLeft:10, borderLeft:`3px solid ${tagColor}` }}>{tactics}</div>
+      </motion.div>
+    )
+  }
 
   return (
     <div>
-      <div style={{ marginBottom:20 }}>
-        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>When We Bat</div>
-        <div style={{ fontFamily:FONT, fontSize:13, color:C.gray4, marginBottom:14 }}>How to approach their bowling attack</div>
-        {whenBat.map((p,i) => (
-          <motion.div key={i} initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }} transition={{ delay:i*0.07, duration:0.3, ease:EASE }}
-            style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'14px 16px', display:'flex', gap:14, alignItems:'flex-start', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
-            <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:C.blueBg, border:'1.5px solid #bfdbfe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>{p.icon}</div>
-            <div>
-              <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:C.green, marginBottom:3, textTransform:'uppercase', letterSpacing:0.5 }}>Priority {p.p}</div>
-              <div style={{ fontFamily:FONT, fontSize:13.5, color:C.dark, lineHeight:1.6 }}>{p.text}</div>
+      {/* === INTEL SUMMARY === */}
+      <div style={{ background:`linear-gradient(135deg, ${C.greenDark}, #1e40af)`, borderRadius:16, padding:'16px 18px', marginBottom:20, color:'#fff' }}>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, marginBottom:10, color:'rgba(255,255,255,.7)', textTransform:'uppercase', letterSpacing:0.5 }}>📋 Pre-Match Intel</div>
+        <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+          {[
+            { v: avoidBatters.length,  l:'Danger Batters', c:'#fca5a5' },
+            { v: targetBatters.length, l:'Targetable Batters', c:'#86efac' },
+            { v: avoidBowlers.length,  l:'Danger Bowlers', c:'#fca5a5' },
+            { v: targetBowlers.length, l:'Targetable Bowlers', c:'#86efac' },
+          ].map(({ v, l, c }) => (
+            <div key={l} style={{ flex:'1 1 100px', background:'rgba(255,255,255,.1)', borderRadius:12, padding:'10px 12px' }}>
+              <div style={{ fontFamily:FONT, fontWeight:900, fontSize:22, color:c }}>{v}</div>
+              <div style={{ fontFamily:FONT, fontSize:10, color:'rgba(255,255,255,.65)', marginTop:2 }}>{l}</div>
             </div>
-          </motion.div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div style={{ marginBottom:20 }}>
-        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>When We Bowl</div>
-        <div style={{ fontFamily:FONT, fontSize:13, color:C.gray4, marginBottom:14 }}>How to attack their batting lineup</div>
-        {whenBowl.map((p,i) => (
-          <motion.div key={i} initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }} transition={{ delay:i*0.07, duration:0.3, ease:EASE }}
-            style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'14px 16px', display:'flex', gap:14, alignItems:'flex-start', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
-            <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:'#fef3c7', border:'1.5px solid #fcd34d', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>{p.icon}</div>
-            <div>
-              <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#d97706', marginBottom:3, textTransform:'uppercase', letterSpacing:0.5 }}>Priority {p.p}</div>
-              <div style={{ fontFamily:FONT, fontSize:13.5, color:C.dark, lineHeight:1.6 }}>{p.text}</div>
-            </div>
-          </motion.div>
-        ))}
+      {/* === WHEN WE BAT === */}
+      <div style={{ marginBottom:24 }}>
+        <SectionHeader icon="🏏" title="When We Bat" sub="Phase-by-phase batting strategy against their attack" color={C.green}/>
+        <PhaseCard phase="Powerplay (Overs 1–6)" overs="Overs 1–6" desc={ppNote} color="#2563eb" delay={0}/>
+        <PhaseCard phase="Middle Overs" overs="Overs 7–15" desc={midNote} color="#7c3aed" delay={0.05}/>
+        <PhaseCard phase="Death Overs" overs="Overs 16–20" desc={deathNote} color="#dc2626" delay={0.1}/>
+
+        {bowlAnalysis.length > 0 && (
+          <div style={{ marginTop:16 }}>
+            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎳 Bowler-by-Bowler Guide</div>
+            <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>How to approach each bowler when you're at the crease</div>
+            {bowlAnalysis.map(a => (
+              <ThreatCard key={a.id} a={a} statObj={bowlStatMap[fullFn(a)]} mode="bowl"/>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* === WHEN WE BOWL === */}
+      <div style={{ marginBottom:24 }}>
+        <SectionHeader icon="🎳" title="When We Bowl" sub="Phase-by-phase bowling strategy against their lineup" color="#d97706"/>
+        <PhaseCard phase="Powerplay (Overs 1–6)" overs="Overs 1–6" desc={ppBowlNote} color="#2563eb" delay={0}/>
+        <PhaseCard phase="Middle Overs" overs="Overs 7–15" desc={midBowlNote} color="#7c3aed" delay={0.05}/>
+        <PhaseCard phase="Death Overs" overs="Overs 16–20" desc={deathBowlNote} color="#dc2626" delay={0.1}/>
+
+        {batAnalysis.length > 0 && (
+          <div style={{ marginTop:16 }}>
+            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🏏 Batter-by-Batter Guide</div>
+            <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>How to bowl at each of their batters</div>
+            {batAnalysis.map(a => (
+              <ThreatCard key={a.id} a={a} statObj={batStatMap[fullFn(a)]} mode="bat"/>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* === ALL-ROUNDER WATCH === */}
+      {topAR.length > 0 && (
+        <div style={{ marginBottom:24 }}>
+          <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>⚡ All-rounder Watch</div>
+          <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:14 }}>Players who can impact BOTH phases — require dual planning</div>
+          {topAR.map(a => {
+            const nm = fn(a)
+            const bs = batStatMap[fullFn(a)]
+            const bw = bowlStatMap[fullFn(a)]
+            const tagColor = a.tag === 'AVOID' ? '#dc2626' : a.tag === 'TARGET' ? '#16a34a' : '#d97706'
+            return (
+              <motion.div key={a.id} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.28, ease:EASE }}
+                style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'14px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                  {a.opponent_players?.photo_url
+                    ? <div style={{ width:40, height:40, borderRadius:'50%', overflow:'hidden', flexShrink:0 }}><img src={a.opponent_players.photo_url} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover' }}/></div>
+                    : <div style={{ width:40, height:40, borderRadius:'50%', flexShrink:0, background:`linear-gradient(135deg,${tagColor}30,${tagColor}10)`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:FONT, fontWeight:800, fontSize:14, color:tagColor }}>{nm.slice(0,2).toUpperCase()}</div>
+                  }
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark }}>{fullFn(a)}</div>
+                    <Badge label={a.tag}/>
+                  </div>
+                  <div style={{ textAlign:'right' }}>
+                    <div style={{ fontFamily:FONT, fontWeight:900, fontSize:18, color:C.green }}>{Math.round(a.composite_score)}</div>
+                    <div style={{ fontFamily:FONT, fontSize:9, color:C.gray4 }}>AR Score</div>
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:8 }}>
+                  <div style={{ flex:1, background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:10, padding:'8px 10px' }}>
+                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#16a34a', marginBottom:4 }}>🏏 BAT</div>
+                    <div style={{ fontFamily:FONT, fontSize:12, color:C.dark }}>{bs?.runs ?? '—'} runs @ SR {parseFloat(bs?.strike_rate)?.toFixed(0) ?? '—'}</div>
+                    <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>Bat score: {Math.round(a.batting_score||0)}/100</div>
+                  </div>
+                  <div style={{ flex:1, background:'#faf5ff', border:'1px solid #e9d5ff', borderRadius:10, padding:'8px 10px' }}>
+                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#7c3aed', marginBottom:4 }}>🎳 BOWL</div>
+                    <div style={{ fontFamily:FONT, fontSize:12, color:C.dark }}>{bw?.wickets ?? '—'} wkts @ {parseFloat(bw?.economy_rate)?.toFixed(2) ?? '—'} econ</div>
+                    <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>Bowl score: {Math.round(a.bowling_score||0)}/100</div>
+                  </div>
+                </div>
+                {a.scouting_notes && <div style={{ fontFamily:FONT, fontSize:12, color:'#374151', lineHeight:1.6, marginTop:10, padding:'8px 10px', background:'#f8fafc', borderRadius:8, borderLeft:`3px solid ${tagColor}` }}>{a.scouting_notes}</div>}
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* === KEY MATCHUP MATRIX === */}
+      {avoidBatters.length > 0 && avoidBowlers.length > 0 && (
+        <div style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:16, padding:16, marginBottom:20, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+          <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🔑 Key Matchups</div>
+          <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:14 }}>Critical individual contests that could decide the match</div>
+          {avoidBowlers.slice(0,2).map((bwl, i) => (
+            <div key={i} style={{ background:'linear-gradient(90deg,#eff6ff,#f5f3ff)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:C.dark, flex:1 }}>vs {fn(bwl)}</div>
+              <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4 }}>Our top-order batters must survive their opening spell</div>
+            </div>
+          ))}
+          {avoidBatters.slice(0,2).map((bat, i) => (
+            <div key={i} style={{ background:'linear-gradient(90deg,#fff7ed,#fffbeb)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:C.dark, flex:1 }}>Bowl to {fn(bat)}</div>
+              <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4 }}>Our best bowler must dismiss them early — crucial wicket</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* === BADGE LEGEND === */}
       <div style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:16, padding:16 }}>
         <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🏷️ Badge Legend</div>
         {[
@@ -515,6 +684,36 @@ export default function AnalysePage() {
       name: r.opponent_players?.player_name?.split(' ')[0] || '?',
       wickets: r.wickets, econ: r.economy_rate,
     })), [bowlStats])
+
+  const battingSRChart = useMemo(() =>
+    [...batStats].sort((a,b)=>b.runs-a.runs).slice(0,8).map(r=>({
+      name: r.opponent_players?.player_name?.split(' ')[0] || '?',
+      sr: parseFloat(r.strike_rate) || 0,
+    })), [batStats])
+
+  const batScatterData = useMemo(() =>
+    batStats.filter(r=>r.runs>0).map(r=>({
+      name: r.opponent_players?.player_name?.split(' ')[0] || '?',
+      runs: r.runs, sr: parseFloat(r.strike_rate) || 0,
+    })), [batStats])
+
+  const bowlEconChart = useMemo(() =>
+    [...bowlStats].filter(r=>r.overs>=10).sort((a,b)=>a.economy_rate-b.economy_rate).map(r=>({
+      name: r.opponent_players?.player_name?.split(' ')[0] || '?',
+      econ: parseFloat(r.economy_rate) || 0, wkts: r.wickets,
+    })), [bowlStats])
+
+  const bowlScatterData = useMemo(() =>
+    bowlStats.filter(r=>r.overs>=10).map(r=>({
+      name: r.opponent_players?.player_name?.split(' ')[0] || '?',
+      wickets: r.wickets, econ: parseFloat(r.economy_rate) || 0,
+    })), [bowlStats])
+
+  const arScatterData = useMemo(() =>
+    arAnalysis.map(a=>({
+      name: a.opponent_players?.player_name?.split(' ')[0] || '?',
+      bat: Math.round(a.batting_score||0), bowl: Math.round(a.bowling_score||0),
+    })), [arAnalysis])
 
   const selectedOpp = opponents.find(o => o.id === selectedId)
 
@@ -645,9 +844,9 @@ export default function AnalysePage() {
               {activeTab==='batting' && (
                 <motion.div key="batting" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {battingChart.length > 0 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:18, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>📊 Top Run-scorers</div>
-                      <ResponsiveContainer width="100%" height={180}>
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>📊 Total Runs</div>
+                      <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={battingChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
                           <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
@@ -655,6 +854,55 @@ export default function AnalysePage() {
                           <Tooltip content={<ChartTip/>}/>
                           <Bar dataKey="runs" fill={C.green} radius={[5,5,0,0]} name="Runs"/>
                         </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {battingSRChart.length > 0 && (
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>⚡ Strike Rate</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>100 = scoring at 1 run per ball — above is aggressive, below is defensive</div>
+                      <ResponsiveContainer width="100%" height={170}>
+                        <BarChart data={battingSRChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <YAxis domain={[0, 'auto']} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <Tooltip content={<ChartTip/>}/>
+                          <ReferenceLine y={100} stroke="#94a3b8" strokeDasharray="4 4" label={{ value:'SR 100', position:'insideTopRight', fontFamily:FONT, fontSize:10, fill:'#94a3b8' }}/>
+                          <Bar dataKey="sr" fill="#f59e0b" radius={[5,5,0,0]} name="Strike Rate"/>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {batScatterData.length >= 2 && (
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎯 Runs vs Strike Rate — Threat Quadrant</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-right = most dangerous (high volume + fast). Top-left = slow but lots of runs. Bottom-right = swings hard but scores little.</div>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <ScatterChart margin={{ top:10, right:20, left:-10, bottom:0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
+                          <XAxis dataKey="runs" name="Runs" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Runs', position:'insideBottom', offset:-2, fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <YAxis dataKey="sr" name="Strike Rate" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'SR', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <Tooltip cursor={{ strokeDasharray:'3 3' }} content={({ payload }) => payload?.length ? (
+                            <div style={{ background:'#1e293b', borderRadius:10, padding:'8px 12px', fontFamily:FONT, fontSize:12, color:'#fff' }}>
+                              <div style={{ fontWeight:800, marginBottom:4 }}>{payload[0]?.payload?.name}</div>
+                              <div>Runs: <strong>{payload[0]?.payload?.runs}</strong></div>
+                              <div>SR: <strong>{payload[0]?.payload?.sr?.toFixed(1)}</strong></div>
+                            </div>
+                          ) : null}/>
+                          <Scatter data={batScatterData} fill={C.green} opacity={0.85}
+                            shape={(props) => {
+                              const { cx, cy, payload } = props
+                              return (
+                                <g>
+                                  <circle cx={cx} cy={cy} r={6} fill={C.green} opacity={0.85}/>
+                                  <text x={cx} y={cy-10} textAnchor="middle" fill={C.gray4} fontSize={9} fontFamily={FONT}>{payload.name}</text>
+                                </g>
+                              )
+                            }}
+                          />
+                        </ScatterChart>
                       </ResponsiveContainer>
                     </div>
                   )}
@@ -680,9 +928,9 @@ export default function AnalysePage() {
               {activeTab==='bowling' && (
                 <motion.div key="bowling" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {bowlingChart.length > 0 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:18, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🎳 Top Wicket-takers (min. 10 overs)</div>
-                      <ResponsiveContainer width="100%" height={180}>
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🎳 Wickets (min. 10 overs)</div>
+                      <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={bowlingChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
                           <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
@@ -690,6 +938,55 @@ export default function AnalysePage() {
                           <Tooltip content={<ChartTip/>}/>
                           <Bar dataKey="wickets" fill="#7c3aed" radius={[5,5,0,0]} name="Wickets"/>
                         </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {bowlEconChart.length > 0 && (
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>💰 Economy Rate (best first)</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Lower = harder to score off. Under 5.0 = elite economy. Above 7.0 = exploitable.</div>
+                      <ResponsiveContainer width="100%" height={170}>
+                        <BarChart data={bowlEconChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <YAxis domain={[0,'auto']} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <Tooltip content={<ChartTip/>}/>
+                          <ReferenceLine y={7} stroke="#f59e0b" strokeDasharray="4 4" label={{ value:'7.0 threshold', position:'insideTopRight', fontFamily:FONT, fontSize:10, fill:'#f59e0b' }}/>
+                          <Bar dataKey="econ" fill="#ef4444" radius={[5,5,0,0]} name="Economy"/>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {bowlScatterData.length >= 2 && (
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎯 Wickets vs Economy — Danger Quadrant</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-left = dangerous (lots of wickets + cheap). Top-right = wickets but expensive. Bottom-left = safe to face.</div>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <ScatterChart margin={{ top:10, right:20, left:-10, bottom:0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
+                          <XAxis dataKey="econ" name="Economy" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Economy', position:'insideBottom', offset:-2, fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <YAxis dataKey="wickets" name="Wickets" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Wkts', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <Tooltip cursor={{ strokeDasharray:'3 3' }} content={({ payload }) => payload?.length ? (
+                            <div style={{ background:'#1e293b', borderRadius:10, padding:'8px 12px', fontFamily:FONT, fontSize:12, color:'#fff' }}>
+                              <div style={{ fontWeight:800, marginBottom:4 }}>{payload[0]?.payload?.name}</div>
+                              <div>Wickets: <strong>{payload[0]?.payload?.wickets}</strong></div>
+                              <div>Economy: <strong>{payload[0]?.payload?.econ?.toFixed(2)}</strong></div>
+                            </div>
+                          ) : null}/>
+                          <Scatter data={bowlScatterData} fill="#7c3aed" opacity={0.85}
+                            shape={(props) => {
+                              const { cx, cy, payload } = props
+                              return (
+                                <g>
+                                  <circle cx={cx} cy={cy} r={6} fill="#7c3aed" opacity={0.85}/>
+                                  <text x={cx} y={cy-10} textAnchor="middle" fill={C.gray4} fontSize={9} fontFamily={FONT}>{payload.name}</text>
+                                </g>
+                              )
+                            }}
+                          />
+                        </ScatterChart>
                       </ResponsiveContainer>
                     </div>
                   )}
@@ -715,7 +1012,7 @@ export default function AnalysePage() {
               {activeTab==='allrounders' && (
                 <motion.div key="ar" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {arAnalysis.length > 1 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:18, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>⚡ Bat vs Bowl Contribution</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Normalised 0–100 scale</div>
                       <ResponsiveContainer width="100%" height={180}>
@@ -734,6 +1031,38 @@ export default function AnalysePage() {
                     </div>
                   )}
 
+                  {arScatterData.length >= 2 && (
+                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🔮 All-rounder Skill Map</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-right = true all-rounder threat (dangerous bat AND bowl). Axes = normalised 0–100 skill score.</div>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <ScatterChart margin={{ top:10, right:20, left:-10, bottom:10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
+                          <XAxis dataKey="bat" name="Bat Score" type="number" domain={[0,105]} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Bat Score', position:'insideBottom', offset:-5, fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <YAxis dataKey="bowl" name="Bowl Score" type="number" domain={[0,105]} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Bowl', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <Tooltip cursor={{ strokeDasharray:'3 3' }} content={({ payload }) => payload?.length ? (
+                            <div style={{ background:'#1e293b', borderRadius:10, padding:'8px 12px', fontFamily:FONT, fontSize:12, color:'#fff' }}>
+                              <div style={{ fontWeight:800, marginBottom:4 }}>{payload[0]?.payload?.name}</div>
+                              <div>Bat Score: <strong>{payload[0]?.payload?.bat}</strong></div>
+                              <div>Bowl Score: <strong>{payload[0]?.payload?.bowl}</strong></div>
+                            </div>
+                          ) : null}/>
+                          <Scatter data={arScatterData} fill="#f59e0b" opacity={0.9}
+                            shape={(props) => {
+                              const { cx, cy, payload } = props
+                              return (
+                                <g>
+                                  <circle cx={cx} cy={cy} r={7} fill="#f59e0b" opacity={0.9}/>
+                                  <text x={cx} y={cy-11} textAnchor="middle" fill={C.gray4} fontSize={9} fontFamily={FONT}>{payload.name}</text>
+                                </g>
+                              )
+                            }}
+                          />
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
                   <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>Top {arAnalysis.length} All-rounders</div>
                   <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:14 }}>Composite = 50% bat score + 50% bowl score. Min 3 games + 10 overs.</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
@@ -746,7 +1075,7 @@ export default function AnalysePage() {
               {/* ── MATCH PLAN ── */}
               {activeTab==='matchplan' && (
                 <motion.div key="plan" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
-                  <MatchPlan batAnalysis={batAnalysis} bowlAnalysis={bowlAnalysis} opp={selectedOpp}/>
+                  <MatchPlan batAnalysis={batAnalysis} bowlAnalysis={bowlAnalysis} arAnalysis={arAnalysis} batStats={batStats} bowlStats={bowlStats} opp={selectedOpp}/>
                 </motion.div>
               )}
 
