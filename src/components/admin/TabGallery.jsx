@@ -74,12 +74,11 @@ function AdminUploadModal({ onClose, onPosted }) {
   }
 
   async function submitAll() {
-    if (!items.length) { setGlobalErr('Select files first'); return }
+    const pending = items.filter(x => x.status !== 'done')
+    if (!pending.length) { setGlobalErr('Select files first'); return }
     setUploading(true); setGlobalErr('')
-    for (const item of items) {
-      if (item.status === 'done') continue
-      await uploadOne(item)
-    }
+    // Upload all files in parallel — each item updates its own status via updateItem
+    await Promise.allSettled(pending.map(item => uploadOne(item)))
     setUploading(false)
     onPosted()
     onClose()

@@ -57,7 +57,6 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
   const [items,     setItems]     = useState([])
   const [dragging,  setDragging]  = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [doneCount, setDoneCount] = useState(0)
   const [globalErr, setGlobalErr] = useState('')
   const inputRef = useRef()
 
@@ -139,14 +138,11 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
   }
 
   async function submitAll() {
-    if (!items.length) { setGlobalErr('Please add at least one photo or video'); return }
-    setUploading(true); setDoneCount(0); setGlobalErr('')
-    // Upload sequentially so we can show per-item progress
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].status === 'done') continue
-      await uploadItem(items[i])
-      setDoneCount(i + 1)
-    }
+    const pending = items.filter(x => x.status !== 'done')
+    if (!pending.length) { setGlobalErr('Please add at least one photo or video'); return }
+    setUploading(true); setGlobalErr('')
+    // Upload all files in parallel — each item updates its own status via updateItem
+    await Promise.allSettled(pending.map(item => uploadItem(item)))
     setUploading(false)
     onPosted()
     onClose()
