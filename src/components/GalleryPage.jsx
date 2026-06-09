@@ -376,13 +376,28 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
   const [reactions,    setReactions]    = useState({ likes:0, dislikes:0, mine:null })
   const [animLike,     setAnimLike]     = useState(false)
   const [downloading,  setDownloading]  = useState(false)
+  const [showShare,    setShowShare]    = useState(false)
   const [copied,       setCopied]       = useState(false)
   const commentEndRef = useRef()
+  const shareRef      = useRef()
 
   const myEmail = user?.email?.toLowerCase()
   const isOwner = myEmail && post.player_email?.toLowerCase() === myEmail
 
   useEffect(() => { loadComments(); loadReactions() }, [post.id])
+
+  // Close share sheet when clicking outside
+  useEffect(() => {
+    if (!showShare) return
+    function handleClick(e) {
+      if (shareRef.current && !shareRef.current.closest('[data-share-sheet]')?.contains(e.target)
+          && !shareRef.current.contains(e.target)) {
+        setShowShare(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showShare])
 
   async function loadComments() {
     const { data } = await supabase.from('post_comments').select('*').eq('post_id', post.id).order('created_at')
@@ -457,15 +472,46 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
     setDownloading(false)
   }
 
-  async function handleShare() {
-    const text = `${post.player_name}${post.title ? ' — ' + post.title : ''}`
-    if (navigator.share) {
-      try { await navigator.share({ title: post.title || 'TUCC Gallery', text, url: post.media_url }) } catch {}
-    } else {
-      try { await navigator.clipboard.writeText(post.media_url) } catch {}
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2200)
-    }
+  const shareText = encodeURIComponent(
+    `${post.player_name}${post.title ? ' — ' + post.title : ''} 🏏 Tamil United CC`
+  )
+  const shareUrl = encodeURIComponent(post.media_url)
+
+  const SHARE_OPTIONS = [
+    {
+      id: 'whatsapp',
+      label: 'WhatsApp',
+      emoji: '💬',
+      bg: '#dcfce7', color: '#15803d', hoverBg: '#bbf7d0',
+      href: `https://wa.me/?text=${shareText}%20${shareUrl}`,
+    },
+    {
+      id: 'facebook',
+      label: 'Facebook',
+      emoji: '👥',
+      bg: '#eff6ff', color: '#1d4ed8', hoverBg: '#dbeafe',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
+    },
+    {
+      id: 'twitter',
+      label: 'X (Twitter)',
+      emoji: '🐦',
+      bg: '#f0f9ff', color: '#0369a1', hoverBg: '#e0f2fe',
+      href: `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`,
+    },
+    {
+      id: 'telegram',
+      label: 'Telegram',
+      emoji: '✈️',
+      bg: '#f0f9ff', color: '#0284c7', hoverBg: '#bae6fd',
+      href: `https://t.me/share/url?url=${shareUrl}&text=${shareText}`,
+    },
+  ]
+
+  async function copyLink() {
+    try { await navigator.clipboard.writeText(post.media_url) } catch {}
+    setCopied(true)
+    setTimeout(() => { setCopied(false); setShowShare(false) }, 2000)
   }
 
   return (
@@ -583,17 +629,66 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
             </span>
           </motion.button>
 
-          {/* Share */}
-          <motion.button whileTap={{ scale:.94 }} onClick={handleShare}
-            style={{ display:'flex', alignItems:'center', gap:6, border:'1.5px solid #e5e7eb', borderRadius:10, padding:'7px 13px', background: copied?'#f0fdf4':'#fff', cursor:'pointer', transition:'all .18s', flexShrink:0, borderColor: copied?'#86efac':'#e5e7eb' }}
-            onMouseEnter={e => { if(!copied){ e.currentTarget.style.background='#eff6ff'; e.currentTarget.style.borderColor='#93c5fd' }}}
-            onMouseLeave={e => { if(!copied){ e.currentTarget.style.background='#fff'; e.currentTarget.style.borderColor='#e5e7eb' }}}>
-            <span style={{ fontSize:15 }}>{copied ? '✅' : '🔗'}</span>
-            <span style={{ fontSize:12, fontWeight:700, color: copied?'#15803d':'#374151', fontFamily:FONT }}>
-              {copied ? 'Copied!' : 'Share'}
-            </span>
-          </motion.button>
+          {/* Share — toggles sheet */}
+          <div style={{ position:'relative' }} ref={shareRef}>
+            <motion.button whileTap={{ scale:.94 }} onClick={() => setShowShare(v => !v)}
+              style={{ display:'flex', alignItems:'center', gap:6, border:`1.5px solid ${showShare?'#6366f1':'#e5e7eb'}`, borderRadius:10, padding:'7px 13px', background:showShare?'#eef2ff':'#fff', cursor:'pointer', transition:'all .18s', flexShrink:0 }}
+              onMouseEnter={e => { if(!showShare){ e.currentTarget.style.background='#eef2ff'; e.currentTarget.style.borderColor='#a5b4fc' }}}
+              onMouseLeave={e => { if(!showShare){ e.currentTarget.style.background='#fff'; e.currentTarget.style.borderColor='#e5e7eb' }}}>
+              <span style={{ fontSize:15 }}>🔗</span>
+              <span style={{ fontSize:12, fontWeight:700, color: showShare?'#4f46e5':'#374151', fontFamily:FONT }}>Share</span>
+            </motion.button>
+          </div>
         </div>
+
+        {/* ── SHARE SHEET ── */}
+        <AnimatePresence>
+          {showShare && (
+            <motion.div
+              initial={{ opacity:0, y:-8, scaleY:.92 }}
+              animate={{ opacity:1, y:0, scaleY:1 }}
+              exit={{ opacity:0, y:-8, scaleY:.92 }}
+              transition={{ type:'spring', damping:22, stiffness:320 }}
+              data-share-sheet="1"
+              style={{ background:'#fafafa', borderBottom:'1px solid #e5e7eb', padding:'14px 16px', flexShrink:0, transformOrigin:'top' }}
+            >
+              <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT, marginBottom:10 }}>
+                Share via
+              </div>
+              <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                {SHARE_OPTIONS.map(opt => (
+                  <motion.a
+                    key={opt.id}
+                    href={opt.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setShowShare(false)}
+                    whileTap={{ scale:.93 }}
+                    whileHover={{ y:-2 }}
+                    style={{ display:'flex', alignItems:'center', gap:7, background:opt.bg, border:`1.5px solid ${opt.hoverBg}`, borderRadius:12, padding:'9px 15px', textDecoration:'none', cursor:'pointer', transition:'all .15s', flex:'1 1 120px' }}
+                    onMouseEnter={e => e.currentTarget.style.background=opt.hoverBg}
+                    onMouseLeave={e => e.currentTarget.style.background=opt.bg}
+                  >
+                    <span style={{ fontSize:18 }}>{opt.emoji}</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:opt.color, fontFamily:FONT }}>{opt.label}</span>
+                  </motion.a>
+                ))}
+
+                {/* Copy Link */}
+                <motion.button
+                  whileTap={{ scale:.93 }} whileHover={{ y:-2 }}
+                  onClick={copyLink}
+                  style={{ display:'flex', alignItems:'center', gap:7, background: copied?'#f0fdf4':'#f3f4f6', border:`1.5px solid ${copied?'#86efac':'#e5e7eb'}`, borderRadius:12, padding:'9px 15px', cursor:'pointer', transition:'all .15s', flex:'1 1 120px' }}
+                >
+                  <span style={{ fontSize:18 }}>{copied ? '✅' : '📋'}</span>
+                  <span style={{ fontSize:12, fontWeight:700, color: copied?'#15803d':'#374151', fontFamily:FONT }}>
+                    {copied ? 'Copied!' : 'Copy Link'}
+                  </span>
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── COMMENTS LIST (scrollable) ── */}
         <div style={{ flex:1, overflowY:'auto', padding:'12px 16px', display:'flex', flexDirection:'column', gap:10, minHeight:0 }}>
