@@ -10,10 +10,12 @@ import TabMessages from './TabMessages'
 import TabStats from './TabStats'
 import TabSettings from './TabSettings'
 import TabPOTW from './TabPOTW'
+import TabActivity from './TabActivity'
 
 const TABS = [
   { id: 'availability', label: '📋 Availability' },
   { id: 'players',      label: '👥 Players' },
+  { id: 'activity',     label: '🕵️ Activity' },
   { id: 'match',        label: '🏏 Match' },
   { id: 'team',         label: '🎽 Team' },
   { id: 'messages',     label: '💬 Messages' },
@@ -120,6 +122,7 @@ export default function AdminDashboard() {
           >
             {tab === 'availability' && <TabAvailability />}
             {tab === 'players'      && <TabPlayers />}
+            {tab === 'activity'     && <TabActivity />}
             {tab === 'match'        && <TabMatch />}
             {tab === 'team'         && <TabTeamSelection />}
             {tab === 'messages'     && <TabMessages />}

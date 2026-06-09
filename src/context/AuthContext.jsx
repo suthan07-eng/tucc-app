@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../supabase'
+import { logLogin, logLogout } from '../hooks/useActivityLog'
 
 const AuthContext = createContext(null)
 
@@ -39,8 +40,10 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function signIn(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+    // Log the login event after successful auth
+    if (data?.user) logLogin(data.user).catch(() => {})
   }
 
   async function signUp(email, password, meta) {
@@ -53,6 +56,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
+    if (user) await logLogout(user).catch(() => {})
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { useActivityLog } from './hooks/useActivityLog'
 import LandingPage from './components/LandingPage'
 import Home from './components/Home'
 import Register from './components/Register'
@@ -27,8 +28,16 @@ function RequireAdmin({ children }) {
   return isAdmin ? children : <Navigate to="/admin/login" replace />
 }
 
+function ActivityTracker() {
+  const { user } = useAuth()
+  useActivityLog(user)
+  return null
+}
+
 function AppRoutes() {
   return (
+    <>
+    <ActivityTracker />
     <Routes>
       {/* Public — landing / login */}
       <Route path="/login" element={<LandingPage />} />
@@ -54,6 +63,7 @@ function AppRoutes() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }
 
