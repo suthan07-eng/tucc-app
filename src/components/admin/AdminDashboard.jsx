@@ -11,11 +11,13 @@ import TabStats from './TabStats'
 import TabSettings from './TabSettings'
 import TabPOTW from './TabPOTW'
 import TabActivity from './TabActivity'
+import TabGallery from './TabGallery'
 
 const TABS = [
   { id: 'availability', label: '📋 Availability' },
   { id: 'players',      label: '👥 Players' },
   { id: 'activity',     label: '🕵️ Activity' },
+  { id: 'gallery',      label: '📸 Gallery' },
   { id: 'match',        label: '🏏 Match' },
   { id: 'team',         label: '🎽 Team' },
   { id: 'messages',     label: '💬 Messages' },
@@ -123,6 +125,7 @@ export default function AdminDashboard() {
             {tab === 'availability' && <TabAvailability />}
             {tab === 'players'      && <TabPlayers />}
             {tab === 'activity'     && <TabActivity />}
+            {tab === 'gallery'      && <TabGallery />}
             {tab === 'match'        && <TabMatch />}
             {tab === 'team'         && <TabTeamSelection />}
             {tab === 'messages'     && <TabMessages />}

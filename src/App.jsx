@@ -11,6 +11,7 @@ import Stats from './components/Stats'
 import ResultsPage from './components/ResultsPage'
 import FixturesPage from './components/FixturesPage'
 import PlayersPage from './components/PlayersPage'
+import GalleryPage from './components/GalleryPage'
 import AdminLogin from './components/admin/AdminLogin'
 import AdminDashboard from './components/admin/AdminDashboard'
 import ResetPassword from './components/ResetPassword'
@@ -53,6 +54,7 @@ function AppRoutes() {
       <Route path="/results" element={<RequireAuth><ResultsPage /></RequireAuth>} />
       <Route path="/fixtures" element={<RequireAuth><FixturesPage /></RequireAuth>} />
       <Route path="/players" element={<RequireAuth><PlayersPage /></RequireAuth>} />
+      <Route path="/gallery" element={<RequireAuth><GalleryPage /></RequireAuth>} />
 
       {/* Password reset (public — accessed via email link) */}
       <Route path="/reset-password" element={<ResetPassword />} />
