@@ -68,7 +68,7 @@ function compressImage(file) {
   })
 }
 
-async function fetchAITitle({ fileName, mediaType, playerName }) {
+async function fetchAISuggestions({ fileName, mediaType, playerName }) {
   try {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     const res = await fetch('/api/generate-title', {
@@ -77,9 +77,9 @@ async function fetchAITitle({ fileName, mediaType, playerName }) {
       body: JSON.stringify({ fileName, mediaType, playerName, dateStr }),
     })
     const data = await res.json()
-    return data.title || null
+    return { title: data.title || null, caption: data.caption || null }
   } catch {
-    return null
+    return { title: null, caption: null }
   }
 }
 
@@ -116,29 +116,29 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
       error: '',
     }))
     setItems(prev => [...prev, ...newItems])
-    // Auto-generate AI titles in parallel
+    // Auto-generate AI title + caption in parallel
     newItems.forEach(item => {
-      fetchAITitle({
+      fetchAISuggestions({
         fileName: item.file.name,
         mediaType: item.file.type.startsWith('video') ? 'video' : 'image',
         playerName: playerInfo?.name || user?.email || '',
-      }).then(title => {
+      }).then(({ title, caption }) => {
         setItems(prev => prev.map(x =>
-          x.id === item.id ? { ...x, title: title || x.title, generating: false } : x
+          x.id === item.id ? { ...x, title: title || x.title, caption: caption || x.caption, generating: false } : x
         ))
       })
     })
   }
 
-  async function regenTitle(item) {
+  async function regenSuggestions(item) {
     setItems(prev => prev.map(x => x.id === item.id ? { ...x, generating: true } : x))
-    const title = await fetchAITitle({
+    const { title, caption } = await fetchAISuggestions({
       fileName: item.file.name,
       mediaType: item.file.type.startsWith('video') ? 'video' : 'image',
       playerName: playerInfo?.name || user?.email || '',
     })
     setItems(prev => prev.map(x =>
-      x.id === item.id ? { ...x, title: title ?? x.title, generating: false } : x
+      x.id === item.id ? { ...x, title: title ?? x.title, caption: caption ?? x.caption, generating: false } : x
     ))
   }
 
@@ -345,7 +345,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
                         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
                           <label style={{ fontSize:11, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT }}>Title</label>
                           <button
-                            onClick={() => regenTitle(item)}
+                            onClick={() => regenSuggestions(item)}
                             disabled={item.generating || uploading}
                             style={{ display:'flex', alignItems:'center', gap:4, background:item.generating?'#f1f5f9':'#fef9c3', border:`1px solid ${item.generating?'#e2e8f0':'#fde68a'}`, borderRadius:8, padding:'4px 10px', cursor:item.generating||uploading?'default':'pointer', transition:'all .15s' }}
                           >
@@ -370,17 +370,17 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
                       </div>
                       {/* Caption */}
                       <div>
-                        <label style={{ fontSize:11, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT, display:'block', marginBottom:6 }}>Caption</label>
+                        <label style={{ fontSize:11, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT, display:'block', marginBottom:6 }}>Description</label>
                         <textarea
                           value={item.caption}
                           onChange={e => updateItem(item.id, { caption:e.target.value })}
-                          placeholder="Describe the moment… (optional)"
+                          placeholder={item.generating ? 'Generating AI description…' : 'Describe the moment… (optional)'}
                           disabled={uploading}
                           maxLength={300}
                           rows={2}
-                          style={{ ...inputStyle(false), resize:'vertical', lineHeight:1.5, minHeight:60 }}
-                          onFocus={e => e.target.style.borderColor='#6366f1'}
-                          onBlur={e => e.target.style.borderColor='#e5e7eb'}
+                          style={{ ...inputStyle(item.generating), resize:'vertical', lineHeight:1.5, minHeight:60 }}
+                          onFocus={e => { if(!item.generating) e.target.style.borderColor='#6366f1' }}
+                          onBlur={e => { e.target.style.borderColor = item.generating?'#fde68a':'#e5e7eb' }}
                         />
                       </div>
                       {item.error && (
@@ -618,12 +618,12 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
         </div>
 
         {/* ── MEDIA ── */}
-        <div style={{ background:'#000', position:'relative', flexShrink:0 }}>
+        <div style={{ background:'#000', position:'relative', flexShrink:0, maxHeight:'52vh', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
           {post.media_type === 'video'
             ? <video src={post.media_url} controls autoPlay muted style={{ width:'100%', maxHeight:'52vh', objectFit:'contain', display:'block' }}/>
             : (
               <>
-                <img src={post.media_url} alt={post.caption||''} style={{ width:'100%', maxHeight:'52vh', objectFit:'contain', display:'block' }}/>
+                <img src={post.media_url} alt={post.caption||''} loading="eager" decoding="async" style={{ width:'100%', maxHeight:'52vh', objectFit:'contain', display:'block' }}/>
                 <AnimatePresence>
                   {animLike && (
                     <motion.div initial={{ scale:0, opacity:1 }} animate={{ scale:1.8, opacity:0 }} exit={{ opacity:0 }}
@@ -813,7 +813,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
 }
 
 // ── Post Card (grid tile) ───────────────────────────────────────
-function PostCard({ post, onClick }) {
+function PostCard({ post, onClick, eager }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -823,54 +823,62 @@ function PostCard({ post, onClick }) {
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onClick}
-      style={{ position:'relative', aspectRatio:'1', borderRadius:16, overflow:'hidden', cursor:'pointer', background:'#1a1060', boxShadow:'0 4px 20px rgba(0,0,0,.15)' }}
+      style={{ position:'relative', borderRadius:16, overflow:'hidden', cursor:'pointer', background:'#e2e8f0', boxShadow:'0 2px 12px rgba(0,0,0,.12)' }}
     >
-      {post.media_type === 'video'
-        ? (
-          <>
-            <video src={post.media_url} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-            <div style={{ position:'absolute', top:10, right:10, background:'rgba(0,0,0,.6)', borderRadius:99, padding:'2px 8px', display:'flex', alignItems:'center', gap:4 }}>
-              <span style={{ fontSize:12 }}>▶</span>
-              <span style={{ fontSize:10, color:'#fff', fontFamily:FONT, fontWeight:700 }}>Video</span>
+      {/* Aspect-ratio box — paddingTop trick works on all browsers including old iOS Safari */}
+      <div style={{ paddingTop:'100%', position:'relative' }}>
+        <div style={{ position:'absolute', inset:0 }}>
+          {post.media_type === 'video'
+            ? <video src={post.media_url} muted playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+            : <img
+                src={post.media_url}
+                alt={post.title || post.caption || ''}
+                loading={eager ? 'eager' : 'lazy'}
+                decoding="async"
+                style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', transition:'transform .35s', transform: hovered?'scale(1.06)':'scale(1)' }}
+              />
+          }
+          {/* Video badge */}
+          {post.media_type === 'video' && (
+            <div style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,.62)', borderRadius:99, padding:'2px 8px', display:'flex', alignItems:'center', gap:4 }}>
+              <span style={{ fontSize:11 }}>▶</span>
+              <span style={{ fontSize:9, color:'#fff', fontFamily:FONT, fontWeight:700 }}>VIDEO</span>
             </div>
-          </>
-        )
-        : <img src={post.media_url} alt={post.caption||''} loading="lazy" style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform .3s', transform: hovered?'scale(1.05)':'scale(1)' }}/>
-      }
-
-      {/* Hover overlay */}
-      <AnimatePresence>
-        {hovered && (
-          <motion.div
-            initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-            style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.45)', display:'flex', alignItems:'center', justifyContent:'center', gap:22 }}
-          >
-            <div style={{ display:'flex', alignItems:'center', gap:6, color:'#fff', fontFamily:FONT }}>
-              <span style={{ fontSize:20 }}>❤️</span>
-              <span style={{ fontSize:14, fontWeight:800 }}>{post._likeCount||0}</span>
+          )}
+          {/* Hover overlay */}
+          <AnimatePresence>
+            {hovered && (
+              <motion.div
+                initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+                style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.42)', display:'flex', alignItems:'center', justifyContent:'center', gap:22 }}
+              >
+                <div style={{ display:'flex', alignItems:'center', gap:6, color:'#fff', fontFamily:FONT }}>
+                  <span style={{ fontSize:20 }}>❤️</span>
+                  <span style={{ fontSize:14, fontWeight:800 }}>{post._likeCount||0}</span>
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, color:'#fff', fontFamily:FONT }}>
+                  <span style={{ fontSize:20 }}>💬</span>
+                  <span style={{ fontSize:14, fontWeight:800 }}>{post._commentCount||0}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Bottom gradient info */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'28px 10px 10px', background:'linear-gradient(transparent,rgba(0,0,0,.82))' }}>
+            {post.title && (
+              <div style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>
+                {post.title}
+              </div>
+            )}
+            <div style={{ display:'flex', alignItems:'center', gap:5, overflow:'hidden' }}>
+              <div style={{ fontSize:10, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flexShrink:0, maxWidth:'55%' }}>
+                {post.player_name}
+              </div>
+              <span style={{ fontSize:9, color:'rgba(255,255,255,.4)', flexShrink:0 }}>·</span>
+              <div style={{ fontSize:9, color:'rgba(255,255,255,.6)', fontFamily:FONT, whiteSpace:'nowrap' }}>
+                {fmtDateShort(post.created_at)}
+              </div>
             </div>
-            <div style={{ display:'flex', alignItems:'center', gap:6, color:'#fff', fontFamily:FONT }}>
-              <span style={{ fontSize:20 }}>💬</span>
-              <span style={{ fontSize:14, fontWeight:800 }}>{post._commentCount||0}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Bottom info overlay */}
-      <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'28px 10px 10px', background:'linear-gradient(transparent,rgba(0,0,0,.82))' }}>
-        {post.title && (
-          <div style={{ fontSize:12, color:'#fff', fontFamily:FONT, fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>
-            {post.title}
-          </div>
-        )}
-        <div style={{ display:'flex', alignItems:'center', gap:5, overflow:'hidden' }}>
-          <div style={{ fontSize:10, color:'rgba(255,255,255,.9)', fontFamily:FONT, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flexShrink:0, maxWidth:'55%' }}>
-            {post.player_name}
-          </div>
-          <span style={{ fontSize:9, color:'rgba(255,255,255,.4)', flexShrink:0 }}>·</span>
-          <div style={{ fontSize:9, color:'rgba(255,255,255,.6)', fontFamily:FONT, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-            {fmtDateShort(post.created_at)}
           </div>
         </div>
       </div>
@@ -1099,7 +1107,7 @@ export default function GalleryPage() {
                   initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
                   transition={{ type:'spring', damping:20, delay: Math.min(i * .04, .3) }}
                 >
-                  <PostCard post={post} onClick={() => setSelectedPost(post)}/>
+                  <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i < 8}/>
                 </motion.div>
               ))}
             </motion.div>
