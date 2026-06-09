@@ -50,11 +50,13 @@ function compressImage(file) {
 }
 
 // ── Admin Upload Modal (bulk) ─────────────────────────────────
-function AdminUploadModal({ onClose, onPosted }) {
+function AdminUploadModal({ onClose, onPosted, existingAlbums = [] }) {
   const [items,     setItems]     = useState([])
   const [dragging,  setDragging]  = useState(false)
   const [uploading, setUploading] = useState(false)
   const [globalErr, setGlobalErr] = useState('')
+  const [albumName, setAlbumName] = useState('')
+  const [albumInput, setAlbumInput] = useState('')
   const inputRef = useRef()
 
   const MAX_FILES = 20
@@ -93,6 +95,7 @@ function AdminUploadModal({ onClose, onPosted }) {
         player_id:null, player_name:ADMIN_NAME, player_email:ADMIN_EMAIL,
         media_url:publicUrl, media_type:item.file.type.startsWith('video')?'video':'image',
         title:item.title.trim()||null, caption:item.caption.trim()||null,
+        album_name:albumName.trim()||null,
       })
       if (dbErr) throw dbErr
       updateItem(item.id, { status:'done' })
@@ -138,6 +141,43 @@ function AdminUploadModal({ onClose, onPosted }) {
 
         {/* Scrollable body */}
         <div style={{ flex:1, overflowY:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:14 }}>
+
+          {/* Album picker */}
+          <div style={{ background:'#f0f9ff', border:'1.5px solid #bae6fd', borderRadius:14, padding:'12px 16px' }}>
+            <div style={{ fontSize:11, fontWeight:800, color:'#0369a1', fontFamily:FONT, marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>📁 Album / Event</div>
+            {existingAlbums.length > 0 && (
+              <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:8 }}>
+                {existingAlbums.map(name => (
+                  <button key={name} onClick={() => { setAlbumName(albumName===name?'':name); setAlbumInput('') }}
+                    style={{ padding:'4px 12px', borderRadius:99, border:`1.5px solid ${albumName===name?'#0369a1':'#bae6fd'}`,
+                      background:albumName===name?'#0369a1':'#fff', color:albumName===name?'#fff':'#0369a1',
+                      fontFamily:FONT, fontSize:11, fontWeight:700, cursor:'pointer', transition:'all .15s' }}>
+                    {albumName===name?'✓ ':''}{name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div style={{ display:'flex', gap:7 }}>
+              <input value={albumInput} onChange={e=>{ setAlbumInput(e.target.value); if(e.target.value.trim()) setAlbumName('') }}
+                onKeyDown={e=>{ if(e.key==='Enter'&&albumInput.trim()){ setAlbumName(albumInput.trim()); setAlbumInput('') } }}
+                placeholder={existingAlbums.length?'New album name…':'"DTU CC Dinner & Dance 2023"'}
+                maxLength={80}
+                style={{ flex:1, border:'1.5px solid #bae6fd', borderRadius:8, padding:'7px 11px', fontFamily:FONT, fontSize:12, color:'#0c4a6e', outline:'none', background:'#fff' }}/>
+              {albumInput.trim() && (
+                <button onClick={()=>{ setAlbumName(albumInput.trim()); setAlbumInput('') }}
+                  style={{ background:'#0369a1', color:'#fff', border:'none', borderRadius:8, padding:'7px 13px', fontFamily:FONT, fontSize:11, fontWeight:800, cursor:'pointer', whiteSpace:'nowrap' }}>
+                  Use →
+                </button>
+              )}
+            </div>
+            {albumName && (
+              <div style={{ marginTop:6, fontSize:11, color:'#0369a1', fontFamily:FONT }}>
+                ✅ Adding to: <strong>"{albumName}"</strong>
+                <button onClick={()=>{ setAlbumName(''); setAlbumInput('') }} style={{ marginLeft:8, fontSize:10, color:'#7dd3fc', background:'none', border:'none', cursor:'pointer', fontFamily:FONT }}>Clear</button>
+              </div>
+            )}
+          </div>
+
           {/* Drop zone */}
           <div
             onDrop={e=>{ e.preventDefault(); setDragging(false); if(!uploading) addFiles(e.dataTransfer.files) }}
@@ -297,6 +337,12 @@ function AdminPostCard({ post, onDelete, onViewComments }) {
           <span style={{ fontSize:11, fontWeight:700, color:C.dark, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1 }}>{post.player_name}</span>
           <span style={{ fontSize:9, color:C.gray3, fontFamily:FONT, flexShrink:0 }}>{timeAgo(post.created_at)}</span>
         </div>
+        {post.album_name && (
+          <div style={{ display:'inline-flex', alignItems:'center', gap:4, background:'#eff6ff', borderRadius:99, padding:'2px 8px', marginBottom:4 }}>
+            <span style={{ fontSize:9 }}>📁</span>
+            <span style={{ fontSize:10, fontWeight:700, color:'#2563eb', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:120 }}>{post.album_name}</span>
+          </div>
+        )}
         {post.title && <div style={{ fontSize:12, fontWeight:800, color:C.dark, fontFamily:FONT, marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{post.title}</div>}
         {post.caption && <div style={{ fontSize:11, color:'#374151', fontFamily:FONT, lineHeight:1.4, marginBottom:8, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{post.caption}</div>}
 
@@ -334,8 +380,9 @@ export default function TabGallery() {
   const [posts,       setPosts]       = useState([])
   const [loading,     setLoading]     = useState(true)
   const [showUpload,  setShowUpload]  = useState(false)
-  const [filterBy,    setFilterBy]    = useState('all') // all | image | video
-  const [searchName,  setSearchName]  = useState('')
+  const [filterBy,     setFilterBy]    = useState('all')  // all | image | video
+  const [filterAlbum,  setFilterAlbum] = useState('')     // '' = all albums
+  const [searchName,   setSearchName]  = useState('')
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
@@ -377,8 +424,12 @@ export default function TabGallery() {
     }
   }
 
+  // Derive album names for the upload modal
+  const albumNames = [...new Set(posts.map(p => p.album_name).filter(Boolean))].sort()
+
   const filtered = posts.filter(p => {
     if (filterBy !== 'all' && p.media_type !== filterBy) return false
+    if (filterAlbum && p.album_name !== filterAlbum) return false
     if (searchName && !p.player_name?.toLowerCase().includes(searchName.toLowerCase())) return false
     return true
   })
@@ -446,6 +497,13 @@ export default function TabGallery() {
             </button>
           ))}
         </div>
+        {albumNames.length > 0 && (
+          <select value={filterAlbum} onChange={e => setFilterAlbum(e.target.value)}
+            style={{ border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:C.dark, outline:'none', background:'#fff', cursor:'pointer', maxWidth:220 }}>
+            <option value="">📁 All Albums</option>
+            {albumNames.map(n => <option key={n} value={n}>📁 {n}</option>)}
+          </select>
+        )}
         <input
           value={searchName} onChange={e => setSearchName(e.target.value)}
           placeholder="🔍 Filter by player name…"
@@ -482,6 +540,7 @@ export default function TabGallery() {
       <AnimatePresence>
         {showUpload && (
           <AdminUploadModal
+            existingAlbums={albumNames}
             onClose={() => setShowUpload(false)}
             onPosted={() => { setShowUpload(false); loadPosts(); toast('Post published! 🚀') }}
           />

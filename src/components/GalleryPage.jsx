@@ -99,13 +99,17 @@ async function fetchAISuggestions({ fileName, mediaType, playerName }) {
 }
 
 // ── Upload Modal (bulk) ─────────────────────────────────────────
-function UploadModal({ user, playerInfo, onClose, onPosted }) {
+function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] }) {
   // items: [{ file, preview, title, caption, status, error }]
   const [items,     setItems]     = useState([])
   const [dragging,  setDragging]  = useState(false)
   const [uploading, setUploading] = useState(false)
   const [globalErr, setGlobalErr] = useState('')
+  const [albumName, setAlbumName] = useState('')
+  const [albumInput, setAlbumInput] = useState('')
+  const [showAlbumDrop, setShowAlbumDrop] = useState(false)
   const inputRef = useRef()
+  const albumRef = useRef()
 
   const MAX_IMAGE_MB = 20, MAX_VIDEO_MB = 100, MAX_FILES = 20
 
@@ -182,6 +186,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
         media_type:   item.file.type.startsWith('video') ? 'video' : 'image',
         title:        item.title.trim()   || null,
         caption:      item.caption.trim() || null,
+        album_name:   albumName.trim()    || null,
       })
       if (dbErr) throw dbErr
       updateItem(item.id, { status:'done' })
@@ -249,6 +254,61 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
 
         {/* ── SCROLLABLE BODY ── */}
         <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', display:'flex', flexDirection:'column', gap:16 }}>
+
+          {/* ── ALBUM PICKER ── */}
+          <div style={{ background:'#f0f9ff', border:'1.5px solid #bae6fd', borderRadius:16, padding:'14px 18px', position:'relative' }}>
+            <div style={{ fontSize:11, fontWeight:800, color:'#0369a1', fontFamily:FONT, marginBottom:10, textTransform:'uppercase', letterSpacing:.6, display:'flex', alignItems:'center', gap:6 }}>
+              <span>📁</span> Album / Event <span style={{ fontWeight:400, color:'#7dd3fc', textTransform:'none', letterSpacing:0 }}>— optional, groups photos together</span>
+            </div>
+            {/* Existing album chips */}
+            {existingAlbums.length > 0 && (
+              <div style={{ display:'flex', gap:7, flexWrap:'wrap', marginBottom:10 }}>
+                {existingAlbums.map(name => (
+                  <button key={name} onClick={() => { setAlbumName(albumName===name?'':name); setAlbumInput('') }}
+                    style={{ padding:'5px 14px', borderRadius:99, border:`1.5px solid ${albumName===name?'#0369a1':'#bae6fd'}`,
+                      background:albumName===name?'#0369a1':'#fff', color:albumName===name?'#fff':'#0369a1',
+                      fontFamily:FONT, fontSize:12, fontWeight:700, cursor:'pointer', transition:'all .15s',
+                      maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {albumName===name?'✓ ':''}{name}
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* New album text input */}
+            <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+              <input
+                ref={albumRef}
+                value={albumInput}
+                onChange={e => { setAlbumInput(e.target.value); if(e.target.value.trim()) setAlbumName('') }}
+                onKeyDown={e => { if(e.key==='Enter' && albumInput.trim()) { setAlbumName(albumInput.trim()); setAlbumInput('') } }}
+                placeholder={existingAlbums.length ? '➕ Or type a new album name…' : '➕ Type album name, e.g. "DTU CC Dinner & Dance 2023"'}
+                maxLength={80}
+                style={{ flex:1, border:'1.5px solid #bae6fd', borderRadius:10, padding:'9px 13px',
+                  fontFamily:FONT, fontSize:13, color:'#0c4a6e', outline:'none', boxSizing:'border-box',
+                  background:'#fff', fontWeight:albumInput?600:400 }}
+                onFocus={e => e.target.style.borderColor='#0369a1'}
+                onBlur={e => e.target.style.borderColor='#bae6fd'}
+              />
+              {albumInput.trim() && (
+                <button onClick={() => { setAlbumName(albumInput.trim()); setAlbumInput('') }}
+                  style={{ background:'#0369a1', color:'#fff', border:'none', borderRadius:10, padding:'9px 16px',
+                    fontFamily:FONT, fontSize:12, fontWeight:800, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
+                  Use this →
+                </button>
+              )}
+            </div>
+            {albumName && (
+              <div style={{ marginTop:8, display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:12, color:'#0369a1', fontFamily:FONT }}>
+                  ✅ All photos will be added to: <strong>"{albumName}"</strong>
+                </span>
+                <button onClick={() => { setAlbumName(''); setAlbumInput('') }}
+                  style={{ fontSize:11, color:'#7dd3fc', background:'none', border:'none', cursor:'pointer', fontFamily:FONT, padding:0 }}>
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Drop zone */}
           <div
@@ -827,6 +887,83 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
   )
 }
 
+// ── Album Card ─────────────────────────────────────────────────
+function AlbumCard({ albumName, posts, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  const cover   = posts.find(p => p.media_type === 'image') || posts[0]
+  const nPhotos = posts.filter(p => p.media_type === 'image').length
+  const nVideos = posts.filter(p => p.media_type === 'video').length
+  const latest  = posts.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b, posts[0])
+
+  return (
+    <motion.div
+      whileHover={{ scale:1.025 }}
+      transition={{ type:'spring', damping:20, stiffness:300 }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      onClick={onClick}
+      style={{ position:'relative', borderRadius:18, overflow:'hidden', cursor:'pointer',
+        background:'#1e293b', boxShadow:'0 4px 24px rgba(0,0,0,.18)' }}
+    >
+      {/* 4:3 aspect ratio */}
+      <div style={{ paddingTop:'75%', position:'relative' }}>
+        <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0 }}>
+          {cover && (
+            cover.media_type === 'video'
+              ? <video src={cover.media_url} muted playsInline preload="metadata"
+                  style={{ width:'100%', height:'100%', objectFit:'cover', display:'block',
+                    transition:'transform .4s', transform:hovered?'scale(1.07)':'scale(1)' }}/>
+              : <img src={cover.media_url} alt={albumName} loading="lazy"
+                  style={{ width:'100%', height:'100%', objectFit:'cover', display:'block',
+                    transition:'transform .4s', transform:hovered?'scale(1.07)':'scale(1)' }}/>
+          )}
+          {/* Full gradient */}
+          <div style={{ position:'absolute', top:0, left:0, right:0, bottom:0,
+            background:'linear-gradient(to bottom, rgba(0,0,0,.08) 0%, rgba(0,0,0,.75) 100%)' }}/>
+          {/* Count badges top-right */}
+          <div style={{ position:'absolute', top:10, right:10, display:'flex', gap:5 }}>
+            {nPhotos > 0 && (
+              <div style={{ background:'rgba(0,0,0,.6)', borderRadius:99, padding:'3px 9px',
+                display:'flex', alignItems:'center', gap:4, backdropFilter:'blur(4px)' }}>
+                <span style={{ fontSize:10 }}>🖼️</span>
+                <span style={{ fontSize:11, color:'#fff', fontFamily:FONT, fontWeight:700 }}>{nPhotos}</span>
+              </div>
+            )}
+            {nVideos > 0 && (
+              <div style={{ background:'rgba(0,0,0,.6)', borderRadius:99, padding:'3px 9px',
+                display:'flex', alignItems:'center', gap:4, backdropFilter:'blur(4px)' }}>
+                <span style={{ fontSize:10 }}>🎬</span>
+                <span style={{ fontSize:11, color:'#fff', fontFamily:FONT, fontWeight:700 }}>{nVideos}</span>
+              </div>
+            )}
+          </div>
+          {/* Bottom info */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'22px 14px 14px' }}>
+            <div style={{ fontSize:15, color:'#fff', fontFamily:FONT, fontWeight:900, marginBottom:3,
+              overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {albumName}
+            </div>
+            <div style={{ fontSize:11, color:'rgba(255,255,255,.6)', fontFamily:FONT }}>
+              {posts.length} item{posts.length!==1?'s':''} · {fmtDateShort(latest?.created_at)}
+            </div>
+          </div>
+          {/* Hover open icon */}
+          <AnimatePresence>
+            {hovered && (
+              <motion.div initial={{ opacity:0, scale:.8 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:.8 }}
+                style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+                  background:'rgba(255,255,255,.22)', borderRadius:'50%', width:56, height:56,
+                  display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(6px)' }}>
+                <span style={{ fontSize:24, color:'#fff' }}>→</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 // ── Post Card (grid tile) ───────────────────────────────────────
 function PostCard({ post, onClick, eager }) {
   const [hovered, setHovered] = useState(false)
@@ -904,13 +1041,15 @@ function PostCard({ post, onClick, eager }) {
 // ── Main Page ───────────────────────────────────────────────────
 export default function GalleryPage() {
   const { user } = useAuth()
-  const [posts,        setPosts]        = useState([])
-  const [playerInfo,   setPlayerInfo]   = useState(null)
-  const [loading,      setLoading]      = useState(true)
-  const [selectedPost, setSelectedPost] = useState(null)
-  const [showUpload,   setShowUpload]   = useState(false)
-  const [sortBy,       setSortBy]       = useState('newest') // newest | popular
-  const [mediaTab,     setMediaTab]     = useState('photos') // photos | videos
+  const [posts,         setPosts]         = useState([])
+  const [playerInfo,    setPlayerInfo]    = useState(null)
+  const [loading,       setLoading]       = useState(true)
+  const [selectedPost,  setSelectedPost]  = useState(null)
+  const [showUpload,    setShowUpload]    = useState(false)
+  const [sortBy,        setSortBy]        = useState('newest')   // newest | popular
+  const [view,          setView]          = useState('albums')   // albums | photos | videos
+  const [selectedAlbum, setSelectedAlbum] = useState(null)      // null = grid, string = open album
+  const [albumInnerTab, setAlbumInnerTab] = useState('photos')  // photos | videos inside an album
 
   // Load player info for logged-in user
   useEffect(() => {
@@ -983,9 +1122,35 @@ export default function GalleryPage() {
     if (sortBy === 'popular') return (b._likeCount - a._likeCount) || (b._commentCount - a._commentCount)
     return new Date(b.created_at) - new Date(a.created_at)
   })
-  const photos = sorted.filter(p => p.media_type === 'image')
-  const videos = sorted.filter(p => p.media_type === 'video')
-  const visiblePosts = mediaTab === 'photos' ? photos : videos
+
+  // Album grouping
+  const albumMap = {}  // albumName → posts[]
+  const noAlbum  = []
+  sorted.forEach(p => {
+    if (p.album_name) {
+      if (!albumMap[p.album_name]) albumMap[p.album_name] = []
+      albumMap[p.album_name].push(p)
+    } else {
+      noAlbum.push(p)
+    }
+  })
+  const albumNames = Object.keys(albumMap).sort((a, b) => {
+    const aLatest = albumMap[a][0]?.created_at || ''
+    const bLatest = albumMap[b][0]?.created_at || ''
+    return new Date(bLatest) - new Date(aLatest)
+  })
+  const existingAlbumNames = albumNames  // pass to upload modal
+
+  // Posts for flat views (Photos / Videos tabs)
+  const allPhotos = sorted.filter(p => p.media_type === 'image')
+  const allVideos = sorted.filter(p => p.media_type === 'video')
+
+  // Posts inside open album
+  const albumPosts = selectedAlbum
+    ? (albumMap[selectedAlbum] || [])
+    : []
+  const albumPhotos = albumPosts.filter(p => p.media_type === 'image')
+  const albumVideos = albumPosts.filter(p => p.media_type === 'video')
 
   const canPost = !!user
 
@@ -1028,7 +1193,7 @@ export default function GalleryPage() {
                   onClick={() => setShowUpload(true)}
                   style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:7, boxShadow:'0 4px 16px rgba(233,160,32,.5)' }}
                 >
-                  <span style={{ fontSize:16 }}>+</span> {mediaTab === 'videos' ? 'Post Video' : 'Post Photo'}
+                  <span style={{ fontSize:16 }}>+</span> Upload Photos
                 </motion.button>
               )}
             </div>
@@ -1037,10 +1202,10 @@ export default function GalleryPage() {
           {/* Stats strip */}
           <div style={{ display:'flex', gap:20, marginTop:18, flexWrap:'wrap' }}>
             {[
-              { label:'Photos',   value:posts.filter(p=>p.media_type==='image').length, emoji:'🖼️' },
-              { label:'Videos',   value:posts.filter(p=>p.media_type==='video').length, emoji:'🎬' },
-              { label:'Likes',    value:posts.reduce((s,p)=>s+p._likeCount,0),          emoji:'❤️' },
-              { label:'Comments', value:posts.reduce((s,p)=>s+p._commentCount,0),       emoji:'💬' },
+              { label:'Albums',   value:albumNames.length,                               emoji:'📁' },
+              { label:'Photos',   value:posts.filter(p=>p.media_type==='image').length,  emoji:'🖼️' },
+              { label:'Videos',   value:posts.filter(p=>p.media_type==='video').length,  emoji:'🎬' },
+              { label:'Likes',    value:posts.reduce((s,p)=>s+p._likeCount,0),           emoji:'❤️' },
             ].map(s => (
               <div key={s.label} style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <span style={{ fontSize:16 }}>{s.emoji}</span>
@@ -1052,31 +1217,25 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* ── Media Tabs ──────────────────────────────────────── */}
+      {/* ── Main Tabs (Albums / Photos / Videos) ────────────── */}
       <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', position:'sticky', top:56, zIndex:50 }}>
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'0 16px', display:'flex', gap:0 }}>
           {[
-            { id:'photos', label:'🖼️ Photos', count: posts.filter(p=>p.media_type==='image').length },
-            { id:'videos', label:'🎬 Videos', count: posts.filter(p=>p.media_type==='video').length },
+            { id:'albums', label:'📁 Albums',   count: albumNames.length + (noAlbum.length > 0 ? 1 : 0) },
+            { id:'photos', label:'🖼️ Photos',   count: allPhotos.length },
+            { id:'videos', label:'🎬 Videos',   count: allVideos.length },
           ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setMediaTab(tab.id)}
-              style={{
-                padding:'14px 22px', border:'none', background:'transparent', cursor:'pointer',
-                fontFamily:FONT, fontSize:13, fontWeight: mediaTab===tab.id ? 800 : 500,
-                color: mediaTab===tab.id ? '#060d2e' : '#9ca3af',
-                borderBottom: `2px solid ${mediaTab===tab.id ? '#e9a020' : 'transparent'}`,
-                transition:'all .18s', display:'flex', alignItems:'center', gap:7,
-              }}
-            >
+            <button key={tab.id} onClick={() => { setView(tab.id); setSelectedAlbum(null) }}
+              style={{ padding:'14px 22px', border:'none', background:'transparent', cursor:'pointer',
+                fontFamily:FONT, fontSize:13, fontWeight: view===tab.id ? 800 : 500,
+                color: view===tab.id ? '#060d2e' : '#9ca3af',
+                borderBottom: `2px solid ${view===tab.id ? '#e9a020' : 'transparent'}`,
+                transition:'all .18s', display:'flex', alignItems:'center', gap:7, whiteSpace:'nowrap' }}>
               {tab.label}
-              <span style={{
-                background: mediaTab===tab.id ? '#e9a020' : '#f3f4f6',
-                color: mediaTab===tab.id ? '#fff' : '#9ca3af',
+              <span style={{ background: view===tab.id ? '#e9a020' : '#f3f4f6',
+                color: view===tab.id ? '#fff' : '#9ca3af',
                 borderRadius:99, padding:'1px 8px', fontSize:11, fontWeight:700, fontFamily:FONT,
-                transition:'all .18s',
-              }}>
+                transition:'all .18s' }}>
                 {tab.count}
               </span>
             </button>
@@ -1084,47 +1243,157 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* ── Feed ────────────────────────────────────────────── */}
+      {/* ── Content Area ────────────────────────────────────── */}
       <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'24px 16px', width:'100%', boxSizing:'border-box', flex:1 }}>
+
         {loading ? (
+          /* Skeleton */
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:12 }}>
             {Array.from({length:9}).map((_,i) => (
               <motion.div key={i} initial={{ opacity:0 }} animate={{ opacity:[0.3,0.6,0.3] }} transition={{ duration:1.4, repeat:Infinity, delay:i*.08 }}
-                style={{ aspectRatio:'1', borderRadius:16, background:'#e5e7eb' }}/>
+                style={{ paddingTop:'75%', borderRadius:18, background:'#e5e7eb', position:'relative' }}/>
             ))}
           </div>
-        ) : visiblePosts.length === 0 ? (
-          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ textAlign:'center', padding:'60px 20px' }}>
-            <div style={{ fontSize:60, marginBottom:16 }}>{mediaTab === 'videos' ? '🎬' : '📷'}</div>
-            <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>
-              No {mediaTab === 'videos' ? 'videos' : 'photos'} yet!
-            </div>
-            <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>
-              {mediaTab === 'videos' ? 'Share a match or training video 🎥' : 'Be the first to share a team moment 🏏'}
-            </div>
-            {canPost && (
-              <motion.button whileTap={{ scale:.96 }} onClick={() => setShowUpload(true)}
-                style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 20px rgba(233,160,32,.4)' }}>
-                {mediaTab === 'videos' ? '🎬 Upload First Video' : '📸 Share First Photo'}
-              </motion.button>
-            )}
-          </motion.div>
-        ) : (
+
+        ) : selectedAlbum ? (
+          /* ── ALBUM DETAIL VIEW ── */
           <AnimatePresence mode="wait">
-            <motion.div
-              key={mediaTab}
-              initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }}
-              transition={{ duration:.22, ease:'easeOut' }}
-              style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:10 }}
-            >
-              {visiblePosts.map((post, i) => (
-                <motion.div key={post.id}
-                  initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
-                  transition={{ type:'spring', damping:20, delay: Math.min(i * .04, .3) }}
-                >
-                  <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i < 8}/>
+            <motion.div key={selectedAlbum} initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-30 }} transition={{ duration:.22 }}>
+              {/* Back + album header */}
+              <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20, flexWrap:'wrap' }}>
+                <button onClick={() => setSelectedAlbum(null)}
+                  style={{ display:'flex', alignItems:'center', gap:6, background:'#f3f4f6', border:'none', borderRadius:99,
+                    padding:'8px 16px', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, color:'#374151' }}>
+                  ← Back
+                </button>
+                <div>
+                  <div style={{ fontSize:20, fontWeight:900, color:'#060d2e', fontFamily:FONT }}>📁 {selectedAlbum}</div>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, marginTop:2 }}>
+                    {albumPhotos.length} photo{albumPhotos.length!==1?'s':''} · {albumVideos.length} video{albumVideos.length!==1?'s':''}
+                  </div>
+                </div>
+              </div>
+              {/* Inner tabs */}
+              <div style={{ display:'flex', gap:0, borderBottom:'1px solid #e5e7eb', marginBottom:20 }}>
+                {[
+                  { id:'photos', label:'🖼️ Photos', count:albumPhotos.length },
+                  { id:'videos', label:'🎬 Videos', count:albumVideos.length },
+                ].map(t => (
+                  <button key={t.id} onClick={() => setAlbumInnerTab(t.id)}
+                    style={{ padding:'10px 20px', border:'none', background:'transparent', cursor:'pointer',
+                      fontFamily:FONT, fontSize:13, fontWeight:albumInnerTab===t.id?800:500,
+                      color:albumInnerTab===t.id?'#060d2e':'#9ca3af',
+                      borderBottom:`2px solid ${albumInnerTab===t.id?'#e9a020':'transparent'}`,
+                      display:'flex', alignItems:'center', gap:6 }}>
+                    {t.label}
+                    <span style={{ background:albumInnerTab===t.id?'#e9a020':'#f3f4f6', color:albumInnerTab===t.id?'#fff':'#9ca3af',
+                      borderRadius:99, padding:'1px 7px', fontSize:11, fontWeight:700, fontFamily:FONT }}>{t.count}</span>
+                  </button>
+                ))}
+              </div>
+              {/* Grid */}
+              {(albumInnerTab==='photos'?albumPhotos:albumVideos).length === 0 ? (
+                <div style={{ textAlign:'center', padding:'40px 20px', color:'#9ca3af', fontFamily:FONT }}>
+                  No {albumInnerTab} in this album yet.
+                </div>
+              ) : (
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:10 }}>
+                  {(albumInnerTab==='photos'?albumPhotos:albumVideos).map((post, i) => (
+                    <motion.div key={post.id} initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
+                      transition={{ type:'spring', damping:20, delay:Math.min(i*.03,.25) }}>
+                      <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i<8}/>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+        ) : view === 'albums' ? (
+          /* ── ALBUMS GRID ── */
+          <AnimatePresence mode="wait">
+            <motion.div key="albums-view" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} transition={{ duration:.22 }}>
+              {albumNames.length === 0 && noAlbum.length === 0 ? (
+                <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ textAlign:'center', padding:'60px 20px' }}>
+                  <div style={{ fontSize:60, marginBottom:16 }}>📁</div>
+                  <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>No albums yet</div>
+                  <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>Upload photos and group them into albums like "Match Day" or "End of Season Dinner"</div>
+                  {canPost && (
+                    <motion.button whileTap={{ scale:.96 }} onClick={() => setShowUpload(true)}
+                      style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 20px rgba(233,160,32,.4)' }}>
+                      📸 Upload First Photos
+                    </motion.button>
+                  )}
                 </motion.div>
-              ))}
+              ) : (
+                <>
+                  {/* Named albums */}
+                  {albumNames.length > 0 && (
+                    <>
+                      <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14 }}>
+                        {albumNames.length} Album{albumNames.length!==1?'s':''}
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16, marginBottom:36 }}>
+                        {albumNames.map((name, i) => (
+                          <motion.div key={name} initial={{ opacity:0, scale:.93 }} animate={{ opacity:1, scale:1 }}
+                            transition={{ type:'spring', damping:20, delay:Math.min(i*.06,.3) }}>
+                            <AlbumCard albumName={name} posts={albumMap[name]} onClick={() => { setSelectedAlbum(name); setAlbumInnerTab('photos') }}/>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {/* Unorganised */}
+                  {noAlbum.length > 0 && (
+                    <>
+                      <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14 }}>
+                        Recent Uploads — {noAlbum.length} item{noAlbum.length!==1?'s':''}
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:10 }}>
+                        {noAlbum.filter(p=>p.media_type==='image').map((post, i) => (
+                          <motion.div key={post.id} initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
+                            transition={{ type:'spring', damping:20, delay:Math.min(i*.03,.25) }}>
+                            <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i<8}/>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+        ) : (
+          /* ── FLAT PHOTOS / VIDEOS GRID ── */
+          <AnimatePresence mode="wait">
+            <motion.div key={view} initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:.22 }}>
+              {(view==='photos'?allPhotos:allVideos).length === 0 ? (
+                <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ textAlign:'center', padding:'60px 20px' }}>
+                  <div style={{ fontSize:60, marginBottom:16 }}>{view==='videos'?'🎬':'📷'}</div>
+                  <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>
+                    No {view==='videos'?'videos':'photos'} yet!
+                  </div>
+                  <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>
+                    {view==='videos'?'Share a match or training video 🎥':'Be the first to share a team moment 🏏'}
+                  </div>
+                  {canPost && (
+                    <motion.button whileTap={{ scale:.96 }} onClick={() => setShowUpload(true)}
+                      style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 20px rgba(233,160,32,.4)' }}>
+                      {view==='videos'?'🎬 Upload First Video':'📸 Share First Photo'}
+                    </motion.button>
+                  )}
+                </motion.div>
+              ) : (
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:10 }}>
+                  {(view==='photos'?allPhotos:allVideos).map((post, i) => (
+                    <motion.div key={post.id} initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
+                      transition={{ type:'spring', damping:20, delay:Math.min(i*.04,.3) }}>
+                      <PostCard post={post} onClick={() => setSelectedPost(post)} eager={i<8}/>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         )}
@@ -1136,6 +1405,7 @@ export default function GalleryPage() {
           <UploadModal
             user={user}
             playerInfo={playerInfo}
+            existingAlbums={existingAlbumNames}
             onClose={() => setShowUpload(false)}
             onPosted={() => { setShowUpload(false); loadPosts() }}
           />
