@@ -12,6 +12,7 @@ import TabSettings from './TabSettings'
 import TabPOTW from './TabPOTW'
 import TabActivity from './TabActivity'
 import TabGallery from './TabGallery'
+import TabAnalyse from './TabAnalyse'
 
 const TABS = [
   { id: 'availability', label: '📋 Availability' },
@@ -24,6 +25,7 @@ const TABS = [
   { id: 'stats',        label: '📊 Stats' },
   { id: 'potw',         label: '🏆 POTW' },
   { id: 'settings',     label: '⚙️ Settings' },
+  { id: 'analyse',      label: '🔍 Analyse' },
 ]
 
 export default function AdminDashboard() {
@@ -132,6 +134,7 @@ export default function AdminDashboard() {
             {tab === 'stats'        && <TabStats />}
             {tab === 'potw'        && <TabPOTW />}
             {tab === 'settings'    && <TabSettings />}
+            {tab === 'analyse'    && <TabAnalyse />}
           </motion.div>
         </AnimatePresence>
       </div>
