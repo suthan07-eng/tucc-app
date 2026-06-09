@@ -370,20 +370,19 @@ function UploadModal({ user, playerInfo, onClose, onPosted }) {
 
 // ── Lightbox Modal ──────────────────────────────────────────────
 function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCommentChange, onDelete }) {
-  const [comments,    setComments]    = useState([])
-  const [commentText, setCommentText] = useState('')
-  const [posting,     setPosting]     = useState(false)
-  const [reactions,   setReactions]   = useState({ likes:0, dislikes:0, mine:null })
-  const [animLike,    setAnimLike]    = useState(false)
+  const [comments,     setComments]     = useState([])
+  const [commentText,  setCommentText]  = useState('')
+  const [posting,      setPosting]      = useState(false)
+  const [reactions,    setReactions]    = useState({ likes:0, dislikes:0, mine:null })
+  const [animLike,     setAnimLike]     = useState(false)
+  const [downloading,  setDownloading]  = useState(false)
+  const [copied,       setCopied]       = useState(false)
   const commentEndRef = useRef()
 
   const myEmail = user?.email?.toLowerCase()
   const isOwner = myEmail && post.player_email?.toLowerCase() === myEmail
 
-  useEffect(() => {
-    loadComments()
-    loadReactions()
-  }, [post.id])
+  useEffect(() => { loadComments(); loadReactions() }, [post.id])
 
   async function loadComments() {
     const { data } = await supabase.from('post_comments').select('*').eq('post_id', post.id).order('created_at')
@@ -403,21 +402,14 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
     if (!user) return
     const current = reactions.mine
     if (current === type) {
-      // toggle off
       await supabase.from('post_reactions').delete().eq('post_id', post.id).eq('player_email', myEmail)
-      setReactions(r => ({ ...r, likes: r.likes - (type==='like'?1:0), dislikes: r.dislikes - (type==='dislike'?1:0), mine: null }))
+      setReactions(r => ({ ...r, likes: r.likes-(type==='like'?1:0), dislikes: r.dislikes-(type==='dislike'?1:0), mine:null }))
     } else if (current) {
-      // switch reaction
       await supabase.from('post_reactions').update({ reaction:type }).eq('post_id', post.id).eq('player_email', myEmail)
-      setReactions(r => ({
-        likes:    r.likes    + (type==='like'?1:-1),
-        dislikes: r.dislikes + (type==='dislike'?1:-1),
-        mine:     type,
-      }))
+      setReactions(r => ({ likes: r.likes+(type==='like'?1:-1), dislikes: r.dislikes+(type==='dislike'?1:-1), mine:type }))
     } else {
-      // new reaction
-      await supabase.from('post_reactions').insert({ post_id:post.id, player_email:myEmail, player_name: playerInfo?.name || user.email, reaction:type })
-      setReactions(r => ({ ...r, likes: r.likes+(type==='like'?1:0), dislikes: r.dislikes+(type==='dislike'?1:0), mine:type }))
+      await supabase.from('post_reactions').insert({ post_id:post.id, player_email:myEmail, player_name:playerInfo?.name||user.email, reaction:type })
+      setReactions(r => ({ ...r, likes:r.likes+(type==='like'?1:0), dislikes:r.dislikes+(type==='dislike'?1:0), mine:type }))
       if (type === 'like') { setAnimLike(true); setTimeout(() => setAnimLike(false), 700) }
     }
     onReactionChange?.(post.id)
@@ -447,162 +439,215 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
     onCommentChange?.(post.id, Math.max(0,(post._commentCount||0)-1))
   }
 
+  async function handleDownload() {
+    setDownloading(true)
+    try {
+      const res  = await fetch(post.media_url)
+      const blob = await res.blob()
+      const ext  = blob.type.split('/')[1]?.split(';')[0] || (post.media_type==='video' ? 'mp4' : 'jpg')
+      const name = `${(post.title||post.player_name||'tucc').replace(/[^a-z0-9]/gi,'_')}.${ext}`
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href = url; a.download = name
+      document.body.appendChild(a); a.click()
+      document.body.removeChild(a); URL.revokeObjectURL(url)
+    } catch {
+      window.open(post.media_url, '_blank')
+    }
+    setDownloading(false)
+  }
+
+  async function handleShare() {
+    const text = `${post.player_name}${post.title ? ' — ' + post.title : ''}`
+    if (navigator.share) {
+      try { await navigator.share({ title: post.title || 'TUCC Gallery', text, url: post.media_url }) } catch {}
+    } else {
+      try { await navigator.clipboard.writeText(post.media_url) } catch {}
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2200)
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center',
-        background:'rgba(0,0,0,.85)', backdropFilter:'blur(6px)', padding:16 }}
+        background:'rgba(0,0,0,.88)', backdropFilter:'blur(8px)', padding:'12px' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <motion.div
-        initial={{ scale:.94, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:.94, opacity:0 }}
+        initial={{ scale:.93, opacity:0, y:16 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:.93, opacity:0, y:16 }}
         transition={{ type:'spring', damping:26, stiffness:300 }}
         style={{
-          display:'flex', flexDirection:'row',
-          background:'#fff', borderRadius:20, overflow:'hidden',
-          width:'100%', maxWidth:940, maxHeight:'92vh',
-          boxShadow:'0 40px 100px rgba(0,0,0,.6)',
+          display:'flex', flexDirection:'column',
+          background:'#fff', borderRadius:22, overflow:'hidden',
+          width:'100%', maxWidth:560, maxHeight:'94vh',
+          boxShadow:'0 40px 100px rgba(0,0,0,.7)',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* LEFT — Media */}
-        <div style={{ flex:'0 0 55%', background:'#000', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', minHeight:400 }}>
+        {/* ── TOP BAR: uploader info + close ── */}
+        <div style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 16px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
+          <Avatar name={post.player_name} size={36}/>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontWeight:800, fontSize:14, color:'#060d2e', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{post.player_name}</div>
+            <div style={{ fontSize:10, color:'#9ca3af', fontFamily:FONT, marginTop:1 }}>
+              {fmtDateTime(post.created_at)}
+              <span style={{ marginLeft:6, background:'#f3f4f6', borderRadius:99, padding:'1px 6px', fontSize:9, color:'#6b7280', fontWeight:700 }}>{timeAgo(post.created_at)}</span>
+            </div>
+          </div>
+          {isOwner && (
+            <button onClick={() => { onDelete(post.id); onClose() }}
+              style={{ border:'none', background:'#fef2f2', color:'#ef4444', cursor:'pointer', fontSize:11, fontFamily:FONT, fontWeight:700, padding:'5px 10px', borderRadius:8 }}>
+              🗑 Delete
+            </button>
+          )}
+          <button onClick={onClose}
+            style={{ width:32, height:32, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:17, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            ×
+          </button>
+        </div>
+
+        {/* ── MEDIA ── */}
+        <div style={{ background:'#000', position:'relative', flexShrink:0 }}>
           {post.media_type === 'video'
-            ? <video src={post.media_url} controls autoPlay muted style={{ width:'100%', maxHeight:'92vh', objectFit:'contain' }}/>
+            ? <video src={post.media_url} controls autoPlay muted style={{ width:'100%', maxHeight:'52vh', objectFit:'contain', display:'block' }}/>
             : (
               <>
-                <img src={post.media_url} alt={post.caption||''} style={{ width:'100%', maxHeight:'92vh', objectFit:'contain' }}/>
-                {/* Double-tap like animation */}
+                <img src={post.media_url} alt={post.caption||''} style={{ width:'100%', maxHeight:'52vh', objectFit:'contain', display:'block' }}/>
                 <AnimatePresence>
                   {animLike && (
-                    <motion.div
-                      initial={{ scale:0, opacity:1 }} animate={{ scale:1.6, opacity:0 }} exit={{ opacity:0 }}
-                      transition={{ duration:.7 }}
-                      style={{ position:'absolute', fontSize:80, pointerEvents:'none' }}
-                    >❤️</motion.div>
+                    <motion.div initial={{ scale:0, opacity:1 }} animate={{ scale:1.8, opacity:0 }} exit={{ opacity:0 }}
+                      transition={{ duration:.65 }}
+                      style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:80, pointerEvents:'none' }}>
+                      ❤️
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </>
             )
           }
-          {/* Close btn */}
-          <button
-            onClick={onClose}
-            style={{ position:'absolute', top:14, left:14, width:34, height:34, borderRadius:'50%', border:'none', background:'rgba(0,0,0,.55)', color:'#fff', cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700 }}
-          >←</button>
         </div>
 
-        {/* RIGHT — Details */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          {/* Post header */}
-          <div style={{ padding:'16px 18px', borderBottom:'1px solid #f0f0f0', display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
-            <Avatar name={post.player_name} size={38}/>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontWeight:800, fontSize:14, color:'#060d2e', fontFamily:FONT }}>{post.player_name}</div>
-              <div style={{ fontSize:11, color:'#9ca3af', fontFamily:FONT }}>
-                {fmtDateTime(post.created_at)}
-                <span style={{ marginLeft:6, background:'#f3f4f6', borderRadius:99, padding:'1px 7px', fontSize:10, color:'#6b7280', fontWeight:700 }}>{timeAgo(post.created_at)}</span>
+        {/* ── TITLE + CAPTION ── */}
+        {(post.title || post.caption) && (
+          <div style={{ padding:'12px 16px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }}>
+            {post.title && (
+              <div style={{ fontWeight:900, fontSize:15, color:'#060d2e', fontFamily:FONT, marginBottom: post.caption?4:0, lineHeight:1.3 }}>
+                {post.title}
               </div>
-            </div>
-            {(isOwner) && (
-              <button
-                onClick={() => { onDelete(post.id); onClose() }}
-                style={{ border:'none', background:'transparent', color:'#ef4444', cursor:'pointer', fontSize:12, fontFamily:FONT, fontWeight:700, padding:'4px 8px', borderRadius:8 }}
-              >🗑 Delete</button>
+            )}
+            {post.caption && (
+              <div style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.6 }}>
+                <span style={{ fontWeight:700, color:'#060d2e' }}>{post.player_name} </span>
+                {post.caption}
+              </div>
             )}
           </div>
+        )}
 
-          {/* Title + Caption */}
-          {(post.title || post.caption) && (
-            <div style={{ padding:'12px 18px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
-              {post.title && (
-                <div style={{ fontWeight:900, fontSize:15, color:'#060d2e', fontFamily:FONT, marginBottom: post.caption ? 5 : 0 }}>
-                  {post.title}
-                </div>
-              )}
-              {post.caption && (
-                <div style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.6 }}>
-                  <span style={{ fontWeight:700, color:'#060d2e' }}>{post.player_name} </span>
-                  {post.caption}
-                </div>
-              )}
+        {/* ── ACTION BAR: reactions + download + share ── */}
+        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }}>
+          {/* Like */}
+          <motion.button whileTap={{ scale:1.3 }} onClick={() => handleReaction('like')}
+            style={{ border:'none', background: reactions.mine==='like'?'#fef2f2':'transparent', borderRadius:99, padding:'5px 10px', cursor:user?'pointer':'default', display:'flex', alignItems:'center', gap:5, transition:'background .2s' }}>
+            <span style={{ fontSize:20, filter:reactions.mine==='like'?'none':'grayscale(1)', transition:'filter .2s' }}>❤️</span>
+            <span style={{ fontSize:13, fontWeight:700, color:reactions.mine==='like'?'#ef4444':'#6b7280', fontFamily:FONT }}>{reactions.likes}</span>
+          </motion.button>
+          {/* Dislike */}
+          <motion.button whileTap={{ scale:1.3 }} onClick={() => handleReaction('dislike')}
+            style={{ border:'none', background:reactions.mine==='dislike'?'#eff6ff':'transparent', borderRadius:99, padding:'5px 10px', cursor:user?'pointer':'default', display:'flex', alignItems:'center', gap:5, transition:'background .2s' }}>
+            <span style={{ fontSize:20, filter:reactions.mine==='dislike'?'none':'grayscale(1)', transition:'filter .2s' }}>👎</span>
+            <span style={{ fontSize:13, fontWeight:700, color:reactions.mine==='dislike'?'#6366f1':'#6b7280', fontFamily:FONT }}>{reactions.dislikes}</span>
+          </motion.button>
+          {/* Comments count */}
+          <div style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 10px' }}>
+            <span style={{ fontSize:18 }}>💬</span>
+            <span style={{ fontSize:13, fontWeight:700, color:'#6b7280', fontFamily:FONT }}>{comments.length}</span>
+          </div>
+
+          {/* Spacer */}
+          <div style={{ flex:1 }}/>
+
+          {/* Download */}
+          <motion.button whileTap={{ scale:.94 }} onClick={handleDownload} disabled={downloading}
+            style={{ display:'flex', alignItems:'center', gap:6, border:'1.5px solid #e5e7eb', borderRadius:10, padding:'7px 13px', background:downloading?'#f9fafb':'#fff', cursor:downloading?'default':'pointer', transition:'all .18s', flexShrink:0 }}
+            onMouseEnter={e => { if(!downloading){ e.currentTarget.style.background='#f0fdf4'; e.currentTarget.style.borderColor='#86efac' }}}
+            onMouseLeave={e => { e.currentTarget.style.background='#fff'; e.currentTarget.style.borderColor='#e5e7eb' }}>
+            {downloading
+              ? <motion.span animate={{ rotate:360 }} transition={{ duration:.9, repeat:Infinity, ease:'linear' }} style={{ display:'inline-block', fontSize:15 }}>⟳</motion.span>
+              : <span style={{ fontSize:15 }}>⬇️</span>
+            }
+            <span style={{ fontSize:12, fontWeight:700, color:downloading?'#9ca3af':'#374151', fontFamily:FONT }}>
+              {downloading ? 'Saving…' : 'Download'}
+            </span>
+          </motion.button>
+
+          {/* Share */}
+          <motion.button whileTap={{ scale:.94 }} onClick={handleShare}
+            style={{ display:'flex', alignItems:'center', gap:6, border:'1.5px solid #e5e7eb', borderRadius:10, padding:'7px 13px', background: copied?'#f0fdf4':'#fff', cursor:'pointer', transition:'all .18s', flexShrink:0, borderColor: copied?'#86efac':'#e5e7eb' }}
+            onMouseEnter={e => { if(!copied){ e.currentTarget.style.background='#eff6ff'; e.currentTarget.style.borderColor='#93c5fd' }}}
+            onMouseLeave={e => { if(!copied){ e.currentTarget.style.background='#fff'; e.currentTarget.style.borderColor='#e5e7eb' }}}>
+            <span style={{ fontSize:15 }}>{copied ? '✅' : '🔗'}</span>
+            <span style={{ fontSize:12, fontWeight:700, color: copied?'#15803d':'#374151', fontFamily:FONT }}>
+              {copied ? 'Copied!' : 'Share'}
+            </span>
+          </motion.button>
+        </div>
+
+        {/* ── COMMENTS LIST (scrollable) ── */}
+        <div style={{ flex:1, overflowY:'auto', padding:'12px 16px', display:'flex', flexDirection:'column', gap:10, minHeight:0 }}>
+          {comments.length === 0 && (
+            <div style={{ color:'#9ca3af', fontSize:13, textAlign:'center', padding:'18px 0', fontFamily:FONT }}>
+              No comments yet · be the first! 💬
             </div>
           )}
-
-          {/* Comments */}
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 18px', display:'flex', flexDirection:'column', gap:10 }}>
-            {comments.length === 0 && (
-              <div style={{ color:'#9ca3af', fontSize:13, textAlign:'center', padding:'20px 0', fontFamily:FONT }}>
-                No comments yet · be the first! 💬
+          {comments.map(c => (
+            <div key={c.id} style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
+              <Avatar name={c.player_name} size={28} style={{ flexShrink:0, marginTop:2 }}/>
+              <div style={{ flex:1, background:'#f9fafb', borderRadius:12, padding:'8px 12px' }}>
+                <div style={{ fontWeight:700, fontSize:12, color:'#060d2e', fontFamily:FONT, marginBottom:2 }}>{c.player_name}</div>
+                <div style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.5, wordBreak:'break-word' }}>{c.text}</div>
+                <div style={{ fontSize:10, color:'#9ca3af', marginTop:3, fontFamily:FONT }}>{timeAgo(c.created_at)}</div>
               </div>
-            )}
-            {comments.map(c => (
-              <div key={c.id} style={{ display:'flex', gap:9, alignItems:'flex-start' }}>
-                <Avatar name={c.player_name} size={28} style={{ flexShrink:0, marginTop:2 }}/>
-                <div style={{ flex:1, background:'#f9fafb', borderRadius:12, padding:'8px 12px', position:'relative' }}>
-                  <div style={{ fontWeight:700, fontSize:12, color:'#060d2e', fontFamily:FONT, marginBottom:2 }}>{c.player_name}</div>
-                  <div style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.5, wordBreak:'break-word' }}>{c.text}</div>
-                  <div style={{ fontSize:10, color:'#9ca3af', marginTop:4, fontFamily:FONT }}>{timeAgo(c.created_at)}</div>
-                </div>
-                {(myEmail === c.player_email?.toLowerCase() || myEmail === post.player_email?.toLowerCase()) && (
-                  <button onClick={() => deleteComment(c.id)} style={{ border:'none', background:'transparent', color:'#d1d5db', cursor:'pointer', fontSize:14, padding:'4px', flexShrink:0, marginTop:4 }}
-                    onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
-                    onMouseLeave={e => e.currentTarget.style.color='#d1d5db'}
-                  >×</button>
-                )}
-              </div>
-            ))}
-            <div ref={commentEndRef}/>
-          </div>
-
-          {/* Reactions + comment input */}
-          <div style={{ borderTop:'1px solid #f0f0f0', padding:'12px 18px', flexShrink:0 }}>
-            {/* Reaction row */}
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
-              <motion.button
-                whileTap={{ scale:1.3 }}
-                onClick={() => handleReaction('like')}
-                style={{ border:'none', background:'none', cursor: user ? 'pointer':'default', padding:0, display:'flex', alignItems:'center', gap:5, fontFamily:FONT }}
-              >
-                <span style={{ fontSize:22, filter: reactions.mine==='like'?'none':'grayscale(1)', transition:'filter .2s' }}>❤️</span>
-                <span style={{ fontSize:13, fontWeight:700, color: reactions.mine==='like'?'#ef4444':'#6b7280' }}>{reactions.likes}</span>
-              </motion.button>
-              <motion.button
-                whileTap={{ scale:1.3 }}
-                onClick={() => handleReaction('dislike')}
-                style={{ border:'none', background:'none', cursor: user ? 'pointer':'default', padding:0, display:'flex', alignItems:'center', gap:5, fontFamily:FONT }}
-              >
-                <span style={{ fontSize:22, filter: reactions.mine==='dislike'?'none':'grayscale(1)', transition:'filter .2s' }}>👎</span>
-                <span style={{ fontSize:13, fontWeight:700, color: reactions.mine==='dislike'?'#6366f1':'#6b7280' }}>{reactions.dislikes}</span>
-              </motion.button>
-              <div style={{ marginLeft:'auto', fontSize:12, color:'#9ca3af', fontFamily:FONT }}>💬 {comments.length}</div>
+              {(myEmail === c.player_email?.toLowerCase() || myEmail === post.player_email?.toLowerCase()) && (
+                <button onClick={() => deleteComment(c.id)}
+                  style={{ border:'none', background:'transparent', color:'#d1d5db', cursor:'pointer', fontSize:14, padding:'4px', flexShrink:0, marginTop:4 }}
+                  onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
+                  onMouseLeave={e => e.currentTarget.style.color='#d1d5db'}>×</button>
+              )}
             </div>
-            {/* Comment input */}
-            {user ? (
-              <div style={{ display:'flex', gap:8, alignItems:'flex-end' }}>
-                <Avatar name={playerInfo?.name || user.email} size={28} style={{ flexShrink:0 }}/>
-                <div style={{ flex:1, position:'relative' }}>
-                  <textarea
-                    value={commentText}
-                    onChange={e => setCommentText(e.target.value)}
-                    onKeyDown={e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); postComment() } }}
-                    placeholder="Add a comment…"
-                    rows={1}
-                    style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:20, padding:'8px 44px 8px 14px', fontFamily:FONT, fontSize:13, resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4, maxHeight:100, overflowY:'auto' }}
-                  />
-                  <button
-                    onClick={postComment}
-                    disabled={!commentText.trim() || posting}
-                    style={{ position:'absolute', right:8, bottom:6, border:'none', background:'none', color: commentText.trim()? '#e9a020':'#d1d5db', cursor: commentText.trim()?'pointer':'default', fontWeight:800, fontSize:13, fontFamily:FONT, padding:4 }}
-                  >Post</button>
-                </div>
+          ))}
+          <div ref={commentEndRef}/>
+        </div>
+
+        {/* ── COMMENT INPUT (pinned bottom) ── */}
+        <div style={{ borderTop:'1px solid #f0f0f0', padding:'12px 16px', flexShrink:0, background:'#fff' }}>
+          {user ? (
+            <div style={{ display:'flex', gap:9, alignItems:'flex-end' }}>
+              <Avatar name={playerInfo?.name || user.email} size={30} style={{ flexShrink:0 }}/>
+              <div style={{ flex:1, position:'relative' }}>
+                <textarea
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyDown={e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); postComment() } }}
+                  placeholder="Add a comment… (Enter to post)"
+                  rows={1}
+                  style={{ width:'100%', border:'1.5px solid #e5e7eb', borderRadius:20, padding:'9px 50px 9px 14px', fontFamily:FONT, fontSize:13, resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4, maxHeight:90, overflowY:'auto', transition:'border .15s' }}
+                  onFocus={e => e.target.style.borderColor='#e9a020'}
+                  onBlur={e => e.target.style.borderColor='#e5e7eb'}
+                />
+                <button onClick={postComment} disabled={!commentText.trim() || posting}
+                  style={{ position:'absolute', right:8, bottom:7, border:'none', background: commentText.trim()?'#e9a020':'transparent', borderRadius:99, padding:'4px 10px', color: commentText.trim()?'#fff':'#d1d5db', cursor:commentText.trim()?'pointer':'default', fontWeight:800, fontSize:12, fontFamily:FONT, transition:'all .15s' }}>
+                  Post
+                </button>
               </div>
-            ) : (
-              <div style={{ textAlign:'center', fontSize:12, color:'#9ca3af', fontFamily:FONT }}>
-                Log in to like and comment
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{ textAlign:'center', fontSize:12, color:'#9ca3af', fontFamily:FONT, padding:'4px 0' }}>
+              Log in to like and comment
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>
