@@ -5,15 +5,18 @@
 //   POST ?action=generate-title            → AI generate gallery title/caption
 export const config = { runtime: 'edge' }
 
-const SUPABASE_URL = 'https://nrbuweeexnoofitznffo.supabase.co'
+const SUPABASE_URL      = 'https://nrbuweeexnoofitznffo.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MDE2NzUsImV4cCI6MjA5NDI3NzY3NX0.cZNkT3TqWMmH_YTi4_cK8NFAELG-Qbq43FDRjqB8Sbs'
+// Service role bypasses RLS — required for writes to tucc_player_scores
+const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODcwMTY3NSwiZXhwIjoyMDk0Mjc3Njc1fQ.JyCySfb0mVFZ7HXc20AZHz3-YVTRW_VMAv8lwhyPvk0'
 
-async function supabaseFetch(path, opts = {}) {
+async function supabaseFetch(path, opts = {}, useServiceKey = false) {
+  const key = useServiceKey ? SUPABASE_SERVICE_KEY : SUPABASE_ANON_KEY
   const r = await fetch(`${SUPABASE_URL}${path}`, {
     ...opts,
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: key,
+      Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
       ...(opts.headers || {}),
@@ -58,7 +61,8 @@ export default async function handler(req) {
           method: 'POST',
           body: JSON.stringify(arr),
           headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-        }
+        },
+        true  // use service role key to bypass RLS
       )
       if (status >= 400) return new Response(JSON.stringify({ error: body }), { status, headers: cors })
       return new Response(JSON.stringify({ saved: body }), { status: 200, headers: cors })

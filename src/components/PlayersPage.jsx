@@ -361,9 +361,11 @@ export default function PlayersPage() {
         }))
         setPlayers(enriched)
 
+        // Index by both btcl_player_id AND player_name for reliable lookup
         const scoreMap = {}
         for (const s of (scoresRaw.scores || [])) {
           scoreMap[s.btcl_player_id] = s
+          if (s.player_name) scoreMap[s.player_name.toLowerCase().trim()] = s
         }
         setCachedScores(scoreMap)
       } catch (e) {
@@ -608,7 +610,9 @@ export default function PlayersPage() {
           {sorted.map(player => {
             const key    = player.id || player.name
             const rank   = rankMap[key] || 99
-            const cached = cachedScores[player.id] || null
+            const cached = cachedScores[player.id]
+              || cachedScores[(player.name || '').toLowerCase().trim()]
+              || null
             return (
               <PlayerCard
                 key={key}
