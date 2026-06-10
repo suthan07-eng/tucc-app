@@ -3,10 +3,18 @@ import { C, FONT, MAX_WIDTH } from '../constants'
 
 const LINKS = [
   { label: 'Home',         path: '/'             },
+  { label: 'Players',      path: '/players'      },
+  { label: 'Gallery',      path: '/gallery'      },
   { label: 'Availability', path: '/availability' },
-  { label: 'League',       path: '/league'       },
   { label: 'Results',      path: '/results'      },
+  { label: 'League',       path: '/league'       },
   { label: 'Statistics',   path: '/stats'        },
+]
+
+const LEGAL_LINKS = [
+  { label: 'Privacy Policy', path: '/privacy' },
+  { label: 'Terms of Use',   path: '/terms'   },
+  { label: 'Cookie Policy',  path: '/cookies' },
 ]
 
 export default function Footer() {
@@ -61,6 +69,41 @@ export default function Footer() {
                 {label}
               </button>
             ))}
+          </div>
+        </nav>
+
+        {/* Legal links */}
+        <nav aria-label="Legal">
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px', marginBottom: 18 }}>
+            {LEGAL_LINKS.map(({ label, path }) => (
+              <button
+                key={path}
+                onClick={() => nav(path)}
+                style={{
+                  background: 'none', border: 'none',
+                  color: 'rgba(255,255,255,.35)',
+                  fontFamily: FONT, fontSize: 11, fontWeight: 500,
+                  cursor: 'pointer', padding: '2px 0',
+                  transition: 'color 150ms ease',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
+              >
+                {label}
+              </button>
+            ))}
+            <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11 }}>·</span>
+            <a
+              href="mailto:[CLUB_EMAIL]"
+              style={{
+                color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
+                fontWeight: 500, textDecoration: 'none',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
+            >
+              Contact
+            </a>
           </div>
         </nav>
 

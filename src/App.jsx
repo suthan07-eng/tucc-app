@@ -16,6 +16,10 @@ import AnalysePage from './components/AnalysePage'
 import AdminLogin from './components/admin/AdminLogin'
 import AdminDashboard from './components/admin/AdminDashboard'
 import ResetPassword from './components/ResetPassword'
+import NotFound from './components/NotFound'
+import PrivacyPolicy from './components/legal/PrivacyPolicy'
+import TermsOfUse from './components/legal/TermsOfUse'
+import CookiePolicy from './components/legal/CookiePolicy'
 
 // Protects all player-facing routes — redirects to /login if not signed in
 function RequireAuth({ children }) {
@@ -26,7 +30,7 @@ function RequireAuth({ children }) {
 
 // Admin-only protection (separate from player auth)
 function RequireAdmin({ children }) {
-  const isAdmin = sessionStorage.getItem('tucc_admin')
+  const isAdmin = sessionStorage.getItem('tucc_admin_token')
   return isAdmin ? children : <Navigate to="/admin/login" replace />
 }
 
@@ -61,12 +65,18 @@ function AppRoutes() {
       {/* Password reset (public — accessed via email link) */}
       <Route path="/reset-password" element={<ResetPassword />} />
 
+      {/* Legal pages (public) */}
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms"   element={<TermsOfUse />} />
+      <Route path="/cookies" element={<CookiePolicy />} />
+
       {/* Admin */}
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* 404 */}
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
     </>
   )

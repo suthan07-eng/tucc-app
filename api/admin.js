@@ -3,21 +3,26 @@
 import https from 'https'
 
 const SUPABASE_HOST = 'nrbuweeexnoofitznffo.supabase.co'
-const SERVICE_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODcwMTY3NSwiZXhwIjoyMDk0Mjc3Njc1fQ.JyCySfb0mVFZ7HXc20AZHz3-YVTRW_VMAv8lwhyPvk0'
+const SERVICE_KEY   = process.env.SUPABASE_SERVICE_ROLE_KEY
+const ANON_KEY      = process.env.SUPABASE_ANON_KEY
+const ADMIN_EMAIL   = process.env.VITE_ADMIN_EMAIL || 'suthan07@gmail.com'
 
-function httpsReq(method, path, body) {
+function httpsReq(method, path, body, headersOverride) {
   return new Promise((resolve, reject) => {
     const bodyStr = body ? JSON.stringify(body) : ''
+    const defaultHeaders = {
+      'apikey':        SERVICE_KEY,
+      'Authorization': `Bearer ${SERVICE_KEY}`,
+      'Content-Type':  'application/json',
+      ...(body ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {}),
+    }
     const options = {
       hostname: SUPABASE_HOST,
       path,
       method,
-      headers: {
-        'apikey':        SERVICE_KEY,
-        'Authorization': `Bearer ${SERVICE_KEY}`,
-        'Content-Type':  'application/json',
-        ...(body ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {}),
-      },
+      headers: headersOverride
+        ? { 'Content-Type': 'application/json', ...headersOverride }
+        : defaultHeaders,
     }
     const req = https.request(options, res => {
       let data = ''
@@ -33,15 +38,43 @@ function httpsReq(method, path, body) {
   })
 }
 
+async function verifyAdminJwt(token) {
+  const result = await httpsReq('GET', '/auth/v1/user', null, {
+    'apikey':        ANON_KEY,
+    'Authorization': `Bearer ${token}`,
+  })
+  if (result.status !== 200 || !result.body?.email) return null
+  return result.body.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? result.body : null
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const allowedOrigins = ['https://tucc.club', 'https://www.tucc.club']
+  const origin = req.headers['origin'] || ''
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   if (req.method === 'OPTIONS') return res.status(200).end()
+
+  // ── Verify caller is the admin via their Supabase JWT ─────────────────
+  const authHeader = req.headers['authorization'] || ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  if (!token) return res.status(401).json({ error: 'Unauthorised' })
+  const adminUser = await verifyAdminJwt(token)
+  if (!adminUser) return res.status(403).json({ error: 'Forbidden' })
 
   const action = req.query?.action || req.query?.type
 
   try {
+    // ── GET players list (id, name, email) ───────────────────────────────
+    if (action === 'players') {
+      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+      const result = await httpsReq('GET', '/rest/v1/players?select=id,name,email&order=name')
+      if (result.status >= 400) return res.status(result.status).json({ error: String(result.body) })
+      return res.status(200).json(Array.isArray(result.body) ? result.body : [])
+    }
+
     // ── GET activity logs ─────────────────────────────────────────────────
     if (action === 'activity') {
       if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })

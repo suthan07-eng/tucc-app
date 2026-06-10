@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /login
+
+Disallow: /admin
+Disallow: /analyse
+Disallow: /availability
+Disallow: /messages
+Disallow: /team
+Disallow: /register
+Disallow: /players
+Disallow: /gallery
+Disallow: /stats
+Disallow: /results
+Disallow: /fixtures
+Disallow: /league
+Disallow: /success
+
+Sitemap: https://tucc.club/sitemap.xml

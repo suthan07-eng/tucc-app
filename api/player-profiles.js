@@ -5,6 +5,25 @@
 //   POST ?action=generate-title      → AI generate gallery title/caption
 export const config = { runtime: 'edge' }
 
+// ── Simple in-memory rate limit for AI generate endpoints ─────────────────
+// Edge functions are stateless across invocations, but this limits bursts
+// within a single instance. For stronger limits use Vercel KV or Upstash.
+const rateLimitMap = new Map() // ip → { count, windowStart }
+const RATE_LIMIT_MAX = 5
+const RATE_LIMIT_WINDOW_MS = 60_000
+
+function checkRateLimit(ip) {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(ip, { count: 1, windowStart: now })
+    return true
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false
+  entry.count++
+  return true
+}
+
 const SUPABASE_URL         = 'https://nrbuweeexnoofitznffo.supabase.co'
 const SUPABASE_ANON_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MDE2NzUsImV4cCI6MjA5NDI3NzY3NX0.rbzJIdXFbj7XrumesA1kFRZ3mp4VJO22QYEMbGuUYFE'
 const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODcwMTY3NSwiZXhwIjoyMDk0Mjc3Njc1fQ.JyCySfb0mVFZ7HXc20AZHz3-YVTRW_VMAv8lwhyPvk0'
@@ -70,6 +89,12 @@ export default async function handler(req) {
 
     // ── POST generate player profile (Anthropic) ──────────────────────────
     if (action === 'generate' && req.method === 'POST') {
+      // Rate limit: max 5 generate requests per minute per IP
+      const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      if (!checkRateLimit(clientIp)) {
+        return json({ error: 'Rate limit exceeded — max 5 profile generations per minute' }, 429)
+      }
+
       // process.env works in Vercel edge runtime
       const apiKey = process.env.ANTHROPIC_API_KEY
       if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not set in Vercel env' }, 500)
@@ -131,6 +156,10 @@ Return ONLY a valid JSON object (no markdown, no extra text):
 
     // ── POST generate gallery title/caption ───────────────────────────────
     if (action === 'generate-title' && req.method === 'POST') {
+      const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      if (!checkRateLimit(clientIp)) {
+        return json({ title: null, caption: null, error: 'Rate limit exceeded' })
+      }
       const apiKey = process.env.ANTHROPIC_API_KEY
       if (!apiKey) return json({ title: null, caption: null, error: 'No API key' })
 
