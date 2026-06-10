@@ -74,46 +74,32 @@ export default function Footer() {
           </div>
         </nav>
 
-        {/* Legal links + Contact — all in one row */}
-        <nav aria-label="Legal">
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 0', marginBottom: 18 }}>
-            {[...LEGAL_LINKS, { label: 'Contact', path: null, href: 'mailto:info@tucc.club' }].map(({ label, path, href }, i, arr) => (
-              <span key={label} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                {path ? (
-                  <button
-                    onClick={() => nav(path)}
-                    style={{
-                      background: 'none', border: 'none',
-                      color: 'rgba(255,255,255,.35)',
-                      fontFamily: FONT, fontSize: 11, fontWeight: 500,
-                      cursor: 'pointer', padding: '0 10px', lineHeight: '20px',
-                      transition: 'color 150ms ease',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
-                  >
-                    {label}
-                  </button>
-                ) : (
-                  <a
-                    href={href}
-                    style={{
-                      color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
-                      fontWeight: 500, textDecoration: 'none', padding: '0 10px', lineHeight: '20px',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
-                  >
-                    {label}
-                  </a>
-                )}
-                {i < arr.length - 1 && (
-                  <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, lineHeight: '20px', userSelect: 'none' }}>·</span>
-                )}
-              </span>
-            ))}
-          </div>
-        </nav>
+        {/* Legal links + Contact */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginBottom: 18, lineHeight: '20px' }}>
+          {[
+            { label: 'Privacy Policy', href: '/privacy',             external: false },
+            { label: 'Terms of Use',   href: '/terms',               external: false },
+            { label: 'Cookie Policy',  href: '/cookies',             external: false },
+            { label: 'Contact',        href: 'mailto:info@tucc.club', external: true  },
+          ].map(({ label, href, external }, i) => (
+            <span key={label} style={{ display: 'inline-flex', alignItems: 'center', lineHeight: '20px' }}>
+              {i > 0 && <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, margin: '0 8px', lineHeight: '20px' }}>·</span>}
+              <a
+                href={href}
+                onClick={!external ? (e => { e.preventDefault(); nav(href) }) : undefined}
+                style={{
+                  color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
+                  fontWeight: 500, textDecoration: 'none', lineHeight: '20px',
+                  display: 'inline-block', verticalAlign: 'middle',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
+              >
+                {label}
+              </a>
+            </span>
+          ))}
+        </div>
 
         {/* Copyright */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 18, textAlign: 'center' }}>
