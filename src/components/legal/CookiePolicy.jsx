@@ -148,7 +148,7 @@ export default function CookiePolicy() {
 
         <Section title="7. Contact">
           <p>
-            Questions: <strong>[CLUB_EMAIL]</strong>
+            Questions: <strong>info@tucc.club</strong>
           </p>
         </Section>
 

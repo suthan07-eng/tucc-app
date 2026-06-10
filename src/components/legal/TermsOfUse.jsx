@@ -63,7 +63,7 @@ export default function TermsOfUse() {
           <ul style={{ paddingLeft: 20 }}>
             <li>You are responsible for maintaining the confidentiality of your login credentials.</li>
             <li style={{ marginTop: 8 }}>You must not share your account or access the App using another member's credentials.</li>
-            <li style={{ marginTop: 8 }}>You must notify us immediately at <strong>[CLUB_EMAIL]</strong> if you suspect unauthorised access to your account.</li>
+            <li style={{ marginTop: 8 }}>You must notify us immediately at <strong>info@tucc.club</strong> if you suspect unauthorised access to your account.</li>
             <li style={{ marginTop: 8 }}>We reserve the right to suspend or deactivate accounts that are inactive, misused, or belonging to members who have left the club.</li>
           </ul>
         </Section>
@@ -145,7 +145,7 @@ export default function TermsOfUse() {
 
         <Section title="10. Contact">
           <p>
-            Questions about these terms: <strong>[CLUB_EMAIL]</strong>
+            Questions about these terms: <strong>info@tucc.club</strong>
           </p>
         </Section>
 

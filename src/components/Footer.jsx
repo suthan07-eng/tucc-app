@@ -7,8 +7,10 @@ const LINKS = [
   { label: 'Gallery',      path: '/gallery'      },
   { label: 'Availability', path: '/availability' },
   { label: 'Results',      path: '/results'      },
+  { label: 'Fixtures',     path: '/fixtures'     },
   { label: 'League',       path: '/league'       },
   { label: 'Statistics',   path: '/stats'        },
+  { label: 'Analyse',      path: '/analyse'      },
 ]
 
 const LEGAL_LINKS = [
@@ -72,9 +74,9 @@ export default function Footer() {
           </div>
         </nav>
 
-        {/* Legal links */}
+        {/* Legal links + Contact — all in one row */}
         <nav aria-label="Legal">
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px', marginBottom: 18 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '6px 14px', marginBottom: 18 }}>
             {LEGAL_LINKS.map(({ label, path }) => (
               <button
                 key={path}
@@ -92,12 +94,12 @@ export default function Footer() {
                 {label}
               </button>
             ))}
-            <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11 }}>·</span>
+            <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, lineHeight: 1 }}>·</span>
             <a
-              href="mailto:[CLUB_EMAIL]"
+              href="mailto:info@tucc.club"
               style={{
                 color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
-                fontWeight: 500, textDecoration: 'none',
+                fontWeight: 500, textDecoration: 'none', lineHeight: 1,
               }}
               onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}

@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
             <strong>[REGISTERED_ADDRESS]</strong>, United Kingdom ("we", "us", "the Club").
           </p>
           <p style={{ marginTop: 10 }}>
-            Contact us about privacy matters at: <strong>[CLUB_EMAIL]</strong>
+            Contact us about privacy matters at: <strong>info@tucc.club</strong>
           </p>
         </Section>
 
@@ -165,7 +165,7 @@ export default function PrivacyPolicy() {
             <li><strong>Withdraw consent</strong> at any time for consent-based processing</li>
           </ul>
           <p style={{ marginTop: 12 }}>
-            To exercise any right, email <strong>[CLUB_EMAIL]</strong>. We will respond within
+            To exercise any right, email <strong>info@tucc.club</strong>. We will respond within
             30 days. You also have the right to lodge a complaint with the{' '}
             <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer" style={{ color: C.green }}>
               Information Commissioner's Office (ICO)
@@ -193,7 +193,7 @@ export default function PrivacyPolicy() {
             We implement appropriate technical measures including HTTPS (enforced via HSTS),
             row-level security on the database, environment-variable-managed API keys (not stored
             in client code), and access logging. No system is completely secure; if you believe
-            your account has been compromised, contact <strong>[CLUB_EMAIL]</strong> immediately.
+            your account has been compromised, contact <strong>info@tucc.club</strong> immediately.
           </p>
         </Section>
 
