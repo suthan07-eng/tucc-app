@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../../supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { C, FONT, MAX_WIDTH } from '../../constants'
 import TabAvailability from './TabAvailability'
@@ -32,8 +33,9 @@ export default function AdminDashboard() {
   const nav = useNavigate()
   const [tab, setTab] = useState('availability')
 
-  function logout() {
-    sessionStorage.removeItem('tucc_admin')
+  async function logout() {
+    sessionStorage.removeItem('tucc_admin_token')
+    await supabase.auth.signOut()
     nav('/admin/login')
   }
 

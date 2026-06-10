@@ -194,14 +194,19 @@ function LogRow({ log }) {
 }
 
 // ── Main tab ───────────────────────────────────────────────────
-const SUPABASE_URL = 'https://nrbuweeexnoofitznffo.supabase.co'
-const SERVICE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODcwMTY3NSwiZXhwIjoyMDk0Mjc3Njc1fQ.JyCySfb0mVFZ7HXc20AZHz3-YVTRW_VMAv8lwhyPvk0'
+// NOTE: All Supabase calls that require service-role are routed through /api/admin
+// to avoid exposing the service key in the browser bundle.
 
-async function fetchWithServiceRole(path) {
-  const r = await fetch(`${SUPABASE_URL}${path}`, {
-    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
-  })
-  return r.json()
+function adminFetch(url, opts = {}) {
+  const token = sessionStorage.getItem('tucc_admin_token') || ''
+  return fetch(url, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(opts.headers || {}),
+    },
+  }).then(r => r.json())
 }
 
 export default function TabActivity() {
@@ -222,16 +227,14 @@ export default function TabActivity() {
 
     try {
       const [playersData, authData, logsData] = await Promise.all([
-        // Players via anon (RLS allows read)
-        fetch(`${SUPABASE_URL}/rest/v1/players?select=id,name,email&order=name`, {
-          headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
-        }).then(r => r.json()),
+        // Players via admin API (keeps service key server-side)
+        adminFetch('/api/admin?action=players'),
 
         // Auth users for last_sign_in_at
-        fetch('/api/admin?action=users').then(r => r.json()),
+        adminFetch('/api/admin?action=users'),
 
         // Activity logs via service-role API (bypasses RLS)
-        fetch('/api/admin?action=activity&limit=300').then(r => r.json()),
+        adminFetch('/api/admin?action=activity&limit=300'),
       ])
 
       const ps = Array.isArray(playersData) ? playersData : []
