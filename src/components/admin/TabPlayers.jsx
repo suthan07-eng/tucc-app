@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
 import Card from '../ui/Card'
@@ -6,6 +6,180 @@ import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
 import { Skeleton } from '../ui/Loader'
 import { useToast } from '../Toast'
+import statsJson from '../../data/stats-2026.json'
+
+const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj'])
+function matchStat(arr, name) {
+  if (!arr?.length || !name) return null
+  const lower = name.toLowerCase().trim()
+  let hit = arr.find(p => p.name.toLowerCase().trim() === lower)
+  if (hit) return hit
+  const words = lower.split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
+  if (words.length >= 2) {
+    hit = arr.find(p => { const n = p.name.toLowerCase(); return words.every(w => n.includes(w)) })
+    if (hit) return hit
+  }
+  return null
+}
+
+function detectRole(p) {
+  const batStyle  = (p.batStyle  || '').toLowerCase()
+  const bowlStyle = (p.bowlStyle || '').toLowerCase()
+  if (batStyle.includes('wicket') || bowlStyle.includes('wicket')) return 'Wicket-Keeper'
+  const bat  = matchStat(statsJson.batting,  p.name)
+  const bowl = matchStat(statsJson.bowling,  p.name)
+  const hasBat  = bat  && (bat.innings  || bat.matches  || 0) >= 1
+  const hasBowl = bowl && (bowl.overs || 0) >= 4
+  if (hasBat && hasBowl) return 'All-Rounder'
+  if (hasBowl)  return 'Bowler'
+  if (bowlStyle && !hasBat) return 'Bowler'
+  return 'Batsman'
+}
+
+function computeScore(p) {
+  const bat  = matchStat(statsJson.batting,  p.name)
+  const bowl = matchStat(statsJson.bowling,  p.name)
+  const matches = bat?.matches || bowl?.matches || 1
+  let batScore = 0
+  if (bat) {
+    batScore = Math.min((bat.runs || 0) / 300, 1) * 40
+      + (parseFloat(bat.strike_rate) >= 120 ? 30 : parseFloat(bat.strike_rate) >= 90 ? 22 : parseFloat(bat.strike_rate) >= 70 ? 15 : parseFloat(bat.strike_rate) >= 50 ? 9 : 5)
+      + Math.min((parseFloat(bat.average) || 0) / 60, 1) * 20
+      + Math.min((bat.fifties || 0) * 2 + (bat.hundreds || 0) * 5, 10)
+  }
+  let bowlScore = 0
+  if (bowl && (bowl.overs || 0) >= 4) {
+    const econ = parseFloat(bowl.economy) || 99
+    const avg  = parseFloat(bowl.average) || 99
+    bowlScore = Math.min((bowl.wickets || 0) / 15, 1) * 40
+      + (econ <= 5 ? 30 : econ <= 6.5 ? 22 : econ <= 8 ? 15 : econ <= 10 ? 9 : 5)
+      + (avg <= 15 ? 20 : avg <= 22 ? 15 : avg <= 30 ? 10 : avg <= 40 ? 5 : 0)
+      + Math.min((bowl.five_fers || 0) * 10, 10)
+  }
+  const role = detectRole(p)
+  let composite = role === 'Bowler' ? batScore * 0.2 + bowlScore * 0.8
+    : (role === 'Batsman' || role === 'Wicket-Keeper') ? batScore * 0.8 + bowlScore * 0.2
+    : batScore * 0.5 + bowlScore * 0.5
+  const engMult    = 0.85 + 0.15 * Math.min(matches / 8, 1)
+  const confidence = Math.min(0.4 + Math.max(matches - 1, 0) / 3 * 0.6, 1)
+  return Math.round(Math.min(composite * engMult * confidence, 100) * 10) / 10
+}
+
+// ── Generate Profiles Panel ─────────────────────────────────────
+function GenerateProfilesPanel() {
+  const toast = useToast()
+  const [btclPlayers, setBtclPlayers] = useState([])
+  const [loadingPlayers, setLoadingPlayers] = useState(true)
+  const [generating, setGenerating]         = useState(false)
+  const [progress, setProgress]             = useState('')
+  const [done, setDone]                     = useState(false)
+
+  useEffect(() => {
+    fetch('/api/players')
+      .then(r => r.json())
+      .then(d => { setBtclPlayers(d.players || d || []); setLoadingPlayers(false) })
+      .catch(() => setLoadingPlayers(false))
+  }, [])
+
+  const handleGenerate = useCallback(async () => {
+    if (generating || btclPlayers.length === 0) return
+    setGenerating(true)
+    setDone(false)
+    let count = 0
+
+    for (let i = 0; i < btclPlayers.length; i++) {
+      const p = btclPlayers[i]
+      setProgress(`${i + 1}/${btclPlayers.length} — ${p.name}`)
+      try {
+        const bat  = matchStat(statsJson.batting,  p.name)
+        const bowl = matchStat(statsJson.bowling,  p.name)
+        const role  = detectRole(p)
+        const score = computeScore(p)
+
+        const aiRes = await fetch('/api/player-profiles?action=generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ player: { name: p.name }, stats: { batting: bat, bowling: bowl }, score, role }),
+        })
+        const aiData  = await aiRes.json()
+        const profile = aiData.profile || {}
+
+        await fetch('/api/player-profiles?action=scores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            btcl_player_id:   p.id,
+            player_name:      p.name,
+            season:           '2026',
+            role,
+            score,
+            headline:         profile.headline           || '',
+            ai_profile:       profile.ai_profile         || '',
+            strengths:        profile.strengths           || [],
+            development_areas: profile.development_areas || [],
+            role_notes:       profile.role_notes          || '',
+            generated_at:     new Date().toISOString(),
+          }),
+        })
+        count++
+      } catch (e) {
+        console.error(`Profile gen failed for ${p.name}:`, e)
+      }
+    }
+
+    setGenerating(false)
+    setDone(true)
+    setProgress('')
+    toast(`✅ ${count}/${btclPlayers.length} AI profiles generated`)
+  }, [btclPlayers, generating, toast])
+
+  return (
+    <div style={{ background: '#FFFBEB', border: `1px solid ${C.gold}50`, borderRadius: 14, padding: '16px 20px', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: '#92400E', marginBottom: 4 }}>
+            ✨ AI Player Profiles
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 12, color: '#B45309', lineHeight: 1.5 }}>
+            Generate AI-written profiles, headlines, strengths and role notes for all {loadingPlayers ? '…' : btclPlayers.length} BTCL players.
+            Profiles are cached and shown on the public Players page.
+          </div>
+          {generating && (
+            <div style={{ marginTop: 8, fontFamily: FONT, fontSize: 12, color: '#92400E', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 12, height: 12, border: '2px solid #D97706', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite', flexShrink: 0 }}/>
+              {progress}
+            </div>
+          )}
+          {done && !generating && (
+            <div style={{ marginTop: 8, fontFamily: FONT, fontSize: 12, color: '#16A34A', fontWeight: 700 }}>
+              ✅ All profiles generated! They are now live on the Players page.
+            </div>
+          )}
+        </div>
+        <button
+          onClick={handleGenerate}
+          disabled={generating || loadingPlayers}
+          style={{
+            background: generating ? C.gray2 : 'linear-gradient(135deg, #D97706, #F59E0B)',
+            color: generating ? C.gray4 : '#fff',
+            fontFamily: FONT, fontWeight: 800, fontSize: 13,
+            border: 'none', borderRadius: 12, padding: '11px 20px',
+            cursor: (generating || loadingPlayers) ? 'not-allowed' : 'pointer',
+            boxShadow: generating ? 'none' : '0 4px 16px rgba(217,119,6,0.3)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            whiteSpace: 'nowrap', flexShrink: 0,
+            transition: 'all .2s',
+          }}
+        >
+          {generating
+            ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite' }}/>Generating…</>
+            : '✨ Generate / Refresh All Profiles'}
+        </button>
+      </div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  )
+}
 
 // ── Edit Credentials Modal ─────────────────────────────────────
 function EditCredentialsModal({ player, onClose, onSaved }) {
@@ -202,6 +376,8 @@ export default function TabPlayers() {
 
   return (
     <div>
+      <GenerateProfilesPanel />
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ fontWeight: 700, color: C.dark, fontFamily: FONT, fontSize: 15 }}>
           {loading ? <Skeleton width={140} height={16} /> : `${players.length} registered player${players.length !== 1 ? 's' : ''}`}
