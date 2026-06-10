@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { C, FONT, ADMIN_EMAIL } from '../../constants'
-import { supabase } from '../../supabase'
+import { C, FONT, ADMIN_EMAIL, ADMIN_PASSWORD } from '../../constants'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Field, { Input } from '../ui/Field'
@@ -13,7 +12,7 @@ export default function AdminLogin() {
   const toast = useToast()
 
   // Already logged in
-  if (sessionStorage.getItem('tucc_admin_token')) {
+  if (sessionStorage.getItem('tucc_admin')) {
     return <Navigate to="/admin" replace />
   }
 
@@ -22,7 +21,7 @@ export default function AdminLogin() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault()
     const errs = {}
     if (!email.trim()) errs.email = 'Required'
@@ -31,25 +30,16 @@ export default function AdminLogin() {
 
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    })
+    const emailOk    = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()
+    const passwordOk = password === ADMIN_PASSWORD
 
-    if (error || !data?.session) {
-      setErrors({ password: error?.message || 'Invalid email or password' })
+    if (!emailOk || !passwordOk) {
+      setErrors({ password: 'Invalid login credentials' })
       setLoading(false)
       return
     }
 
-    if (data.user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-      await supabase.auth.signOut()
-      setErrors({ password: 'Not authorised as admin' })
-      setLoading(false)
-      return
-    }
-
-    sessionStorage.setItem('tucc_admin_token', data.session.access_token)
+    sessionStorage.setItem('tucc_admin', '1')
     toast('Welcome back, Captain! 🏏')
     nav('/admin')
   }

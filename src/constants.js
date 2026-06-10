@@ -38,8 +38,7 @@ export const ROLES = ['Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper', 'Fiel
 
 export const FORMATS = ['T20', 'ODI', 'T10', 'Hundred', 'Friendly']
 
-export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'suthan07@gmail.com'
-// ADMIN_PASSWORD removed — never store passwords in source files.
-// The admin password is verified via Supabase Auth only.
+export const ADMIN_EMAIL    = import.meta.env.VITE_ADMIN_EMAIL    || 'suthan07@gmail.com'
+export const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'TUCC@2025'
 
 export const MAX_WIDTH = 680

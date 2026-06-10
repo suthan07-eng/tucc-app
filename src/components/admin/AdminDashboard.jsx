@@ -33,9 +33,8 @@ export default function AdminDashboard() {
   const nav = useNavigate()
   const [tab, setTab] = useState('availability')
 
-  async function logout() {
-    sessionStorage.removeItem('tucc_admin_token')
-    await supabase.auth.signOut()
+  function logout() {
+    sessionStorage.removeItem('tucc_admin')
     nav('/admin/login')
   }
 
