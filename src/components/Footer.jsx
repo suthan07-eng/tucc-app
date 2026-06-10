@@ -94,12 +94,12 @@ export default function Footer() {
                 {label}
               </button>
             ))}
-            <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, lineHeight: 1 }}>·</span>
+            <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, lineHeight: '1' }}>·</span>
             <a
               href="mailto:info@tucc.club"
               style={{
                 color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
-                fontWeight: 500, textDecoration: 'none', lineHeight: 1,
+                fontWeight: 500, textDecoration: 'none',
               }}
               onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
