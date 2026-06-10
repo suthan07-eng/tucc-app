@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { C, FONT, ADMIN_EMAIL } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import statsJson from '../data/stats-2026.json'
+import Nav from './Nav'
+import Footer from './Footer'
 
 // ─── Name-match helper (mirrors logic in api/players.js) ─────────────────────
 const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj'])
@@ -468,25 +470,35 @@ export default function PlayersPage() {
   // ── Loading ──
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 40, height: 40, border: `3px solid ${C.gray2}`, borderTopColor: C.green, borderRadius: '50%', animation: 'spin .8s linear infinite', margin: '0 auto 16px' }}/>
-          <p style={{ fontFamily: FONT, color: C.gray4, fontSize: 14 }}>Loading squad…</p>
+      <>
+        <Nav />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: 40, height: 40, border: `3px solid ${C.gray2}`, borderTopColor: C.green, borderRadius: '50%', animation: 'spin .8s linear infinite', margin: '0 auto 16px' }}/>
+            <p style={{ fontFamily: FONT, color: C.gray4, fontSize: 14 }}>Loading squad…</p>
+          </div>
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
+        <Footer />
+      </>
     )
   }
 
   if (error) {
     return (
-      <div style={{ padding: 32, textAlign: 'center' }}>
-        <p style={{ fontFamily: FONT, color: C.red, fontSize: 14 }}>Failed to load players: {error}</p>
-      </div>
+      <>
+        <Nav />
+        <div style={{ padding: 32, textAlign: 'center' }}>
+          <p style={{ fontFamily: FONT, color: C.red, fontSize: 14 }}>Failed to load players: {error}</p>
+        </div>
+        <Footer />
+      </>
     )
   }
 
   return (
+    <>
+    <Nav />
     <div style={{ padding: '24px 16px 80px', maxWidth: 780, margin: '0 auto' }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
@@ -632,5 +644,7 @@ export default function PlayersPage() {
         </div>
       )}
     </div>
+    <Footer />
+    </>
   )
 }
