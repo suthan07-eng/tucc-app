@@ -631,7 +631,7 @@ export default function AnalysePage() {
 
   // 1. Load opponents list
   useEffect(() => {
-    supabase.from('opponents').select('id, name, season, match_date')
+    supabase.from('opponents').select('id, name, season, match_date, notes')
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         setOpponents(data || [])
@@ -781,9 +781,33 @@ export default function AnalysePage() {
           <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(233,160,32,.15)', border:'1px solid rgba(233,160,32,.35)', borderRadius:20, padding:'4px 12px', marginBottom:10 }}>
             <span style={{ fontSize:10, fontWeight:800, color:'#e9a020', letterSpacing:1, textTransform:'uppercase' }}>🔍 Opposition Scouting</span>
           </div>
-          <h1 style={{ fontFamily:FONT, fontSize:20, fontWeight:900, color:'#fff', margin:'0 0 14px', letterSpacing:-0.3, lineHeight:1.2 }}>
+          <h1 style={{ fontFamily:FONT, fontSize:20, fontWeight:900, color:'#fff', margin:'0 0 6px', letterSpacing:-0.3, lineHeight:1.2 }}>
             {selectedOpp ? `${selectedOpp.name} · ${selectedOpp.season}` : 'Opposition Analysis'}
           </h1>
+
+          {/* Description */}
+          {selectedOpp?.notes && (
+            <p style={{ fontFamily:FONT, fontSize:13, color:'rgba(255,255,255,.72)', margin:'0 0 16px', lineHeight:1.65, maxWidth:500 }}>
+              {selectedOpp.notes}
+            </p>
+          )}
+
+          {/* Quick stats — inside hero, white-on-dark */}
+          {!loadingData && (
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16 }}>
+              {[
+                { v: batStats.length,    l:'Batters analysed' },
+                { v: bowlStats.filter(r=>r.overs>=10).length, l:'Bowlers (10+ overs)' },
+                { v: bowlStats.reduce((s,r)=>s+(r.five_wkt_haul||0),0), l:'Five-wkt hauls' },
+                { v: batStats.reduce((s,r)=>s+(r.hundreds||0),0), l:'Centuries' },
+              ].map(({ v, l }) => (
+                <div key={l} style={{ flex:'1 1 100px', background:'rgba(255,255,255,.1)', border:'1px solid rgba(255,255,255,.15)', borderRadius:10, padding:'8px 12px' }}>
+                  <div style={{ fontFamily:FONT, fontWeight:900, fontSize:18, color:'#fff' }}>{v}</div>
+                  <div style={{ fontFamily:FONT, fontSize:10, color:'rgba(255,255,255,.55)', marginTop:2 }}>{l}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Opponent selector */}
           <div style={{ marginBottom:4 }}>
@@ -818,20 +842,6 @@ export default function AnalysePage() {
 
         {!loadingData && (
           <>
-            {/* Quick stats row */}
-            <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:20 }}>
-              {[
-                { v: batStats.length,    l:'Batters analysed' },
-                { v: bowlStats.filter(r=>r.overs>=10).length, l:'Bowlers (10+ overs)' },
-                { v: bowlStats.reduce((s,r)=>s+r.five_wkt_haul,0), l:'Five-wicket hauls' },
-                { v: batStats.reduce((s,r)=>s+r.hundreds,0), l:'Centuries' },
-              ].map(({ v, l }) => (
-                <div key={l} style={{ flex:'1 1 110px', background:'#fff', border:`1.5px solid ${C.gray2}`, borderRadius:14, padding:'12px 14px', boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
-                  <div style={{ fontFamily:FONT, fontWeight:900, fontSize:20, color:C.green }}>{v}</div>
-                  <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>{l}</div>
-                </div>
-              ))}
-            </div>
 
             {/* Tabs */}
             <div style={{ marginBottom:20 }}>
