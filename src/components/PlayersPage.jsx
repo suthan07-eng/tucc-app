@@ -1,642 +1,632 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, TrendingUp, Target, Shield, Star, ExternalLink, Users } from 'lucide-react'
-import { C, FONT, MAX_WIDTH } from '../constants'
-import Nav from './Nav'
-import Footer from './Footer'
+import { C, FONT, ADMIN_EMAIL } from '../constants'
+import { useAuth } from '../context/AuthContext'
+import statsJson from '../data/stats-2026.json'
 
-const EASE = [0.23, 1, 0.32, 1]
-const PHOTO_BASE = 'https://admin.btcluk.com/players/'
-const BTCL_PROFILE = 'https://play-cricket.com/player_stats/player/'
-const OUR_NAMES_LG = ['Tamil United', 'TUCC', 'Dollishill Tamil United', 'DTU']
-const isOursLeague = (name = '') => OUR_NAMES_LG.some(t => name.toLowerCase().includes(t.toLowerCase()))
+// ─── Name-match helper (mirrors logic in api/players.js) ─────────────────────
+const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj'])
+function matchStat(arr, name) {
+  if (!arr?.length || !name) return null
+  const lower = name.toLowerCase().trim()
+  // 1. Exact
+  let hit = arr.find(p => p.name.toLowerCase().trim() === lower)
+  if (hit) return hit
+  // 2. Partial — all non-common, >2-char words from player name appear in stat name
+  const words = lower.split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
+  if (words.length >= 2) {
+    hit = arr.find(p => {
+      const n = p.name.toLowerCase()
+      return words.every(w => n.includes(w))
+    })
+    if (hit) return hit
+  }
+  return null
+}
 
-// ── Season stat pill ──────────────────────────────────────────
-function SeasonPill({ label, value, grad, shadow, delay = 0 }) {
+// ─── Score Ring (matches AnalysePage style) ──────────────────────────────────
+function ScoreRing({ score, size = 56 }) {
+  const r = (size - 8) / 2
+  const circ = 2 * Math.PI * r
+  const fill = (Math.min(score, 100) / 100) * circ
+  const col = score >= 75 ? C.ok : score >= 55 ? C.gold : score >= 35 ? C.green : C.gray3
+  return (
+    <svg width={size} height={size} style={{ flexShrink: 0 }}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={C.gray2} strokeWidth={5}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={col} strokeWidth={5}
+        strokeDasharray={`${fill} ${circ - fill}`} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`}/>
+      <text x={size/2} y={size/2 + 1} textAnchor="middle" dominantBaseline="middle"
+        fill={col} style={{ fontFamily: FONT, fontWeight: 800, fontSize: size * 0.27 }}>
+        {Math.round(score)}
+      </text>
+    </svg>
+  )
+}
+
+// ─── Medal badge for top 3 ────────────────────────────────────────────────────
+function MedalBadge({ rank }) {
+  const medals = {
+    1: { label: '🥇 #1', bg: '#FEF3C7', color: '#D97706' },
+    2: { label: '🥈 #2', bg: '#F1F5F9', color: '#64748B' },
+    3: { label: '🥉 #3', bg: '#FEF3C7', color: '#B45309' },
+  }
+  const m = medals[rank]
+  if (!m) return null
+  return (
+    <div style={{ position: 'absolute', top: 12, right: 12, background: m.bg, color: m.color, borderRadius: 20, padding: '3px 10px', fontFamily: FONT, fontWeight: 800, fontSize: 11, letterSpacing: 0.3, zIndex: 2 }}>
+      {m.label}
+    </div>
+  )
+}
+
+// ─── Stat Tile ────────────────────────────────────────────────────────────────
+function StatTile({ label, value, highlight }) {
+  return (
+    <div style={{ background: highlight ? `${C.green}12` : C.gray1, border: `1px solid ${highlight ? C.green + '30' : C.gray2}`, borderRadius: 10, padding: '9px 14px', minWidth: 60, textAlign: 'center', flex: '1 1 60px' }}>
+      <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 15, color: highlight ? C.green : C.dark, lineHeight: 1 }}>{value ?? '—'}</div>
+      <div style={{ fontFamily: FONT, fontSize: 9, color: C.gray4, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+    </div>
+  )
+}
+
+// ─── TUCC Performance Score formula ──────────────────────────────────────────
+function computeScore(player) {
+  const bat  = player._bat
+  const bowl = player._bowl
+  const matches = player.stats?.matches || bat?.matches || bowl?.matches || 1
+
+  // Batting sub-score 0-100
+  let batScore = 0
+  if (bat) {
+    const runsNorm = Math.min((bat.runs || 0) / 300, 1) * 40
+    const sr = parseFloat(bat.strike_rate) || 0
+    const srPts = sr >= 120 ? 30 : sr >= 90 ? 22 : sr >= 70 ? 15 : sr >= 50 ? 9 : 5
+    const avgNorm = Math.min((parseFloat(bat.average) || 0) / 60, 1) * 20
+    const milestones = Math.min((bat.fifties || 0) * 2 + (bat.hundreds || 0) * 5, 10)
+    batScore = runsNorm + srPts + avgNorm + milestones
+  }
+
+  // Bowling sub-score 0-100
+  let bowlScore = 0
+  if (bowl && (bowl.overs || 0) >= 4) {
+    const wktsNorm = Math.min((bowl.wickets || 0) / 15, 1) * 40
+    const econ = parseFloat(bowl.economy) || 99
+    const econPts = econ <= 5 ? 30 : econ <= 6.5 ? 22 : econ <= 8 ? 15 : econ <= 10 ? 9 : 5
+    const avg = parseFloat(bowl.average) || 99
+    const avgPts = avg <= 15 ? 20 : avg <= 22 ? 15 : avg <= 30 ? 10 : avg <= 40 ? 5 : 0
+    const fivefers = Math.min((bowl.five_fers || 0) * 10, 10)
+    bowlScore = wktsNorm + econPts + avgPts + fivefers
+  }
+
+  // Role
+  const role = detectRole(player)
+  let composite = 0
+  let bonus = 0
+  if (role === 'Bowler') {
+    composite = batScore * 0.20 + bowlScore * 0.80
+  } else if (role === 'Batsman' || role === 'Wicket-Keeper') {
+    composite = batScore * 0.80 + bowlScore * 0.20
+  } else {
+    const ar_runs  = bat?.runs   || 0
+    const ar_wkts  = bowl?.wickets || 0
+    bonus = ar_runs >= 25 && ar_wkts >= 3 ? Math.min((ar_runs / 60 + ar_wkts / 5) * 5, 10) : 0
+    composite = batScore * 0.50 + bowlScore * 0.50 + bonus
+  }
+
+  const engMult   = 0.85 + 0.15 * Math.min(matches / 8, 1.0)
+  const confidence = Math.min(0.4 + Math.max(matches - 1, 0) / 3 * 0.6, 1.0)
+  const final = Math.min(composite * engMult * confidence, 100)
+
+  return {
+    score:      Math.round(final * 10) / 10,
+    batScore:   Math.round(batScore),
+    bowlScore:  Math.round(bowlScore),
+    engMult:    Math.round(engMult * 100) / 100,
+    confidence: Math.round(confidence * 100) / 100,
+  }
+}
+
+function detectRole(player) {
+  const batStyle  = (player.batStyle  || '').toLowerCase()
+  const bowlStyle = (player.bowlStyle || '').toLowerCase()
+  const isWK = batStyle.includes('wicket') || bowlStyle.includes('wicket')
+  if (isWK) return 'Wicket-Keeper'
+  const hasBat  = player._bat  && (player._bat.innings  || player._bat.matches  || 0) >= 1
+  const hasBowl = player._bowl && (player._bowl.overs || 0) >= 4
+  if (hasBat && hasBowl) return 'All-Rounder'
+  if (hasBowl)  return 'Bowler'
+  if (bowlStyle && !hasBat) return 'Bowler'
+  return 'Batsman'
+}
+
+// ─── Role badge ───────────────────────────────────────────────────────────────
+function RoleBadge({ role }) {
+  const map = {
+    'Batsman':       { bg: '#EFF6FF', color: '#2563EB' },
+    'Bowler':        { bg: '#FEF3C7', color: '#D97706' },
+    'All-Rounder':   { bg: '#F0FDF4', color: '#16A34A' },
+    'Wicket-Keeper': { bg: '#FDF4FF', color: '#9333EA' },
+  }
+  const s = map[role] || { bg: C.gray1, color: C.gray4 }
+  return (
+    <span style={{ background: s.bg, color: s.color, fontFamily: FONT, fontWeight: 700, fontSize: 10, padding: '3px 9px', borderRadius: 20, letterSpacing: 0.4, textTransform: 'uppercase', flexShrink: 0, whiteSpace: 'nowrap' }}>
+      {role}
+    </span>
+  )
+}
+
+// ─── Individual Player Card ───────────────────────────────────────────────────
+function PlayerCard({ player, rank, cachedScore, isAdmin }) {
+  const [expanded, setExpanded] = useState(false)
+  const role = detectRole(player)
+  const { score, batScore, bowlScore } = computeScore(player)
+  const bat  = player._bat
+  const bowl = player._bowl
+  const hasCache = !!cachedScore?.headline
+  const isTopThree = rank <= 3
+
+  const borderColor = rank === 1 ? '#D97706' : rank === 2 ? '#94A3B8' : rank === 3 ? '#B45309' : C.gray2
+  const boxShadow   = rank === 1
+    ? '0 0 0 2px #FEF3C7, 0 4px 24px rgba(217,119,6,0.15)'
+    : rank === 2
+    ? '0 0 0 2px #F1F5F9, 0 4px 16px rgba(100,116,139,0.12)'
+    : rank === 3
+    ? '0 0 0 2px #FEF3C7, 0 4px 16px rgba(180,83,9,0.12)'
+    : `0 2px 12px ${C.shadowMd}`
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14, scale: 0.93 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.45, ease: EASE }}
-      style={{
-        background: grad, borderRadius: 18,
-        padding: '14px 10px', textAlign: 'center',
-        boxShadow: shadow, flex: 1, minWidth: 0,
-        position: 'relative', overflow: 'hidden',
-      }}
+      layout
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+      style={{ position: 'relative', background: C.white, borderRadius: 18, boxShadow, border: `2px solid ${borderColor}`, overflow: 'hidden', cursor: 'pointer' }}
+      onClick={() => setExpanded(e => !e)}
     >
-      <div style={{ position:'absolute', top:-14, right:-14, width:48, height:48, borderRadius:'50%', background:'rgba(255,255,255,.13)', pointerEvents:'none' }}/>
-      <div style={{ position:'absolute', bottom:-10, left:-10, width:32, height:32, borderRadius:'50%', background:'rgba(255,255,255,.07)', pointerEvents:'none' }}/>
-      <div style={{ fontFamily:FONT, fontSize:26, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums', position:'relative', zIndex:1 }}>{value}</div>
-      <div style={{ fontFamily:FONT, fontSize:9, fontWeight:800, color:'rgba(255,255,255,.75)', marginTop:5, textTransform:'uppercase', letterSpacing:1, position:'relative', zIndex:1 }}>{label}</div>
+      {isTopThree && <MedalBadge rank={rank} />}
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '18px 18px 14px' }}>
+        {/* Photo / initials */}
+        <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: C.gray1, border: `2px solid ${C.gray2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 800, fontSize: 18, color: C.gray3 }}>
+          {player.photoUrl
+            ? <img src={player.photoUrl} alt={player.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: player.photoPos || 'center top' }}/>
+            : <span>{(player.name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}</span>
+          }
+        </div>
+
+        {/* Name + role + headline */}
+        <div style={{ flex: 1, minWidth: 0, paddingRight: isTopThree ? 56 : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 5 }}>
+            <span style={{ fontFamily: FONT, fontWeight: 800, fontSize: 15, color: C.dark, lineHeight: 1.2 }}>{player.name}</span>
+            <RoleBadge role={role} />
+          </div>
+          {hasCache
+            ? <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray4, margin: 0, lineHeight: 1.45 }}>{cachedScore.headline}</p>
+            : <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, margin: 0, fontStyle: 'italic' }}>
+                {player.stats?.matches ? `${player.stats.matches} match${player.stats.matches > 1 ? 'es' : ''} · ${role}` : role}
+              </p>
+          }
+        </div>
+
+        <ScoreRing score={score} size={56} />
+      </div>
+
+      {/* ── Stat tiles ── */}
+      <div style={{ display: 'flex', gap: 6, padding: '0 14px 14px', flexWrap: 'wrap' }}>
+        {bat && <>
+          <StatTile label="Runs"  value={bat.runs} />
+          <StatTile label="Avg"   value={bat.average} />
+          <StatTile label="SR"    value={bat.strike_rate} highlight />
+          {(bat.highest > 0) && <StatTile label="HS" value={bat.highest + (bat.highest_no ? '*' : '')} />}
+        </>}
+        {bowl && (bowl.overs || 0) >= 4 && <>
+          <StatTile label="Wkts" value={bowl.wickets} highlight />
+          <StatTile label="Econ" value={bowl.economy} />
+          {bowl.best_wickets != null && <StatTile label="Best" value={`${bowl.best_wickets}/${bowl.best_runs}`} />}
+        </>}
+        {!bat && (!bowl || (bowl.overs || 0) < 4) && (
+          <StatTile label="Matches" value={player.stats?.matches || '—'} />
+        )}
+      </div>
+
+      {/* ── Expand footer ── */}
+      <div style={{ borderTop: `1px solid ${C.gray2}`, padding: '8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3 }}>
+          {expanded ? 'Hide profile' : hasCache ? 'View AI profile' : 'View breakdown'}
+        </span>
+        <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.25 }}>
+          <svg width={14} height={14} viewBox="0 0 14 14" fill="none">
+            <path d="M3 5l4 4 4-4" stroke={C.gray3} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.div>
+      </div>
+
+      {/* ── Expanded panel ── */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            style={{ overflow: 'hidden' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '4px 18px 18px', borderTop: `1px solid ${C.gray1}` }}>
+
+              {/* Score breakdown */}
+              <div style={{ margin: '12px 0 14px', padding: '10px 14px', background: C.gray1, borderRadius: 10 }}>
+                <div style={{ fontFamily: FONT, fontSize: 10, color: C.gray4, fontWeight: 700, marginBottom: 7, textTransform: 'uppercase', letterSpacing: 0.5 }}>Score Breakdown</div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  {bat && <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>⚡ Batting sub-score: <strong style={{ color: C.dark }}>{batScore}</strong>/100</div>}
+                  {bowl && (bowl.overs || 0) >= 4 && <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>🎯 Bowling sub-score: <strong style={{ color: C.dark }}>{bowlScore}</strong>/100</div>}
+                  <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>🏏 Overall: <strong style={{ color: C.green }}>{score}</strong>/100</div>
+                </div>
+              </div>
+
+              {/* AI content */}
+              {hasCache ? (
+                <div>
+                  {cachedScore.ai_profile && (
+                    <p style={{ fontFamily: FONT, fontSize: 13, color: C.gray5, lineHeight: 1.65, margin: '0 0 14px' }}>
+                      {cachedScore.ai_profile}
+                    </p>
+                  )}
+
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+                    {(cachedScore.strengths || []).length > 0 && (
+                      <div style={{ flex: '1 1 140px' }}>
+                        <div style={{ fontFamily: FONT, fontSize: 10, color: C.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 7 }}>Strengths</div>
+                        {(cachedScore.strengths || []).map((s, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 5 }}>
+                            <span style={{ color: C.ok, fontSize: 11, marginTop: 1, flexShrink: 0 }}>✓</span>
+                            <span style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.4 }}>{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {(cachedScore.development_areas || []).length > 0 && (
+                      <div style={{ flex: '1 1 140px' }}>
+                        <div style={{ fontFamily: FONT, fontSize: 10, color: C.gold, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 7 }}>Growth Areas</div>
+                        {(cachedScore.development_areas || []).map((d, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 5 }}>
+                            <span style={{ color: C.gold, fontSize: 11, marginTop: 1, flexShrink: 0 }}>→</span>
+                            <span style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.4 }}>{d}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {cachedScore.role_notes && (
+                    <div style={{ background: `${C.green}0d`, border: `1px solid ${C.green}20`, borderRadius: 10, padding: '10px 13px' }}>
+                      <div style={{ fontFamily: FONT, fontSize: 10, color: C.green, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Team Role</div>
+                      <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, margin: 0, lineHeight: 1.55 }}>{cachedScore.role_notes}</p>
+                    </div>
+                  )}
+
+                  {cachedScore.generated_at && (
+                    <p style={{ fontFamily: FONT, fontSize: 10, color: C.gray3, margin: '10px 0 0', textAlign: 'right' }}>
+                      AI profile · {new Date(cachedScore.generated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div style={{ padding: '12px', background: C.gray1, borderRadius: 10, textAlign: 'center' }}>
+                  <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray4, margin: 0 }}>
+                    No AI profile yet.{isAdmin ? ' Click "Generate / Refresh All Profiles" above.' : ' Check back soon — profiles are updated by the admin.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
 
-// ── Role detection ────────────────────────────────────────────
-function detectRole(p) {
-  const bat  = p.stats?.runs  !== null && p.stats?.runs  >= 0
-  const bowl = p.stats?.wickets !== null
-  const bowl2 = (p.bowlStyle || '').length > 0
-  const bat2  = (p.batStyle  || '').length > 0
-  if ((p.batStyle || '').includes('Wicket') || (p.bowlStyle || '').includes('Wicket')) return 'Wicket-Keeper'
-  if (bat && bowl) return 'All-Rounder'
-  if (bowl && !bat) return 'Bowler'
-  if (bat && !bowl) return 'Batsman'
-  if (bowl2) return 'Bowler'
-  if (bat2)  return 'Batsman'
-  return 'Player'
-}
+// ─── PlayersPage ──────────────────────────────────────────────────────────────
+export default function PlayersPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.email === ADMIN_EMAIL || user?.email?.endsWith('@tucc.club')
 
-const ROLE_META = {
-  'Batsman':       { color: '#15803d', bg: '#dcfce7', grad: 'linear-gradient(135deg,#15803d,#3b82f6)', icon: TrendingUp,  label: 'BAT' },
-  'Bowler':        { color: '#be123c', bg: '#ffe4e6', grad: 'linear-gradient(135deg,#be123c,#f43f5e)', icon: Target,      label: 'BOWL' },
-  'All-Rounder':   { color: '#7c3aed', bg: '#ede9fe', grad: 'linear-gradient(135deg,#7c3aed,#a78bfa)', icon: Star,        label: 'AR' },
-  'Wicket-Keeper': { color: '#b45309', bg: '#fef3c7', grad: 'linear-gradient(135deg,#b45309,#f59e0b)', icon: Shield,      label: 'WK' },
-  'Player':        { color: '#475569', bg: '#f1f5f9', grad: 'linear-gradient(135deg,#475569,#94a3b8)', icon: Users,       label: 'PLR' },
-}
+  const [players, setPlayers]           = useState([])
+  const [cachedScores, setCachedScores] = useState({})
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState(null)
+  const [activeTab, setActiveTab]       = useState('All')
+  const [sortBy, setSortBy]             = useState('score')
+  const [generating, setGenerating]     = useState(false)
+  const [genProgress, setGenProgress]   = useState('')
+  const [showMethodology, setShowMethodology] = useState(false)
 
-const HAND_SHORT = s => (s || '').replace('Right Hand', 'RHB').replace('Left Hand', 'LHB').replace('Right-arm', 'RA').replace('Left-arm', 'LA').replace('Slow left-arm orthodox', 'LA spin').replace('Off break (right-arm)', 'RA off-spin').replace(' fast', ' fast')
+  useEffect(() => {
+    async function load() {
+      setLoading(true)
+      try {
+        const [playersRes, scoresRes] = await Promise.all([
+          fetch('/api/players'),
+          fetch('/api/tucc-player-scores?season=2026'),
+        ])
+        const playersRaw  = await playersRes.json()
+        const scoresRaw   = await scoresRes.json()
 
-// ── Player Photo ──────────────────────────────────────────────
-// fill=true → stretches to 100% of parent (use when parent is the circle)
-// fill=false → renders its own fixed-size circle
-// photoPos → CSS object-position override (e.g. 'center 20%')
-function PlayerPhoto({ photoUrl, name, size = 96, fill = false, photoPos = 'center 35%' }) {
-  const [err, setErr] = useState(false)
-  const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  const PALETTE  = ['#2563eb','#7c3aed','#0369a1','#b45309','#0891b2','#be185d','#059669','#6d28d9','#c2410c','#0f766e']
-  let h = 0; for (const c of (name || '')) h = (h * 31 + c.charCodeAt(0)) & 0xffffff
-  const bg = PALETTE[Math.abs(h) % PALETTE.length]
+        const enriched = (playersRaw.players || playersRaw || []).map(p => ({
+          ...p,
+          name: p.name || `${p.forename || ''} ${p.surname || ''}`.trim(),
+        }))
+        setPlayers(enriched)
 
-  const fillBase = { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-  const fixedBase = { width: size, height: size, borderRadius: '50%', flexShrink: 0 }
+        const scoreMap = {}
+        for (const s of (scoresRaw.scores || [])) {
+          scoreMap[s.btcl_player_id] = s
+        }
+        setCachedScores(scoreMap)
+      } catch (e) {
+        setError(e.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
 
-  if (!photoUrl || err) {
+  const enriched = useMemo(() =>
+    players.map(p => {
+      const withStats = {
+        ...p,
+        _bat:  matchStat(statsJson.batting,  p.name),
+        _bowl: matchStat(statsJson.bowling,  p.name),
+      }
+      return { ...withStats, _computed: computeScore(withStats), _role: detectRole(withStats) }
+    }),
+    [players]
+  )
+
+  const TAB_OPTIONS = ['All', 'Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper']
+
+  const filtered = useMemo(() =>
+    activeTab === 'All' ? enriched : enriched.filter(p => p._role === activeTab),
+    [enriched, activeTab]
+  )
+
+  const sorted = useMemo(() => {
+    const copy = [...filtered]
+    if      (sortBy === 'score')   copy.sort((a, b) => b._computed.score - a._computed.score)
+    else if (sortBy === 'name')    copy.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    else if (sortBy === 'runs')    copy.sort((a, b) => (b.batting?.runs || 0) - (a.batting?.runs || 0))
+    else if (sortBy === 'wickets') copy.sort((a, b) => (b.bowling?.wickets || 0) - (a.bowling?.wickets || 0))
+    return copy
+  }, [filtered, sortBy])
+
+  // Global rank (across all players, by score)
+  const rankMap = useMemo(() => {
+    const allByScore = [...enriched].sort((a, b) => b._computed.score - a._computed.score)
+    const m = {}
+    allByScore.forEach((p, i) => { m[p.id || p.name] = i + 1 })
+    return m
+  }, [enriched])
+
+  const handleGenerateAll = useCallback(async () => {
+    if (!isAdmin || generating) return
+    setGenerating(true)
+    setGenProgress('Starting...')
+    const results = []
+    for (let i = 0; i < enriched.length; i++) {
+      const p = enriched[i]
+      setGenProgress(`Generating ${i + 1}/${enriched.length}: ${p.name}…`)
+      try {
+        const aiRes = await fetch('/api/generate-player-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            player: { name: p.name },
+            stats: { batting: p._bat, bowling: p._bowl },
+            score: p._computed.score,
+            role: p._role,
+          }),
+        })
+        const aiData  = await aiRes.json()
+        const profile = aiData.profile || {}
+        const record  = {
+          btcl_player_id: p.id || (i + 1),
+          player_name:    p.name,
+          season:         '2026',
+          role:           p._role,
+          score:          p._computed.score,
+          score_breakdown: p._computed,
+          headline:        profile.headline            || '',
+          ai_profile:      profile.ai_profile          || '',
+          strengths:       profile.strengths            || [],
+          development_areas: profile.development_areas || [],
+          role_notes:      profile.role_notes           || '',
+          generated_at:    new Date().toISOString(),
+        }
+        await fetch('/api/tucc-player-scores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(record),
+        })
+        results.push(record)
+      } catch (e) {
+        console.error(`Profile gen failed for ${p.name}:`, e)
+      }
+    }
+    const scoreMap = {}
+    for (const s of results) scoreMap[s.btcl_player_id] = s
+    setCachedScores(prev => ({ ...prev, ...scoreMap }))
+    setGenProgress(`✅ Done — ${results.length}/${enriched.length} profiles generated.`)
+    setGenerating(false)
+  }, [enriched, isAdmin, generating])
+
+  // ── Loading ──
+  if (loading) {
     return (
-      <div style={{
-        ...(fill ? fillBase : fixedBase),
-        background: `linear-gradient(135deg, ${bg}, ${bg}cc)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: FONT, fontWeight: 900,
-        fontSize: fill ? '28%' : Math.round(size * 0.3),
-        color: '#fff',
-        ...(fill ? {} : { boxShadow: `0 6px 20px ${bg}55` }),
-      }}>
-        {initials}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 40, height: 40, border: `3px solid ${C.gray2}`, borderTopColor: C.green, borderRadius: '50%', animation: 'spin .8s linear infinite', margin: '0 auto 16px' }}/>
+          <p style={{ fontFamily: FONT, color: C.gray4, fontSize: 14 }}>Loading squad…</p>
+        </div>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     )
   }
-  return (
-    <div style={{
-      ...(fill ? fillBase : fixedBase),
-      overflow: 'hidden',
-      background: '#e2e8f0',
-      ...(fill ? {} : { borderRadius: '50%', boxShadow: '0 6px 20px rgba(0,0,0,.18)', border: '3px solid rgba(255,255,255,.9)', flexShrink: 0 }),
-    }}>
-      <img
-        src={photoUrl}
-        alt={name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photoPos }}
-        onError={() => setErr(true)}
-      />
-    </div>
-  )
-}
 
-// ── Player Card ───────────────────────────────────────────────
-function PlayerCard({ player, index, onClick }) {
-  const role    = detectRole(player)
-  const meta    = ROLE_META[role] || ROLE_META.Player
-  const RoleIcon = meta.icon
-  const { matches, runs, wickets, catches } = player.stats || {}
-  const hasStats = matches != null || runs != null || wickets != null || catches != null
-
-  const statPills = [
-    { label: 'GP',   value: matches, color: '#6366f1', bg: '#eef2ff', borderColor: '#c7d2fe' },
-    { label: 'Runs', value: runs,    color: '#15803d', bg: '#dcfce7', borderColor: '#bbf7d0' },
-    { label: 'Wkts', value: wickets, color: '#be123c', bg: '#ffe4e6', borderColor: '#fecdd3' },
-    { label: 'Catch',value: catches, color: '#7c3aed', bg: '#ede9fe', borderColor: '#ddd6fe' },
-  ].filter(s => s.value != null)
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: EASE, delay: Math.min(index * 0.05, 0.4) }}
-      whileTap={{ scale: 0.97 }}
-      onClick={() => onClick(player)}
-      style={{
-        background: '#fff',
-        borderRadius: 24,
-        overflow: 'hidden',
-        border: '1px solid rgba(0,0,0,.06)',
-        boxShadow: '0 2px 12px rgba(0,0,0,.07), 0 8px 28px rgba(0,0,0,.06)',
-        cursor: 'pointer',
-        position: 'relative',
-        display: 'flex', flexDirection: 'column',
-      }}
-    >
-      {/* ── Hero photo area ── */}
-      <div style={{ position: 'relative', background: meta.grad, paddingTop: '60%', overflow: 'hidden' }}>
-        {/* Background texture circles */}
-        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: -10, width: 70, height: 70, borderRadius: '50%', background: 'rgba(0,0,0,.1)', pointerEvents: 'none' }} />
-
-        {/* GP badge — top left */}
-        {matches != null && (
-          <div style={{
-            position: 'absolute', top: 9, left: 9, zIndex: 2,
-            background: 'rgba(0,0,0,.35)', backdropFilter: 'blur(6px)',
-            borderRadius: 10, padding: '4px 8px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-          }}>
-            <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{matches}</div>
-            <div style={{ fontFamily: FONT, fontSize: 7, fontWeight: 800, color: 'rgba(255,255,255,.65)', textTransform: 'uppercase', letterSpacing: 0.5 }}>GP</div>
-          </div>
-        )}
-
-        {/* Role badge — top right */}
-        <div style={{
-          position: 'absolute', top: 9, right: 9, zIndex: 2,
-          background: 'rgba(255,255,255,.22)', backdropFilter: 'blur(6px)',
-          border: '1px solid rgba(255,255,255,.35)',
-          borderRadius: 10, padding: '4px 8px',
-          display: 'flex', alignItems: 'center', gap: 3,
-        }}>
-          <RoleIcon size={9} color="#fff" strokeWidth={2.5} />
-          <span style={{ fontFamily: FONT, fontSize: 8, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 0.5 }}>{meta.label}</span>
-        </div>
-
-        {/* Player photo — positioned at bottom-center of hero */}
-        <div style={{
-          position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)',
-          width: '55%', aspectRatio: '1',
-          borderRadius: '50%', overflow: 'hidden',
-          border: '3px solid rgba(255,255,255,.9)',
-          boxShadow: '0 8px 24px rgba(0,0,0,.25)',
-          background: '#e2e8f0',
-          zIndex: 1,
-        }}>
-          <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill photoPos={player.photoPos || 'center 35%'} />
-        </div>
+  if (error) {
+    return (
+      <div style={{ padding: 32, textAlign: 'center' }}>
+        <p style={{ fontFamily: FONT, color: C.red, fontSize: 14 }}>Failed to load players: {error}</p>
       </div>
+    )
+  }
 
-      {/* ── Body ── */}
-      <div style={{ padding: '10px 12px 14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Name */}
-        <div style={{ textAlign: 'center', marginBottom: 10 }}>
-          <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 900, color: C.dark, lineHeight: 1.2 }}>
-            {player.forename}
-          </div>
-          <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, color: C.gray4, lineHeight: 1.3 }}>
-            {player.surname}
-          </div>
-        </div>
+  return (
+    <div style={{ padding: '24px 16px 80px', maxWidth: 780, margin: '0 auto' }}>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
-        {/* Role + BTCL chip row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: meta.grad, borderRadius: 20, padding: '3px 10px', boxShadow: `0 2px 8px ${meta.color}44` }}>
-            <span style={{ fontFamily: FONT, fontSize: 9, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 0.6 }}>{role}</span>
-          </div>
-          {player.id && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', borderRadius: 20, padding: '3px 9px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: C.gray4 }}>#{player.id}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Bat / Bowl style chips */}
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 }}>
-          {player.batStyle && (
-            <div style={{ background: '#eff6ff', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', border: '1px solid #bfdbfe' }}>
-              🏏 {HAND_SHORT(player.batStyle)}
-            </div>
-          )}
-          {player.bowlStyle && (
-            <div style={{ background: '#fff1f2', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', border: '1px solid #fecdd3' }}>
-              🔴 {HAND_SHORT(player.bowlStyle)}
-            </div>
-          )}
-        </div>
-
-        {/* Stat pills */}
-        {hasStats && statPills.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(statPills.length, 4)}, 1fr)`, gap: 5, marginTop: 'auto' }}>
-            {statPills.map(({ label, value, color, bg, borderColor }) => (
-              <div key={label} style={{
-                background: bg, borderRadius: 10, padding: '6px 4px',
-                textAlign: 'center', border: `1px solid ${borderColor}`,
-              }}>
-                <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
-                <div style={{ fontFamily: FONT, fontSize: 7, fontWeight: 800, color: `${color}99`, marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.4 }}>{label}</div>
+      {/* ── Hero banner ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        style={{ background: `linear-gradient(135deg, ${C.greenDark} 0%, ${C.green} 100%)`, borderRadius: 20, padding: '28px 24px 22px', marginBottom: 20, position: 'relative', overflow: 'hidden' }}
+      >
+        <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, background: 'rgba(255,255,255,0.05)', borderRadius: '50%', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', bottom: -20, left: -20, width: 80,  height: 80,  background: 'rgba(255,255,255,0.04)', borderRadius: '50%', pointerEvents: 'none' }}/>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>TUCC · 2026 Season</div>
+          <h1 style={{ fontFamily: FONT, fontWeight: 900, fontSize: 26, color: '#fff', margin: '0 0 8px', lineHeight: 1.1 }}>Our Squad</h1>
+          <p style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.72)', margin: '0 0 18px', lineHeight: 1.55 }}>
+            TUCC Performance Scores reflect each player's 2026 BTCL Premier Division contributions — role-weighted, confidence-adjusted.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[
+              { v: players.length, l: 'Squad size' },
+              { v: enriched.filter(p => p._role === 'Batsman' || p._role === 'Wicket-Keeper').length, l: 'Batters' },
+              { v: enriched.filter(p => p._role === 'Bowler').length, l: 'Bowlers' },
+              { v: enriched.filter(p => p._role === 'All-Rounder').length, l: 'All-rounders' },
+            ].map(({ v, l }) => (
+              <div key={l} style={{ flex: '1 1 90px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '8px 12px' }}>
+                <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: '#fff' }}>{v}</div>
+                <div style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>{l}</div>
               </div>
             ))}
           </div>
-        )}
-        {!hasStats && (
-          <div style={{ textAlign: 'center', marginTop: 'auto', padding: '6px 0' }}>
-            <span style={{ fontFamily: FONT, fontSize: 10, color: C.gray3, fontWeight: 600 }}>No matches yet</span>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  )
-}
-
-// ── Player Modal ──────────────────────────────────────────────
-function PlayerModal({ player, onClose }) {
-  const role = detectRole(player)
-  const meta = ROLE_META[role] || ROLE_META.Player
-  const RoleIcon = meta.icon
-  const { matches, runs, innings, highest, average, wickets, economy, bestWkt, catches } = player.stats || {}
-
-  const allStats = [
-    { label: 'Games',   value: matches, color: '#6366f1', bg: '#eef2ff', border: '#c7d2fe' },
-    { label: 'Runs',    value: runs,    color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
-    { label: 'Innings', value: innings, color: '#0369a1', bg: '#e0f2fe', border: '#bae6fd' },
-    { label: 'Highest', value: highest, color: '#b45309', bg: '#fef3c7', border: '#fde68a' },
-    { label: 'Average', value: average != null ? Number(average).toFixed(1) : null, color: '#0891b2', bg: '#cffafe', border: '#a5f3fc' },
-    { label: 'Wickets', value: wickets, color: '#be123c', bg: '#ffe4e6', border: '#fecdd3' },
-    { label: 'Economy', value: economy != null ? Number(economy).toFixed(2) : null, color: '#7c3aed', bg: '#ede9fe', border: '#ddd6fe' },
-    { label: 'Best',    value: bestWkt != null ? `${bestWkt}wkt` : null, color: '#9f1239', bg: '#fff1f2', border: '#fecdd3' },
-    { label: 'Catches', value: catches, color: '#6d28d9', bg: '#f5f3ff', border: '#ddd6fe' },
-  ].filter(s => s.value != null && s.value !== '' && s.value !== 0 || s.value === 0 && s.label === 'Runs')
-   .filter(s => s.value != null)
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-    >
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', duration: 0.42, bounce: 0.08 }}
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#f8fafc', borderRadius: '32px 32px 0 0',
-          width: '100%', maxWidth: MAX_WIDTH,
-          maxHeight: '92vh', overflowY: 'auto',
-          paddingBottom: 48,
-        }}
-      >
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 0' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 99, background: '#e2e8f0' }} />
-        </div>
-
-        {/* ── Hero ── */}
-        <div style={{ position: 'relative', background: meta.grad, margin: '12px 16px 0', borderRadius: 24, overflow: 'hidden', padding: '24px 20px 20px' }}>
-          <div style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,.1)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -20, left: -20, width: 90, height: 90, borderRadius: '50%', background: 'rgba(0,0,0,.1)', pointerEvents: 'none' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
-            <div style={{ width: 88, height: 88, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,.85)', boxShadow: '0 8px 24px rgba(0,0,0,.25)', flexShrink: 0, background: '#e2e8f0' }}>
-              <PlayerPhoto photoUrl={player.photoUrl} name={player.name} fill photoPos={player.photoPos || 'center 35%'} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: FONT, fontSize: 24, fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: -0.3 }}>
-                {player.forename}
-              </div>
-              <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.7)', marginBottom: 12 }}>
-                {player.surname}
-              </div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.22)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 20, padding: '5px 12px' }}>
-                  <RoleIcon size={11} color="#fff" strokeWidth={2.5} />
-                  <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: '#fff' }}>{role}</span>
-                </div>
-                {player.id && (
-                  <div style={{ background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 20, padding: '5px 12px', fontFamily: FONT, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>
-                    BTCL #{player.id}
-                  </div>
-                )}
-                {matches != null && (
-                  <div style={{ background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 20, padding: '5px 12px', fontFamily: FONT, fontSize: 11, fontWeight: 800, color: '#fff' }}>
-                    {matches} game{matches !== 1 ? 's' : ''} played
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ padding: '16px 16px 0' }}>
-
-          {/* Playing styles */}
-          {(player.batStyle || player.bowlStyle) && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Playing Style</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {player.batStyle && (
-                  <div style={{ flex: 1, minWidth: 120, background: '#eff6ff', borderRadius: 16, padding: '12px 16px', border: '1px solid #bfdbfe' }}>
-                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>🏏 Batting</div>
-                    <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#1e3a8a' }}>{player.batStyle}</div>
-                  </div>
-                )}
-                {player.bowlStyle && (
-                  <div style={{ flex: 1, minWidth: 120, background: '#fff1f2', borderRadius: 16, padding: '12px 16px', border: '1px solid #fecdd3' }}>
-                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>🔴 Bowling</div>
-                    <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#881337' }}>{player.bowlStyle}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 2026 Season Stats grid */}
-          {allStats.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>2026 Season Stats</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                {allStats.map(({ label, value, color, bg, border }) => (
-                  <div key={label} style={{ background: bg, borderRadius: 16, padding: '14px 10px', textAlign: 'center', border: `1.5px solid ${border}`, position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', bottom: -8, right: -8, width: 36, height: 36, borderRadius: '50%', background: `${color}12`, pointerEvents: 'none' }} />
-                    <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-                    <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 800, color: `${color}aa`, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* BTCL Profile link */}
-          {player.id && (
-            <a
-              href={`${BTCL_PROFILE}${player.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                background: meta.grad, color: '#fff',
-                borderRadius: 18, padding: '15px 20px',
-                fontFamily: FONT, fontSize: 14, fontWeight: 800,
-                textDecoration: 'none', boxShadow: `0 8px 24px ${meta.color}40`,
-              }}
-            >
-              View BTCL Profile <ExternalLink size={15} strokeWidth={2.5} />
-            </a>
-          )}
         </div>
       </motion.div>
-    </motion.div>
-  )
-}
 
-// ── Skeleton card ─────────────────────────────────────────────
-function SkeletonCard() {
-  return (
-    <div style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', border: `1px solid ${C.gray2}` }}>
-      {/* Photo area */}
-      <div style={{ paddingTop: '72%', background: C.gray1, position: 'relative' }}>
-        <div style={{ position: 'absolute', bottom: -24, left: '50%', transform: 'translateX(-50%)', width: '60%', aspectRatio: '1', borderRadius: '50%', background: C.gray2, border: '3px solid #fff' }} />
-      </div>
-      <div style={{ padding: '32px 14px 14px' }}>
-        <div style={{ height: 13, width: '60%', borderRadius: 6, background: C.gray1, margin: '0 auto 6px' }} />
-        <div style={{ height: 10, width: '40%', borderRadius: 6, background: C.gray1, margin: '0 auto 12px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-          {[0,1,2].map(i => <div key={i} style={{ height: 40, borderRadius: 10, background: C.gray1 }} />)}
+      {/* ── Admin panel ── */}
+      {isAdmin && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          style={{ background: '#FFFBEB', border: `1px solid ${C.gold}50`, borderRadius: 14, padding: '14px 18px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
+        >
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: '#92400E' }}>⚙️ Admin</div>
+            {genProgress && <div style={{ fontFamily: FONT, fontSize: 11, color: '#B45309', marginTop: 3 }}>{genProgress}</div>}
+          </div>
+          <button
+            onClick={handleGenerateAll}
+            disabled={generating}
+            style={{ background: generating ? C.gray2 : C.gold, color: generating ? C.gray4 : '#fff', fontFamily: FONT, fontWeight: 700, fontSize: 12, border: 'none', borderRadius: 10, padding: '8px 16px', cursor: generating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, transition: 'background 0.2s' }}
+          >
+            {generating
+              ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite' }}/>Generating…</>
+              : '✨ Generate / Refresh All Profiles'}
+          </button>
+        </motion.div>
+      )}
+
+      {/* ── Tabs + sort ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' }}>
+          {TAB_OPTIONS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{ fontFamily: FONT, fontWeight: tab === activeTab ? 700 : 500, fontSize: 12, padding: '6px 13px', borderRadius: 20, border: `1.5px solid ${tab === activeTab ? C.green : C.gray2}`, background: tab === activeTab ? C.green : C.white, color: tab === activeTab ? '#fff' : C.gray4, cursor: 'pointer', transition: 'all .2s' }}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-      </div>
-    </div>
-  )
-}
-
-const FILTERS = ['All', 'Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper']
-
-// ── Main Page ─────────────────────────────────────────────────
-export default function PlayersPage() {
-  const nav = useNavigate()
-  const [players, setPlayers]   = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(false)
-  const [query, setQuery]       = useState('')
-  const [filter, setFilter]     = useState('All')
-  const [selected, setSelected] = useState(null)
-  const [source, setSource]     = useState(null)
-  const [teamStats, setTeamStats] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/league-table')
-      .then(r => r.json())
-      .then(d => {
-        const ourRow = (d.rows || d.teams || []).find(t => isOursLeague(t.team))
-        if (ourRow) setTeamStats(ourRow)
-      })
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    fetch('/api/players')
-      .then(r => r.json())
-      .then(d => { setPlayers(d.players || []); setSource(d.source); setLoading(false) })
-      .catch(() => { setError(true); setLoading(false) })
-  }, [])
-
-  const filtered = players.filter(p => {
-    const role = detectRole(p)
-    const matchFilter = filter === 'All' || role === filter
-    const q = query.toLowerCase()
-    const matchQuery = !q || p.name.toLowerCase().includes(q) || String(p.id).includes(q)
-    return matchFilter && matchQuery
-  })
-
-  // Squad counts
-  const roleCounts = players.reduce((acc, p) => {
-    const r = detectRole(p); acc[r] = (acc[r] || 0) + 1; return acc
-  }, {})
-
-  return (
-    <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
-      <Nav />
-
-      {/* ── Hero ── */}
-      <div style={{
-        background: 'linear-gradient(160deg, #020818 0%, #0f1e5a 35%, #1a1060 65%, #0a0730 100%)',
-        padding: '24px 20px 36px', position: 'relative', overflow: 'hidden',
-      }}>
-        {/* Ambient orbs */}
-        <motion.div animate={{ scale:[1,1.2,1], opacity:[.14,.04,.14] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut' }}
-          style={{ position:'absolute', top:-60, right:-60, width:240, height:240, borderRadius:'50%', background:'rgba(124,58,237,.3)', filter:'blur(60px)', pointerEvents:'none' }}/>
-        <div style={{ position:'absolute', bottom:-30, left:-30, width:160, height:160, borderRadius:'50%', background:'rgba(233,160,32,.08)', filter:'blur(40px)', pointerEvents:'none' }}/>
-        {/* Grid overlay */}
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px)', backgroundSize:'40px 40px' }}/>
-
-        <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <motion.button onClick={() => nav('/')} whileTap={{ scale: 0.95 }} style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.38)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 24 }}>
-            <ArrowLeft size={14} strokeWidth={2} /> Home
-          </motion.button>
-
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: EASE }}>
-
-            {/* Title row — bigger circular logo with gold ring */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <motion.div animate={{ scale:[1,1.1,1], opacity:[.4,.1,.4] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
-                  style={{ position:'absolute', inset:-8, borderRadius:'50%', background:'radial-gradient(circle,rgba(233,160,32,.4) 0%,transparent 70%)', pointerEvents:'none' }}/>
-                <div style={{ width:68, height:68, borderRadius:'50%', background:'rgba(255,255,255,.06)', border:'3px solid rgba(233,160,32,.6)', boxShadow:'0 0 0 2px rgba(233,160,32,.15), 0 8px 28px rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', position:'relative', zIndex:1 }}>
-                  <div style={{ width:58, height:58, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                    <img src="/logo.png" alt="TUCC" style={{ width:50, height:50, objectFit:'contain' }}/>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>Squad</h1>
-                <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 12, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span>Tamil United CC · BTCL 2026</span>
-                  {!loading && (
-                    <span style={{ background:'rgba(167,139,250,.12)', border:'1px solid rgba(167,139,250,.25)', borderRadius:20, padding:'2px 9px', fontFamily:FONT, fontSize:10, fontWeight:700, color:'#c4b5fd' }}>
-                      {players.length} players
-                    </span>
-                  )}
-                  {source === 'live' && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <motion.span animate={{ opacity:[1,.2,1] }} transition={{ duration:1.8, repeat:Infinity }}
-                        style={{ width:6, height:6, borderRadius:'50%', background:'#67e8f9', boxShadow:'0 0 8px #67e8f9', display:'inline-block' }}/>
-                      <span style={{ color:'#67e8f9', fontWeight:700, fontSize:11 }}>Live</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Season stats pills — live from league table */}
-            {teamStats && (
-              <div style={{ display: 'flex', gap: 10 }}>
-                <SeasonPill delay={0.05} label="Played" value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,#2563eb,#3b82f6)" shadow="0 6px 20px rgba(37,99,235,.4)" />
-                <SeasonPill delay={0.10} label="Won"    value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#22c55e)" shadow="0 6px 20px rgba(21,128,61,.4)" />
-                <SeasonPill delay={0.15} label="Lost"   value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,#be123c,#f43f5e)" shadow="0 6px 20px rgba(190,18,60,.35)" />
-                <SeasonPill delay={0.20} label="Points" value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,#b45309,#f59e0b)" shadow="0 6px 20px rgba(180,83,9,.4)" />
-                <SeasonPill delay={0.25} label="NRR"    value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#22c55e)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.35)" />
-              </div>
-            )}
-
-            {/* Fallback squad role pills if league stats not yet loaded */}
-            {!teamStats && !loading && (
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[
-                  { label:'Squad',   value:players.length,                                              grad:'linear-gradient(135deg,#4338ca,#6366f1)', shadow:'0 6px 20px rgba(67,56,202,.4)' },
-                  { label:'Batsmen', value:(roleCounts['Batsman']||0)+(roleCounts['All-Rounder']||0),   grad:'linear-gradient(135deg,#15803d,#22c55e)', shadow:'0 6px 20px rgba(21,128,61,.4)' },
-                  { label:'Bowlers', value:(roleCounts['Bowler']||0)+(roleCounts['All-Rounder']||0),    grad:'linear-gradient(135deg,#be123c,#f43f5e)', shadow:'0 6px 20px rgba(190,18,60,.35)' },
-                  { label:'WK',      value:roleCounts['Wicket-Keeper']||0,                              grad:'linear-gradient(135deg,#b45309,#f59e0b)', shadow:'0 6px 20px rgba(180,83,9,.4)' },
-                ].map(({ label, value, grad, shadow }, i) => (
-                  <SeasonPill key={label} delay={0.05+i*0.05} label={label} value={value} grad={grad} shadow={shadow}/>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </div>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, background: C.white, border: `1.5px solid ${C.gray2}`, borderRadius: 10, padding: '6px 10px', cursor: 'pointer' }}
+        >
+          <option value="score">Sort: Score</option>
+          <option value="name">Sort: Name</option>
+          <option value="runs">Sort: Runs</option>
+          <option value="wickets">Sort: Wickets</option>
+        </select>
       </div>
 
-      {/* ── Content ── */}
-      <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '20px 16px 56px', width: '100%' }}>
-
-        {/* Search + filter */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-          {/* Search bar */}
-          <div style={{ position: 'relative' }}>
-            <Search size={16} color={C.gray3} strokeWidth={2} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
-            <input
-              type="text"
-              placeholder="Search by name or BTCL ID…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                paddingLeft: 40, paddingRight: 16, paddingTop: 12, paddingBottom: 12,
-                borderRadius: 14, border: `1.5px solid ${C.gray2}`,
-                fontFamily: FONT, fontSize: 14, color: C.dark,
-                background: '#fff', outline: 'none',
-                boxShadow: `0 2px 8px ${C.shadow}`,
-              }}
-            />
-          </div>
-
-          {/* Role filter chips */}
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
-            {FILTERS.map(f => {
-              const active = filter === f
-              const m = ROLE_META[f] || { color: '#4338ca', bg: '#ede9fe', grad: 'linear-gradient(135deg,#4338ca,#6366f1)' }
-              return (
-                <motion.button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    flexShrink: 0,
-                    padding: '8px 14px', borderRadius: 20,
-                    fontFamily: FONT, fontSize: 12, fontWeight: 700,
-                    cursor: 'pointer',
-                    background: active ? (f === 'All' ? 'linear-gradient(135deg,#4338ca,#6366f1)' : m.grad) : '#fff',
-                    color: active ? '#fff' : C.gray4,
-                    border: `1.5px solid ${active ? 'transparent' : C.gray2}`,
-                    boxShadow: active ? `0 4px 12px ${m.color || '#4338ca'}35` : 'none',
-                    transition: 'all 180ms ease',
-                  }}
-                >
-                  {f}
-                </motion.button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Results count */}
-        {!loading && (
-          <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.gray4, marginBottom: 16 }}>
-            {filtered.length} player{filtered.length !== 1 ? 's' : ''}{filter !== 'All' ? ` · ${filter}` : ''}
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div style={{ background: '#fff1f2', border: `1.5px solid #fecaca`, borderRadius: 16, padding: '16px', marginBottom: 16, textAlign: 'center', color: C.red, fontFamily: FONT, fontSize: 14 }}>
-            Couldn't load squad data.
-          </div>
-        )}
-
-        {/* Grid */}
-        {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 20px', background: '#fff', borderRadius: 22, border: `1px solid ${C.gray2}` }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🏏</div>
-            <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 800, color: C.dark }}>No players found</div>
-            <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray3, marginTop: 4 }}>Try a different search or filter.</div>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-            {filtered.map((p, i) => (
-              <PlayerCard
-                key={p.id || p.name}
-                player={p}
-                index={i}
-                onClick={setSelected}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── Player Modal ── */}
+      {/* ── Methodology note ── */}
+      <button
+        onClick={() => setShowMethodology(m => !m)}
+        style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 10px', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+      >
+        {showMethodology ? '▲ Hide' : '▼ How is the Performance Score calculated?'}
+      </button>
       <AnimatePresence>
-        {selected && <PlayerModal player={selected} onClose={() => setSelected(null)} />}
+        {showMethodology && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{ overflow: 'hidden', marginBottom: 14 }}
+          >
+            <div style={{ background: C.gray1, borderRadius: 12, padding: '14px 16px', fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.65 }}>
+              <strong style={{ color: C.dark }}>TUCC Performance Score (0–100)</strong> is computed from 2026 BTCL stats using role-weighted batting and bowling sub-scores.<br/><br/>
+              <strong>Batting sub-score:</strong> runs (up to 40pts) + strike rate tier (up to 30pts) + average (up to 20pts) + milestones (capped 10pts).<br/>
+              <strong>Bowling sub-score:</strong> wickets (up to 40pts) + economy tier (up to 30pts) + average tier (up to 20pts) + 5-fers (capped 10pts).<br/>
+              <strong>Role weights:</strong> Batters/WK — 80% bat / 20% bowl. Bowlers — 20% bat / 80% bowl. All-rounders — 50/50 + up to 10pt bonus.<br/>
+              <strong>Confidence adjustment:</strong> scores for players with fewer than 4 matches are scaled down to prevent small-sample inflation.
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
-      <Footer />
+      {/* ── Count line ── */}
+      <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, margin: '0 0 14px' }}>
+        {sorted.length} player{sorted.length !== 1 ? 's' : ''}
+        {activeTab !== 'All' ? ` · ${activeTab}` : ''}
+        {Object.keys(cachedScores).length > 0 ? ` · ${Object.keys(cachedScores).length} AI profiles` : ''}
+      </p>
 
-      <style>{`
-        input::placeholder { color: ${C.gray3}; }
-        input:focus { border-color: #a78bfa !important; box-shadow: 0 0 0 3px rgba(167,139,250,.15) !important; }
-      `}</style>
+      {/* ── Cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 14 }}>
+        <AnimatePresence mode="popLayout">
+          {sorted.map(player => {
+            const key    = player.id || player.name
+            const rank   = rankMap[key] || 99
+            const cached = cachedScores[player.id] || null
+            return (
+              <PlayerCard
+                key={key}
+                player={player}
+                rank={rank}
+                cachedScore={cached}
+                isAdmin={isAdmin}
+              />
+            )
+          })}
+        </AnimatePresence>
+      </div>
+
+      {sorted.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <p style={{ fontFamily: FONT, fontSize: 14, color: C.gray3 }}>No players found for this filter.</p>
+        </div>
+      )}
     </div>
   )
 }
