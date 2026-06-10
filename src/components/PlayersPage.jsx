@@ -172,7 +172,7 @@ const MEDAL = {
 // ─── Player Card (full) ────────────────────────────────────────────────────────
 function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
   const [expanded, setExpanded] = useState(false)
-  const role     = detectRole(player)
+  const role     = player._role || detectRole(player)
   const rc       = getRoleConfig(role)
   const { score, batScore, bowlScore } = computeScore(player)
   const bat      = player._bat
@@ -399,7 +399,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
 
 // ─── Leaderboard row (compact list view) ─────────────────────────────────────
 function LeaderRow({ player, rank, cachedScore, onClick }) {
-  const role = detectRole(player)
+  const role = player._role || detectRole(player)
   const rc   = getRoleConfig(role)
   const { score } = computeScore(player)
   const bat  = player._bat
@@ -834,7 +834,7 @@ export default function PlayersPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
             {sorted.slice(0, 3).map((player, i) => {
               const rank = i + 1
-              const rc   = ROLE_CONFIG[player._role] || ROLE_CONFIG['Batsman']
+              const rc   = getRoleConfig(player._role)
               const { score } = computeScore(player)
               const cached = cachedScores[player.id] || cachedScores[(player.name||'').toLowerCase().trim()] || null
               return (
