@@ -266,7 +266,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
       {/* ── Expand toggle ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 18px', background: '#fafafa', borderBottom: expanded ? `1px solid ${C.gray2}` : 'none' }}>
         <span style={{ fontFamily: FONT, fontSize: 11.5, color: C.gray4, fontWeight: 600 }}>
-          {expanded ? 'Hide profile' : hasCache ? 'View AI profile & breakdown' : 'View score breakdown'}
+          {expanded ? 'Hide profile' : hasCache ? 'View profile & breakdown' : 'View score breakdown'}
         </span>
         <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.25 }}>
           <svg width={16} height={16} viewBox="0 0 16 16" fill="none">
