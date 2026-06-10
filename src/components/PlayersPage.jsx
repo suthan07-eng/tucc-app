@@ -165,7 +165,8 @@ function PlayerCard({ player, rank, cachedScore, isAdmin }) {
   const { score, batScore, bowlScore } = computeScore(player)
   const bat  = player._bat
   const bowl = player._bowl
-  const hasCache = !!cachedScore?.headline
+  // hasCache: true if we have real AI content (non-empty headline or profile text)
+  const hasCache = !!(cachedScore?.headline || cachedScore?.ai_profile)
   const isTopThree = rank <= 3
 
   const borderColor = rank === 1 ? '#D97706' : rank === 2 ? '#94A3B8' : rank === 3 ? '#B45309' : C.gray2
@@ -259,17 +260,17 @@ function PlayerCard({ player, rank, cachedScore, isAdmin }) {
           >
             <div style={{ padding: '4px 18px 18px', borderTop: `1px solid ${C.gray1}` }}>
 
-              {/* Score breakdown */}
+              {/* ── Score breakdown — always visible ── */}
               <div style={{ margin: '12px 0 14px', padding: '10px 14px', background: C.gray1, borderRadius: 10 }}>
                 <div style={{ fontFamily: FONT, fontSize: 10, color: C.gray4, fontWeight: 700, marginBottom: 7, textTransform: 'uppercase', letterSpacing: 0.5 }}>Score Breakdown</div>
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  {bat && <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>⚡ Batting sub-score: <strong style={{ color: C.dark }}>{batScore}</strong>/100</div>}
-                  {bowl && (bowl.overs || 0) >= 4 && <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>🎯 Bowling sub-score: <strong style={{ color: C.dark }}>{bowlScore}</strong>/100</div>}
+                  {bat && <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>⚡ Batting: <strong style={{ color: C.dark }}>{batScore}</strong>/100</div>}
+                  {bowl && (bowl.overs || 0) >= 4 && <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>🎯 Bowling: <strong style={{ color: C.dark }}>{bowlScore}</strong>/100</div>}
                   <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>🏏 Overall: <strong style={{ color: C.green }}>{score}</strong>/100</div>
                 </div>
               </div>
 
-              {/* AI content */}
+              {/* ── AI content ── */}
               {hasCache ? (
                 <div>
                   {cachedScore.ai_profile && (
@@ -277,12 +278,11 @@ function PlayerCard({ player, rank, cachedScore, isAdmin }) {
                       {cachedScore.ai_profile}
                     </p>
                   )}
-
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-                    {(cachedScore.strengths || []).length > 0 && (
+                    {(cachedScore.strengths || []).filter(Boolean).length > 0 && (
                       <div style={{ flex: '1 1 140px' }}>
                         <div style={{ fontFamily: FONT, fontSize: 10, color: C.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 7 }}>Strengths</div>
-                        {(cachedScore.strengths || []).map((s, i) => (
+                        {(cachedScore.strengths || []).filter(Boolean).map((s, i) => (
                           <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 5 }}>
                             <span style={{ color: C.ok, fontSize: 11, marginTop: 1, flexShrink: 0 }}>✓</span>
                             <span style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.4 }}>{s}</span>
@@ -290,10 +290,10 @@ function PlayerCard({ player, rank, cachedScore, isAdmin }) {
                         ))}
                       </div>
                     )}
-                    {(cachedScore.development_areas || []).length > 0 && (
+                    {(cachedScore.development_areas || []).filter(Boolean).length > 0 && (
                       <div style={{ flex: '1 1 140px' }}>
                         <div style={{ fontFamily: FONT, fontSize: 10, color: C.gold, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 7 }}>Growth Areas</div>
-                        {(cachedScore.development_areas || []).map((d, i) => (
+                        {(cachedScore.development_areas || []).filter(Boolean).map((d, i) => (
                           <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 5 }}>
                             <span style={{ color: C.gold, fontSize: 11, marginTop: 1, flexShrink: 0 }}>→</span>
                             <span style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.4 }}>{d}</span>
@@ -302,14 +302,12 @@ function PlayerCard({ player, rank, cachedScore, isAdmin }) {
                       </div>
                     )}
                   </div>
-
                   {cachedScore.role_notes && (
                     <div style={{ background: `${C.green}0d`, border: `1px solid ${C.green}20`, borderRadius: 10, padding: '10px 13px' }}>
                       <div style={{ fontFamily: FONT, fontSize: 10, color: C.green, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Team Role</div>
                       <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, margin: 0, lineHeight: 1.55 }}>{cachedScore.role_notes}</p>
                     </div>
                   )}
-
                   {cachedScore.generated_at && (
                     <p style={{ fontFamily: FONT, fontSize: 10, color: C.gray3, margin: '10px 0 0', textAlign: 'right' }}>
                       AI profile · {new Date(cachedScore.generated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -317,9 +315,13 @@ function PlayerCard({ player, rank, cachedScore, isAdmin }) {
                   )}
                 </div>
               ) : (
-                <div style={{ padding: '12px', background: C.gray1, borderRadius: 10, textAlign: 'center' }}>
-                  <p style={{ fontFamily: FONT, fontSize: 12, color: C.gray4, margin: 0 }}>
-                    No AI profile yet.{isAdmin ? ' Click "Generate / Refresh All Profiles" above.' : ' Check back soon — profiles are updated by the admin.'}
+                <div style={{ padding: '10px 14px', background: '#FFFBEB', border: `1px solid ${C.gold}40`, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>✨</span>
+                  <p style={{ fontFamily: FONT, fontSize: 12, color: '#92400E', margin: 0, lineHeight: 1.5 }}>
+                    AI profile not generated yet.{' '}
+                    {isAdmin
+                      ? <strong>Go to Admin → Players → "Generate / Refresh All Profiles".</strong>
+                      : 'The admin will generate profiles soon.'}
                   </p>
                 </div>
               )}
