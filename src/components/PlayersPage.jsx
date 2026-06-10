@@ -78,6 +78,18 @@ const ROLE_CONFIG = {
   'All-Rounder':   { grad: 'linear-gradient(135deg,#065f46 0%,#10b981 100%)', accent: '#10b981', light: '#ecfdf5', text: '#065f46', icon: '⚡' },
   'Wicket-Keeper': { grad: 'linear-gradient(135deg,#581c87 0%,#a855f7 100%)', accent: '#a855f7', light: '#faf5ff', text: '#581c87', icon: '🧤' },
 }
+// For combined roles like "Batsman / Wicket-Keeper", pick config of the primary (first) role
+function getRoleConfig(role) {
+  if (!role) return ROLE_CONFIG['Batsman']
+  const primary = role.split('/')[0].trim()
+  return ROLE_CONFIG[primary] || ROLE_CONFIG['Batsman']
+}
+// Icon string for combined roles e.g. "🏏 🧤"
+function getRoleIcons(role) {
+  const icons = { 'Batsman':'🏏', 'Bowler':'🎯', 'All-Rounder':'⚡', 'Wicket-Keeper':'🧤' }
+  if (!role) return '🏏'
+  return role.split('/').map(r => icons[r.trim()] || '🏏').join(' ')
+}
 
 // ─── Score ring ───────────────────────────────────────────────────────────────
 function ScoreRing({ score, size = 72, accent = '#3b82f6' }) {
@@ -160,7 +172,7 @@ const MEDAL = {
 function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
   const [expanded, setExpanded] = useState(false)
   const role     = detectRole(player)
-  const rc       = ROLE_CONFIG[role] || ROLE_CONFIG['Batsman']
+  const rc       = getRoleConfig(role)
   const { score, batScore, bowlScore } = computeScore(player)
   const bat      = player._bat
   const bowl     = player._bowl
@@ -229,7 +241,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
               </span>
             </div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 20, padding: '3px 10px', marginBottom: 8 }}>
-              <span style={{ fontSize: 10 }}>{rc.icon}</span>
+              <span style={{ fontSize: 10 }}>{getRoleIcons(role)}</span>
               <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 10, color: '#fff', letterSpacing: 0.5, textTransform: 'uppercase' }}>{role}</span>
             </div>
             {hasCache && (
@@ -387,7 +399,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
 // ─── Leaderboard row (compact list view) ─────────────────────────────────────
 function LeaderRow({ player, rank, cachedScore, onClick }) {
   const role = detectRole(player)
-  const rc   = ROLE_CONFIG[role] || ROLE_CONFIG['Batsman']
+  const rc   = getRoleConfig(role)
   const { score } = computeScore(player)
   const bat  = player._bat
   const bowl = player._bowl
@@ -436,7 +448,7 @@ function LeaderRow({ player, rank, cachedScore, onClick }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ background: rc.light, color: rc.text, fontFamily: FONT, fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 10, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-            {rc.icon} {role}
+            {getRoleIcons(role)} {role}
           </span>
           {bat && <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray4 }}>{bat.runs}r</span>}
           {bowl && (bowl.overs || 0) >= 4 && <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray4 }}>{bowl.wickets}w</span>}

@@ -184,15 +184,40 @@ function GenerateProfilesPanel() {
 const ROLES = ['Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper']
 const ROLE_ICONS = { 'Batsman': '🏏', 'Bowler': '🎯', 'All-Rounder': '⚡', 'Wicket-Keeper': '🧤' }
 
+// Parse a stored role string into an array of selected roles
+// e.g. "Batsman / Wicket-Keeper" → ['Batsman', 'Wicket-Keeper']
+function parseRoles(roleStr) {
+  if (!roleStr) return ['Batsman']
+  return roleStr.split('/').map(r => r.trim()).filter(r => ROLES.includes(r))
+}
+// Combine selected roles array back to a display string
+function combineRoles(selected) {
+  if (!selected.length) return 'Batsman'
+  return selected.join(' / ')
+}
+
 // ── Edit Player Modal ─────────────────────────────────────────────
 function EditPlayerModal({ player, onClose, onSaved }) {
   const toast = useToast()
-  const [email, setEmail]       = useState(player.email || '')
-  const [password, setPassword] = useState('')
-  const [role, setRole]         = useState(player.role || 'Batsman')
-  const [showPass, setShowPass] = useState(false)
-  const [busy, setBusy]         = useState(false)
-  const [err, setErr]           = useState('')
+  const [email, setEmail]         = useState(player.email || '')
+  const [password, setPassword]   = useState('')
+  const [selectedRoles, setSelectedRoles] = useState(() => parseRoles(player.role))
+  const [showPass, setShowPass]   = useState(false)
+  const [busy, setBusy]           = useState(false)
+  const [err, setErr]             = useState('')
+
+  function toggleRole(r) {
+    setSelectedRoles(prev => {
+      if (prev.includes(r)) {
+        // Don't allow deselecting the last role
+        if (prev.length === 1) return prev
+        return prev.filter(x => x !== r)
+      }
+      return [...prev, r]
+    })
+  }
+
+  const combinedRole = combineRoles(selectedRoles)
 
   async function handleSave(e) {
     e.preventDefault()
@@ -200,7 +225,7 @@ function EditPlayerModal({ player, onClose, onSaved }) {
     const trimmedEmail    = email.trim().toLowerCase()
     const emailChanged    = trimmedEmail && trimmedEmail !== (player.email || '').toLowerCase()
     const passwordChanged = password.length > 0
-    const roleChanged     = role !== player.role
+    const roleChanged     = combinedRole !== player.role
     if (!emailChanged && !passwordChanged && !roleChanged) { setErr('No changes to save.'); return }
     if (passwordChanged && password.length < 6) { setErr('Password must be at least 6 characters.'); return }
 
@@ -209,7 +234,7 @@ function EditPlayerModal({ player, onClose, onSaved }) {
     // Save role (and optionally email) to players table
     if (roleChanged || emailChanged) {
       const updates = {}
-      if (roleChanged)  updates.role  = role
+      if (roleChanged)  updates.role  = combinedRole
       if (emailChanged) updates.email = trimmedEmail
       await supabase.from('players').update(updates).eq('id', player.id)
     }
@@ -225,9 +250,9 @@ function EditPlayerModal({ player, onClose, onSaved }) {
     }
 
     setBusy(false)
-    const changes = [roleChanged && `role → ${role}`, emailChanged && 'email', passwordChanged && 'password'].filter(Boolean).join(', ')
+    const changes = [roleChanged && `role → ${combinedRole}`, emailChanged && 'email', passwordChanged && 'password'].filter(Boolean).join(', ')
     toast(`✅ Updated ${player.name}: ${changes}`)
-    onSaved({ ...player, role, email: emailChanged ? trimmedEmail : player.email })
+    onSaved({ ...player, role: combinedRole, email: emailChanged ? trimmedEmail : player.email })
     onClose()
   }
 
@@ -248,30 +273,46 @@ function EditPlayerModal({ player, onClose, onSaved }) {
 
         <form onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:16 }}>
 
-          {/* ── Role selector ── */}
+          {/* ── Role multi-select ── */}
           <div>
-            <label style={{ fontSize:12, fontWeight:700, color:C.gray4, display:'block', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>
-              Player Role
-            </label>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <label style={{ fontSize:12, fontWeight:700, color:C.gray4, textTransform:'uppercase', letterSpacing:.5 }}>
+                Player Role
+              </label>
+              <span style={{ fontSize:11, color:C.gray3 }}>Select one or more</span>
+            </div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-              {ROLES.map(r => (
-                <button
-                  key={r} type="button"
-                  onClick={() => setRole(r)}
-                  style={{
-                    padding:'10px 12px', borderRadius:10, cursor:'pointer', fontFamily:FONT,
-                    fontWeight: role === r ? 700 : 500, fontSize:13,
-                    border: `2px solid ${role === r ? C.green : C.gray2}`,
-                    background: role === r ? C.greenBg : '#fff',
-                    color: role === r ? C.green : C.gray5,
-                    display:'flex', alignItems:'center', gap:7,
-                    transition:'all .15s',
-                  }}
-                >
-                  <span style={{ fontSize:15 }}>{ROLE_ICONS[r]}</span>
-                  {r}
-                </button>
-              ))}
+              {ROLES.map(r => {
+                const active = selectedRoles.includes(r)
+                return (
+                  <button
+                    key={r} type="button"
+                    onClick={() => toggleRole(r)}
+                    style={{
+                      padding:'10px 12px', borderRadius:10, cursor:'pointer', fontFamily:FONT,
+                      fontWeight: active ? 700 : 500, fontSize:13,
+                      border: `2px solid ${active ? C.green : C.gray2}`,
+                      background: active ? C.greenBg : '#fff',
+                      color: active ? C.green : C.gray5,
+                      display:'flex', alignItems:'center', gap:7,
+                      transition:'all .15s', position:'relative',
+                    }}
+                  >
+                    <span style={{ fontSize:15 }}>{ROLE_ICONS[r]}</span>
+                    {r}
+                    {active && (
+                      <span style={{ marginLeft:'auto', width:16, height:16, borderRadius:'50%', background:C.green, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                        <svg width={9} height={9} viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2 4-4" stroke="#fff" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            {/* Preview combined role */}
+            <div style={{ marginTop:8, padding:'8px 12px', background:C.gray1, borderRadius:8, fontSize:12, color:C.gray5 }}>
+              <span style={{ color:C.gray3 }}>Will be saved as: </span>
+              <strong style={{ color:C.dark }}>{combinedRole}</strong>
             </div>
           </div>
 
