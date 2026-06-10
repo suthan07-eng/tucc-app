@@ -76,36 +76,42 @@ export default function Footer() {
 
         {/* Legal links + Contact — all in one row */}
         <nav aria-label="Legal">
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '6px 14px', marginBottom: 18 }}>
-            {LEGAL_LINKS.map(({ label, path }) => (
-              <button
-                key={path}
-                onClick={() => nav(path)}
-                style={{
-                  background: 'none', border: 'none',
-                  color: 'rgba(255,255,255,.35)',
-                  fontFamily: FONT, fontSize: 11, fontWeight: 500,
-                  cursor: 'pointer', padding: '2px 0',
-                  transition: 'color 150ms ease',
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
-              >
-                {label}
-              </button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 0', marginBottom: 18 }}>
+            {[...LEGAL_LINKS, { label: 'Contact', path: null, href: 'mailto:info@tucc.club' }].map(({ label, path, href }, i, arr) => (
+              <span key={label} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                {path ? (
+                  <button
+                    onClick={() => nav(path)}
+                    style={{
+                      background: 'none', border: 'none',
+                      color: 'rgba(255,255,255,.35)',
+                      fontFamily: FONT, fontSize: 11, fontWeight: 500,
+                      cursor: 'pointer', padding: '0 10px', lineHeight: '20px',
+                      transition: 'color 150ms ease',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
+                  >
+                    {label}
+                  </button>
+                ) : (
+                  <a
+                    href={href}
+                    style={{
+                      color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
+                      fontWeight: 500, textDecoration: 'none', padding: '0 10px', lineHeight: '20px',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
+                  >
+                    {label}
+                  </a>
+                )}
+                {i < arr.length - 1 && (
+                  <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, lineHeight: '20px', userSelect: 'none' }}>·</span>
+                )}
+              </span>
             ))}
-            <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11, lineHeight: '1' }}>·</span>
-            <a
-              href="mailto:info@tucc.club"
-              style={{
-                color: 'rgba(255,255,255,.35)', fontFamily: FONT, fontSize: 11,
-                fontWeight: 500, textDecoration: 'none',
-              }}
-              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.7)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.35)'}
-            >
-              Contact
-            </a>
           </div>
         </nav>
 
