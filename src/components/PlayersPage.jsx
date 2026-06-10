@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { C, FONT, ADMIN_EMAIL } from '../constants'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../supabase'
 import statsJson from '../data/stats-2026.json'
 import Nav from './Nav'
 import Footer from './Footer'
@@ -478,6 +479,7 @@ export default function PlayersPage() {
 
   const [players, setPlayers]           = useState([])
   const [cachedScores, setCachedScores] = useState({})
+  const [adminRoles, setAdminRoles]     = useState({}) // name.toLowerCase() → role string from Supabase
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState(null)
   const [activeTab, setActiveTab]       = useState('All')
@@ -493,17 +495,27 @@ export default function PlayersPage() {
     async function load() {
       setLoading(true)
       try {
-        const [playersRes, scoresRes] = await Promise.all([
+        const [playersRes, scoresRes, { data: sbPlayers }] = await Promise.all([
           fetch('/api/players'),
           fetch('/api/player-profiles?action=scores&season=2026'),
+          supabase.from('players').select('name, role'),
         ])
         const playersRaw = await playersRes.json()
         const scoresRaw  = await scoresRes.json()
-        const enriched = (playersRaw.players || playersRaw || []).map(p => ({
+
+        // Build a name→role map from admin-set Supabase roles
+        const roleMap = {}
+        for (const sp of (sbPlayers || [])) {
+          if (sp.name && sp.role) roleMap[sp.name.toLowerCase().trim()] = sp.role
+        }
+        setAdminRoles(roleMap)
+
+        const enrichedPlayers = (playersRaw.players || playersRaw || []).map(p => ({
           ...p,
           name: p.name || `${p.forename || ''} ${p.surname || ''}`.trim(),
         }))
-        setPlayers(enriched)
+        setPlayers(enrichedPlayers)
+
         const scoreMap = {}
         for (const s of (scoresRaw.scores || [])) {
           scoreMap[s.btcl_player_id] = s
@@ -522,9 +534,12 @@ export default function PlayersPage() {
   const enriched = useMemo(() =>
     players.map(p => {
       const withStats = { ...p, _bat: matchStat(statsJson.batting, p.name), _bowl: matchStat(statsJson.bowling, p.name) }
-      return { ...withStats, _computed: computeScore(withStats), _role: detectRole(withStats) }
+      // Admin-set role takes priority over auto-detected role
+      const adminRole = adminRoles[(p.name || '').toLowerCase().trim()]
+      const _role = adminRole || detectRole(withStats)
+      return { ...withStats, _computed: computeScore(withStats), _role }
     }),
-    [players]
+    [players, adminRoles]
   )
 
   // Squad-wide stats
@@ -540,7 +555,14 @@ export default function PlayersPage() {
   const TAB_OPTIONS = ['All', 'Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper']
 
   const filtered = useMemo(() => {
-    let arr = activeTab === 'All' ? enriched : enriched.filter(p => p._role === activeTab)
+    let arr = enriched
+    if (activeTab !== 'All') {
+      // Combined roles like "Batsman / Wicket-Keeper" should appear in both tabs
+      arr = enriched.filter(p =>
+        p._role === activeTab ||
+        p._role?.split('/').map(r => r.trim()).includes(activeTab)
+      )
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       arr = arr.filter(p => (p.name || '').toLowerCase().includes(q))
@@ -656,10 +678,10 @@ export default function PlayersPage() {
           {/* Role breakdown pills */}
           <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
             {[
-              { role: 'Batsman', icon: '🏏', count: enriched.filter(p => p._role === 'Batsman').length },
-              { role: 'Bowler', icon: '🎯', count: enriched.filter(p => p._role === 'Bowler').length },
-              { role: 'All-Rounder', icon: '⚡', count: enriched.filter(p => p._role === 'All-Rounder').length },
-              { role: 'Wicket-Keeper', icon: '🧤', count: enriched.filter(p => p._role === 'Wicket-Keeper').length },
+              { role: 'Batsman', icon: '🏏', count: enriched.filter(p => p._role?.split('/').map(r=>r.trim()).includes('Batsman')).length },
+              { role: 'Bowler', icon: '🎯', count: enriched.filter(p => p._role?.split('/').map(r=>r.trim()).includes('Bowler')).length },
+              { role: 'All-Rounder', icon: '⚡', count: enriched.filter(p => p._role?.split('/').map(r=>r.trim()).includes('All-Rounder')).length },
+              { role: 'Wicket-Keeper', icon: '🧤', count: enriched.filter(p => p._role?.split('/').map(r=>r.trim()).includes('Wicket-Keeper')).length },
             ].filter(x => x.count > 0).map(x => (
               <div key={x.role} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.13)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 12px' }}>
                 <span style={{ fontSize: 12 }}>{x.icon}</span>
