@@ -350,7 +350,7 @@ export default function PlayersPage() {
       try {
         const [playersRes, scoresRes] = await Promise.all([
           fetch('/api/players'),
-          fetch('/api/tucc-player-scores?season=2026'),
+          fetch('/api/player-profiles?action=scores&season=2026'),
         ])
         const playersRaw  = await playersRes.json()
         const scoresRaw   = await scoresRes.json()
@@ -420,7 +420,7 @@ export default function PlayersPage() {
       const p = enriched[i]
       setGenProgress(`Generating ${i + 1}/${enriched.length}: ${p.name}…`)
       try {
-        const aiRes = await fetch('/api/generate-player-profile', {
+        const aiRes = await fetch('/api/player-profiles?action=generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -446,7 +446,7 @@ export default function PlayersPage() {
           role_notes:      profile.role_notes           || '',
           generated_at:    new Date().toISOString(),
         }
-        await fetch('/api/tucc-player-scores', {
+        await fetch('/api/player-profiles?action=scores', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(record),

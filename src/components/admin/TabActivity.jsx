@@ -228,10 +228,10 @@ export default function TabActivity() {
         }).then(r => r.json()),
 
         // Auth users for last_sign_in_at
-        fetch('/api/admin-get-auth-users').then(r => r.json()),
+        fetch('/api/admin?action=users').then(r => r.json()),
 
         // Activity logs via service-role API (bypasses RLS)
-        fetch('/api/admin-get-activity?limit=300').then(r => r.json()),
+        fetch('/api/admin?action=activity&limit=300').then(r => r.json()),
       ])
 
       const ps = Array.isArray(playersData) ? playersData : []

@@ -85,7 +85,7 @@ function localSuggestions(fileName, mediaType) {
 async function fetchAISuggestions({ fileName, mediaType, playerName }) {
   try {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-    const res = await fetch('/api/generate-title', {
+    const res = await fetch('/api/player-profiles?action=generate-title', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fileName, mediaType, playerName, dateStr }),

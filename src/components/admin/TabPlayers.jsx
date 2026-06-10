@@ -30,7 +30,7 @@ function EditCredentialsModal({ player, onClose, onSaved }) {
     if (emailChanged)    body.newEmail    = trimmedEmail
     if (passwordChanged) body.newPassword = password
 
-    const r = await fetch('/api/admin-update-user', {
+    const r = await fetch('/api/admin?action=update-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
