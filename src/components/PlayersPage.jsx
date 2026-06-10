@@ -371,7 +371,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
                 <div style={{ padding: '14px', background: '#FFFBEB', border: `1px solid #FDE68A`, borderRadius: 12, display: 'flex', gap: 10, alignItems: 'center' }}>
                   <span style={{ fontSize: 20 }}>✨</span>
                   <p style={{ fontFamily: FONT, fontSize: 12, color: '#92400E', margin: 0, lineHeight: 1.5 }}>
-                    AI profile not generated yet.{' '}
+                    Profile not generated yet.{' '}
                     {isAdmin ? <strong>Go to Admin → Players → Generate All Profiles.</strong> : 'Check back soon!'}
                   </p>
                 </div>
