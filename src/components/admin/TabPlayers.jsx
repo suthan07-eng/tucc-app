@@ -1,6 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+
+function adminFetch(url, opts = {}) {
+  const token = import.meta.env.VITE_ADMIN_API_TOKEN || ''
+  return fetch(url, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'x-admin-token': token } : {}),
+      ...(opts.headers || {}),
+    },
+  })
+}
 import Card from '../ui/Card'
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
@@ -244,7 +256,7 @@ function EditPlayerModal({ player, onClose, onSaved }) {
       const body = { currentEmail: player.email }
       if (emailChanged)    body.newEmail    = trimmedEmail
       if (passwordChanged) body.newPassword = password
-      const r    = await fetch('/api/admin?action=update-user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const r    = await adminFetch('/api/admin?action=update-user', { method: 'POST', body: JSON.stringify(body) })
       const data = await r.json()
       if (!r.ok) { setBusy(false); setErr(data.error || 'Auth update failed.'); return }
     }

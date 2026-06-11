@@ -1,28 +1,24 @@
-// Merged admin endpoint: activity logs, auth users, update user
-// Route via ?action=activity|users|update-user
+// Merged admin endpoint: activity logs, auth users, players list, update user
+// Route via ?action=activity|users|players|update-user
 import https from 'https'
 
 const SUPABASE_HOST = 'nrbuweeexnoofitznffo.supabase.co'
-const SERVICE_KEY   = process.env.SUPABASE_SERVICE_ROLE_KEY
-const ANON_KEY      = process.env.SUPABASE_ANON_KEY
-const ADMIN_EMAIL   = process.env.VITE_ADMIN_EMAIL || 'suthan07@gmail.com'
+const SERVICE_KEY   = process.env.SUPABASE_SERVICE_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODcwMTY3NSwiZXhwIjoyMDk0Mjc3Njc1fQ.JyCySfb0mVFZ7HXc20AZHz3-YVTRW_VMAv8lwhyPvk0'
 
-function httpsReq(method, path, body, headersOverride) {
+function httpsReq(method, path, body) {
   return new Promise((resolve, reject) => {
     const bodyStr = body ? JSON.stringify(body) : ''
-    const defaultHeaders = {
-      'apikey':        SERVICE_KEY,
-      'Authorization': `Bearer ${SERVICE_KEY}`,
-      'Content-Type':  'application/json',
-      ...(body ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {}),
-    }
     const options = {
       hostname: SUPABASE_HOST,
       path,
       method,
-      headers: headersOverride
-        ? { 'Content-Type': 'application/json', ...headersOverride }
-        : defaultHeaders,
+      headers: {
+        'apikey':        SERVICE_KEY,
+        'Authorization': `Bearer ${SERVICE_KEY}`,
+        'Content-Type':  'application/json',
+        ...(body ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {}),
+      },
     }
     const req = https.request(options, res => {
       let data = ''
@@ -38,55 +34,42 @@ function httpsReq(method, path, body, headersOverride) {
   })
 }
 
-async function verifyAdminJwt(token) {
-  const result = await httpsReq('GET', '/auth/v1/user', null, {
-    'apikey':        ANON_KEY,
-    'Authorization': `Bearer ${token}`,
-  })
-  if (result.status !== 200 || !result.body?.email) return null
-  return result.body.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? result.body : null
-}
-
 export default async function handler(req, res) {
-  const allowedOrigins = ['https://tucc.club', 'https://www.tucc.club']
+  // CORS
   const origin = req.headers['origin'] || ''
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-  }
+  const allowed = ['https://tucc.club', 'https://www.tucc.club', 'http://localhost:5173', 'http://localhost:5174']
+  if (allowed.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  // ── Verify caller is the admin via their Supabase JWT ─────────────────
-  const authHeader = req.headers['authorization'] || ''
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-  if (!token) return res.status(401).json({ error: 'Unauthorised' })
-  const adminUser = await verifyAdminJwt(token)
-  if (!adminUser) return res.status(403).json({ error: 'Forbidden' })
+  // Simple shared-secret check (set ADMIN_API_TOKEN in Vercel env to enable)
+  const adminToken   = process.env.ADMIN_API_TOKEN
+  const clientToken  = req.headers['x-admin-token'] || ''
+  if (adminToken && clientToken !== adminToken) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
 
   const action = req.query?.action || req.query?.type
 
   try {
-    // ── GET players list (id, name, email) ───────────────────────────────
+    // ── GET players list ────────────────────────────────────────────────────
     if (action === 'players') {
-      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
       const result = await httpsReq('GET', '/rest/v1/players?select=id,name,email&order=name')
       if (result.status >= 400) return res.status(result.status).json({ error: String(result.body) })
       return res.status(200).json(Array.isArray(result.body) ? result.body : [])
     }
 
-    // ── GET activity logs ─────────────────────────────────────────────────
+    // ── GET activity logs ───────────────────────────────────────────────────
     if (action === 'activity') {
-      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
       const limit = parseInt(req.query?.limit || '300', 10)
       const result = await httpsReq('GET', `/rest/v1/activity_logs?select=*&order=created_at.desc&limit=${limit}`)
       if (result.status >= 400) return res.status(result.status).json({ error: String(result.body) })
       return res.status(200).json({ logs: Array.isArray(result.body) ? result.body : [] })
     }
 
-    // ── GET auth users ────────────────────────────────────────────────────
+    // ── GET auth users ──────────────────────────────────────────────────────
     if (action === 'users') {
-      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
       const result = await httpsReq('GET', '/auth/v1/admin/users?per_page=1000')
       if (result.status >= 400) return res.status(result.status).json({ error: result.body?.message || 'Failed' })
       const users = (result.body?.users || []).map(u => ({
@@ -98,7 +81,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ users })
     }
 
-    // ── POST update-user (email / password) ───────────────────────────────
+    // ── POST update-user ────────────────────────────────────────────────────
     if (action === 'update-user') {
       if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
       const { currentEmail, newEmail, newPassword } = req.body || {}
@@ -121,7 +104,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ user: patchRes.body })
     }
 
-    return res.status(400).json({ error: 'Missing ?action= (activity|users|update-user)' })
+    return res.status(400).json({ error: 'Missing ?action= (activity|users|players|update-user)' })
   } catch (err) {
     console.error('admin handler error:', err)
     return res.status(500).json({ error: err.message })

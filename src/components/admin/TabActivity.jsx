@@ -198,12 +198,12 @@ function LogRow({ log }) {
 // to avoid exposing the service key in the browser bundle.
 
 function adminFetch(url, opts = {}) {
-  const token = sessionStorage.getItem('tucc_admin_token') || ''
+  const token = import.meta.env.VITE_ADMIN_API_TOKEN || ''
   return fetch(url, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(token ? { 'x-admin-token': token } : {}),
       ...(opts.headers || {}),
     },
   }).then(r => r.json())
