@@ -30,7 +30,7 @@ function RequireAuth({ children }) {
 
 // Admin-only protection (separate from player auth)
 function RequireAdmin({ children }) {
-  const isAdmin = sessionStorage.getItem('tucc_admin_token')
+  const isAdmin = sessionStorage.getItem('tucc_admin')
   return isAdmin ? children : <Navigate to="/admin/login" replace />
 }
 
