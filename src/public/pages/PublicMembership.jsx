@@ -70,7 +70,7 @@ export default function PublicMembership() {
 
       {/* Pricing Cards */}
       <section style={{ maxWidth: 1100, margin: '0 auto', padding: '90px 24px 60px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 24, alignItems: 'start' }}>
           {TIER_CONFIG.map(({ key, i, highlight, label }) => {
             const plan = SITE.membership[i]
             return (

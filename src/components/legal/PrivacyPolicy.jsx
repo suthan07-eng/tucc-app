@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import Nav from '../Nav'
-import Footer from '../Footer'
+import PublicNav from '../../public/PublicNav'
+import PublicFooter from '../../public/PublicFooter'
 import { C, FONT, MAX_WIDTH } from '../../constants'
 
 function Section({ title, children }) {
@@ -21,9 +21,9 @@ export default function PrivacyPolicy() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Nav />
+      <PublicNav />
 
-      <main style={{ flex: 1, padding: '40px 20px 60px', maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '108px 20px 60px', maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}>
 
         {/* Back */}
         <button
@@ -43,8 +43,8 @@ export default function PrivacyPolicy() {
         <Section title="1. Who We Are">
           <p>
             This privacy policy applies to the Tamil United Cricket Club member portal at tucc.club
-            (the "App"), operated by <strong>[LEGAL_ENTITY_NAME]</strong>, registered at{' '}
-            <strong>[REGISTERED_ADDRESS]</strong>, United Kingdom ("we", "us", "the Club").
+            (the "App"), operated by <strong>Dollishill Tamil United</strong>, registered at{' '}
+            <strong>27 Orchard Gate, Greenford, Middlesex, UB6 0QL</strong>, United Kingdom ("we", "us", "the Club").
           </p>
           <p style={{ marginTop: 10 }}>
             Contact us about privacy matters at: <strong>info@tucc.club</strong>
@@ -215,7 +215,7 @@ export default function PrivacyPolicy() {
 
       </main>
 
-      <Footer />
+      <PublicFooter />
     </div>
   )
 }

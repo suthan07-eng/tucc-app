@@ -17,3 +17,8 @@ dist/
 
 # Backup files that may contain sensitive data
 src/constants.GREEN_THEME_BACKUP.js
+
+# Local agent tooling / config (not part of the site)
+.claude/
+agency-agents/
+scripts/

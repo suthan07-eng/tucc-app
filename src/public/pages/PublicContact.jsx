@@ -66,7 +66,7 @@ export default function PublicContact() {
 
   const CONTACT_DETAILS = [
     { icon: '📍', label: 'Address', value: SITE.address, href: null },
-    { icon: '📞', label: 'Phone', value: SITE.phone, href: `tel:${SITE.phone}` },
+    ...(SITE.phone ? [{ icon: '📞', label: 'Phone', value: SITE.phone, href: `tel:${SITE.phone}` }] : []),
     { icon: '✉️', label: 'Email', value: SITE.email, href: `mailto:${SITE.email}` },
     { icon: '🕐', label: 'Office Hours', value: SITE.hours, href: null },
     { icon: '🏏', label: 'League', value: SITE.league, href: null },

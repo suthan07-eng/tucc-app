@@ -77,7 +77,6 @@ export default function PublicJoin() {
     try {
       // Insert into Supabase
       const { error: dbErr } = await supabase.from('membership_enquiries').insert(payload)
-      if (dbErr) console.warn('Supabase insert error (non-fatal):', dbErr.message)
 
       // Send email notification
       await fetch('/api/send-email', {
@@ -100,7 +99,7 @@ export default function PublicJoin() {
             </div>
           `,
         }),
-      }).catch(err => console.warn('Email send failed (non-fatal):', err))
+      }).catch(() => {})
 
       // Auto-reply to applicant
       await fetch('/api/send-email', {
@@ -118,7 +117,7 @@ export default function PublicJoin() {
             </div>
           `,
         }),
-      }).catch(err => console.warn('Auto-reply failed (non-fatal):', err))
+      }).catch(() => {})
 
       setStatus('success')
     } catch (err) {

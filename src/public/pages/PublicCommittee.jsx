@@ -96,7 +96,7 @@ export default function PublicCommittee() {
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px 120px' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 210px), 1fr))',
           gap: 24,
         }}>
           {SITE.committee.map((member, i) => (

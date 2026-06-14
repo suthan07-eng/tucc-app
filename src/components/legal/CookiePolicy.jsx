@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import Nav from '../Nav'
-import Footer from '../Footer'
+import PublicNav from '../../public/PublicNav'
+import PublicFooter from '../../public/PublicFooter'
 import { C, FONT, MAX_WIDTH } from '../../constants'
 
 function Section({ title, children }) {
@@ -29,9 +29,9 @@ export default function CookiePolicy() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Nav />
+      <PublicNav />
 
-      <main style={{ flex: 1, padding: '40px 20px 60px', maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '108px 20px 60px', maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}>
 
         <button
           onClick={() => nav(-1)}
@@ -154,7 +154,7 @@ export default function CookiePolicy() {
 
       </main>
 
-      <Footer />
+      <PublicFooter />
     </div>
   )
 }

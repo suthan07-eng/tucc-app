@@ -11,6 +11,7 @@ import PublicJoin from './public/pages/PublicJoin'
 import PublicGallery from './public/pages/PublicGallery'
 import PublicContact from './public/pages/PublicContact'
 import PublicSponsors from './public/pages/PublicSponsors'
+import PublicPlayers from './public/pages/PublicPlayers'
 import Register from './components/Register'
 import Availability from './components/Availability'
 import Success from './components/Success'
@@ -63,6 +64,7 @@ function AppRoutes() {
       <Route path="/photos" element={<PublicGallery />} />
       <Route path="/contact" element={<PublicContact />} />
       <Route path="/sponsors" element={<PublicSponsors />} />
+      <Route path="/squad"   element={<PublicPlayers />} />
 
       {/* Public — landing / login */}
       <Route path="/login" element={<LandingPage />} />

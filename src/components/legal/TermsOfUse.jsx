@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import Nav from '../Nav'
-import Footer from '../Footer'
+import PublicNav from '../../public/PublicNav'
+import PublicFooter from '../../public/PublicFooter'
 import { C, FONT, MAX_WIDTH } from '../../constants'
 
 function Section({ title, children }) {
@@ -21,9 +21,9 @@ export default function TermsOfUse() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Nav />
+      <PublicNav />
 
-      <main style={{ flex: 1, padding: '40px 20px 60px', maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '108px 20px 60px', maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}>
 
         <button
           onClick={() => nav(-1)}
@@ -46,8 +46,8 @@ export default function TermsOfUse() {
             If you do not agree, do not use the App.
           </p>
           <p style={{ marginTop: 10 }}>
-            These terms are issued by <strong>[LEGAL_ENTITY_NAME]</strong>,{' '}
-            <strong>[REGISTERED_ADDRESS]</strong> ("we", "us", "the Club").
+            These terms are issued by <strong>Dollishill Tamil United</strong>,{' '}
+            <strong>27 Orchard Gate, Greenford, Middlesex, UB6 0QL</strong> ("we", "us", "the Club").
           </p>
         </Section>
 
@@ -151,7 +151,7 @@ export default function TermsOfUse() {
 
       </main>
 
-      <Footer />
+      <PublicFooter />
     </div>
   )
 }

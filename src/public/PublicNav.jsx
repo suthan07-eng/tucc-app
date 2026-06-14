@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { label: 'About',      to: '/about' },
   { label: 'Committee',  to: '/committee' },
   { label: 'Membership', to: '/membership' },
+  { label: 'Squad',      to: '/squad' },
   { label: 'Gallery',    to: '/photos' },
   { label: 'Contact',    to: '/contact' },
   { label: 'Sponsors',   to: '/sponsors' },
@@ -47,7 +48,9 @@ export default function PublicNav() {
         }}>
           {/* Logo + wordmark */}
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <img src={SITE.logo} alt={SITE.clubShortName} style={{ height: 42, width: 'auto' }} onError={e => { e.target.style.display='none' }} />
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+              <img src={SITE.logo} alt={SITE.clubShortName} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+            </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px', lineHeight: 1.1, fontFamily: "'Outfit', sans-serif" }}>
                 Tamil United
@@ -154,6 +157,24 @@ export default function PublicNav() {
           to { opacity: 1; transform: translateY(0); }
         }
         nav a:hover { opacity: 0.85; }
+
+        /* ── Global responsive grid collapses (apply site-wide) ── */
+        @media (max-width: 768px) {
+          [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+          [style*="grid-template-columns: 1fr 2fr"] { grid-template-columns: 1fr !important; }
+          [style*="grid-template-columns: 2fr 1fr"] { grid-template-columns: 1fr !important; }
+          /* tame oversized gaps when stacked */
+          [style*="gap: 80px"] { gap: 36px !important; }
+          [style*="gap: 60px"] { gap: 32px !important; }
+        }
+        @media (max-width: 600px) {
+          /* champion podium → stacked, champion (middle child) first */
+          [style*="grid-template-columns: 1fr 1.15fr 1fr"] { display: flex !important; flex-direction: column; align-items: stretch !important; gap: 14px !important; }
+          [style*="grid-template-columns: 1fr 1.15fr 1fr"] > * { margin-bottom: 0 !important; }
+          [style*="grid-template-columns: 1fr 1.15fr 1fr"] > *:nth-child(2) { order: -1; }
+          /* featured sponsor card (logo + text) → stack & centre */
+          [style*="grid-template-columns: auto 1fr"] { grid-template-columns: 1fr !important; justify-items: center; text-align: center; }
+        }
       `}</style>
     </>
   )

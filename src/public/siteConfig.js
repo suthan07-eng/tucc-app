@@ -6,7 +6,7 @@ export const SITE = {
   tagline: 'Where Passion Meets Precision',
   tagline2: 'Unity in whites. Power in numbers. Heart in every match.',
   email: 'info@tucc.club', // flagged: was info@dtucc.com — confirm with user
-  phone: '+44 7494 964762',
+  phone: null, // personal mobile omitted — data protection; contact via club email only
   address: '27 Orchard Gate, Greenford, Middlesex, UB6 0QL',
   hours: 'Mon–Fri 8am–5pm · Sat by appointment',
   league: 'British Tamils Cricket League',
@@ -19,12 +19,12 @@ export const SITE = {
   },
   colors: { primary: '#2563eb', dark: '#1e3a8a', gold: '#e9a020' },
   sponsors: [
-    { tier: 'Platinum', name: 'GPS Group of Companies', url: 'https://www.gpsgroupofcompanies.com/', logo: '/sponsors/gps-group.png' },
-    { tier: 'Gold',     name: 'Sangeetha Jewellers',   url: 'https://sangeethajewellers.co.uk/',   logo: '/sponsors/sangeetha-jewellers.png' },
-    { tier: 'Silver',   name: 'Praba Restaurant & Bar',url: 'https://prabarestaurant.com/',         logo: '/sponsors/praba-restaurant.png' },
-    { tier: 'Silver',   name: 'Lotus Living',           url: 'https://lotusliving.co.uk/',          logo: '/sponsors/lotus-living.png' },
-    { tier: 'Bronze',   name: 'NSKA Accountancy',       url: 'https://www.nska-accountancy.co.uk/', logo: '/sponsors/nska-accountancy.png' },
-    { tier: 'Bronze',   name: 'Palm Beach',             url: 'https://palmbeachuk.com/',            logo: '/sponsors/palm-beach.png' },
+    { tier: 'Platinum', name: 'GPS Group of Companies', url: 'https://www.gpsgroupofcompanies.com/', logo: '/sponsors/gps-300x300.png' },
+    { tier: 'Gold',     name: 'Sangeetha Jewellers',   url: 'https://sangeethajewellers.co.uk/',   logo: '/sponsors/sageetha-300x300 (1).png' },
+    { tier: 'Silver',   name: 'Praba Restaurant & Bar',url: 'https://www.tripadvisor.co.uk/Restaurant_Review-g580418-d26778696-Reviews-Praba_Restaurant_Bar-Harrow_Greater_London_England.html', logo: '/sponsors/prabas-300x300.png' },
+    { tier: 'Silver',   name: 'Lotus Living',           url: 'https://lotusliving.co.uk/',          logo: '/sponsors/Lotus -300x300.png' },
+    { tier: 'Bronze',   name: 'NSKA Accountancy',       url: 'https://www.nska-accountancy.co.uk/', logo: '/sponsors/Nska-300x300.png' },
+    { tier: 'Bronze',   name: 'Palm Beach',             url: 'https://palmbeachuk.com/',            logo: '/sponsors/palm beach.png' },
   ],
   committee: [
     { name: 'Pathmanathan Giritharan',     role: '4th Patron',                   photo: '/committee/giritharan.jpg' },
