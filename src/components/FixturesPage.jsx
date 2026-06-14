@@ -495,7 +495,7 @@ export default function FixturesPage() {
 
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', position:'relative', zIndex:1 }}>
           <motion.button
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             whileTap={{ scale:.95 }}
             style={{ display:'flex', alignItems:'center', gap:6, color:'rgba(255,255,255,.38)', background:'none', border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:600, padding:0, marginBottom:24 }}
           >

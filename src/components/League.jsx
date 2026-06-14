@@ -49,7 +49,7 @@ export default function League() {
         <motion.div variants={staggerList} initial="hidden" animate="visible" style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
           <motion.button
             variants={fadeUp}
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 12 }}
           >
             ← Home

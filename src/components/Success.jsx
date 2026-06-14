@@ -101,7 +101,7 @@ export default function Success() {
 
           {/* Actions */}
           <motion.div variants={fadeUp} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Button size="full" onClick={() => nav('/')}>
+            <Button size="full" onClick={() => nav('/app')}>
               <Home size={16} strokeWidth={2.5} />
               Back to Home
             </Button>

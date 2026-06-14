@@ -310,7 +310,7 @@ export default function LandingPage() {
   const [busy, setBusy]             = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
 
-  useEffect(() => { if (!loading && user) nav('/', { replace: true }) }, [user, loading])
+  useEffect(() => { if (!loading && user) nav('/app', { replace: true }) }, [user, loading])
 
   async function handleSubmit(e) {
     e.preventDefault(); setErr(''); setBusy(true)
@@ -325,7 +325,7 @@ export default function LandingPage() {
       }
       if (mode === 'login') {
         await signIn(email, password)
-        nav('/', { replace: true })
+        nav('/app', { replace: true })
       } else {
         if (!fullName.trim()) { setErr('Please enter your full name.'); setBusy(false); return }
         const r = await fetch('/api/auth-signup', {
@@ -335,7 +335,7 @@ export default function LandingPage() {
         const data = await r.json()
         if (!r.ok) throw new Error(data.error||'Signup failed')
         await signIn(email, password)
-        nav('/', { replace: true })
+        nav('/app', { replace: true })
       }
     } catch(e) { setErr(e.message||'Something went wrong.') }
     setBusy(false)

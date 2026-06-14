@@ -1014,7 +1014,7 @@ export default function Stats() {
         transition: 'background 400ms ease',
       }}>
         <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
-          <motion.button onClick={() => nav('/')} whileTap={{ scale: 0.96 }} transition={{ duration: 0.14 }}
+          <motion.button onClick={() => nav('/app')} whileTap={{ scale: 0.96 }} transition={{ duration: 0.14 }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.55)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 16 }}
           >
             <ArrowLeft size={14} strokeWidth={2} /> Home

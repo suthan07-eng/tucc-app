@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext'
 const EASE = [0.23, 1, 0.32, 1]
 
 const MENU_LINKS = [
-  { path: '/',             label: 'Home',         Icon: Home,          color: '#1d4ed8', bg: '#eff6ff' },
+  { path: '/app',          label: 'Home',         Icon: Home,          color: '#1d4ed8', bg: '#eff6ff' },
   { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: '#fffbeb' },
   { path: '/fixtures',     label: 'Fixtures',     Icon: CalendarDays,  color: '#1d4ed8', bg: '#eff6ff' },
   { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: '#e0f2fe' },
@@ -66,7 +66,7 @@ export default function Nav() {
         }}>
           {/* Logo + brand */}
           <motion.button
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.14, ease: EASE }}
             aria-label="Go to home"

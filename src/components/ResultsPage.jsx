@@ -422,7 +422,7 @@ export default function ResultsPage() {
 
         <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', position: 'relative' }}>
           <motion.button
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             whileTap={{ scale: 0.95 }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 20 }}
           >

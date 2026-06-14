@@ -303,7 +303,7 @@ export default function Availability() {
         >
           <motion.button
             variants={fadeUp}
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 10 }}
           >
             ← Home
