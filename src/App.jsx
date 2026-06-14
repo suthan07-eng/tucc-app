@@ -3,6 +3,14 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { useActivityLog, useButtonTracking } from './hooks/useActivityLog'
 import LandingPage from './components/LandingPage'
 import Home from './components/Home'
+import PublicHome from './public/pages/PublicHome'
+import PublicAbout from './public/pages/PublicAbout'
+import PublicCommittee from './public/pages/PublicCommittee'
+import PublicMembership from './public/pages/PublicMembership'
+import PublicJoin from './public/pages/PublicJoin'
+import PublicGallery from './public/pages/PublicGallery'
+import PublicContact from './public/pages/PublicContact'
+import PublicSponsors from './public/pages/PublicSponsors'
 import Register from './components/Register'
 import Availability from './components/Availability'
 import Success from './components/Success'
@@ -46,11 +54,23 @@ function AppRoutes() {
     <>
     <ActivityTracker />
     <Routes>
+      {/* Public marketing site */}
+      <Route path="/" element={<PublicHome />} />
+      <Route path="/about" element={<PublicAbout />} />
+      <Route path="/committee" element={<PublicCommittee />} />
+      <Route path="/membership" element={<PublicMembership />} />
+      <Route path="/join" element={<PublicJoin />} />
+      <Route path="/photos" element={<PublicGallery />} />
+      <Route path="/contact" element={<PublicContact />} />
+      <Route path="/sponsors" element={<PublicSponsors />} />
+
       {/* Public — landing / login */}
       <Route path="/login" element={<LandingPage />} />
 
+      {/* Member dashboard (moved from / to /app) */}
+      <Route path="/app" element={<RequireAuth><Home /></RequireAuth>} />
+
       {/* Protected player routes */}
-      <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/register" element={<RequireAuth><Register /></RequireAuth>} />
       <Route path="/availability" element={<RequireAuth><Availability /></RequireAuth>} />
       <Route path="/success" element={<RequireAuth><Success /></RequireAuth>} />
