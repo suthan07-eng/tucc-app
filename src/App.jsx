@@ -1,34 +1,53 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { useActivityLog, useButtonTracking } from './hooks/useActivityLog'
-import LandingPage from './components/LandingPage'
-import Home from './components/Home'
-import PublicHome from './public/pages/PublicHome'
-import PublicAbout from './public/pages/PublicAbout'
-import PublicCommittee from './public/pages/PublicCommittee'
-import PublicMembership from './public/pages/PublicMembership'
-import PublicJoin from './public/pages/PublicJoin'
-import PublicGallery from './public/pages/PublicGallery'
-import PublicContact from './public/pages/PublicContact'
-import PublicSponsors from './public/pages/PublicSponsors'
-import PublicPlayers from './public/pages/PublicPlayers'
-import Register from './components/Register'
-import Availability from './components/Availability'
-import Success from './components/Success'
-import League from './components/League'
-import Stats from './components/Stats'
-import ResultsPage from './components/ResultsPage'
-import FixturesPage from './components/FixturesPage'
-import PlayersPage from './components/PlayersPage'
-import GalleryPage from './components/GalleryPage'
-import AnalysePage from './components/AnalysePage'
-import AdminLogin from './components/admin/AdminLogin'
-import AdminDashboard from './components/admin/AdminDashboard'
-import ResetPassword from './components/ResetPassword'
-import NotFound from './components/NotFound'
-import PrivacyPolicy from './components/legal/PrivacyPolicy'
-import TermsOfUse from './components/legal/TermsOfUse'
-import CookiePolicy from './components/legal/CookiePolicy'
+
+// Public marketing pages (code-split so each route loads on demand)
+const PublicHome       = lazy(() => import('./public/pages/PublicHome'))
+const PublicAbout      = lazy(() => import('./public/pages/PublicAbout'))
+const PublicCommittee  = lazy(() => import('./public/pages/PublicCommittee'))
+const PublicMembership = lazy(() => import('./public/pages/PublicMembership'))
+const PublicJoin       = lazy(() => import('./public/pages/PublicJoin'))
+const PublicGallery    = lazy(() => import('./public/pages/PublicGallery'))
+const PublicContact    = lazy(() => import('./public/pages/PublicContact'))
+const PublicSponsors   = lazy(() => import('./public/pages/PublicSponsors'))
+const PublicPlayers    = lazy(() => import('./public/pages/PublicPlayers'))
+
+// Auth / member dashboard
+const LandingPage  = lazy(() => import('./components/LandingPage'))
+const Home         = lazy(() => import('./components/Home'))
+const Register     = lazy(() => import('./components/Register'))
+const Availability = lazy(() => import('./components/Availability'))
+const Success      = lazy(() => import('./components/Success'))
+const League       = lazy(() => import('./components/League'))
+const Stats        = lazy(() => import('./components/Stats'))
+const ResultsPage  = lazy(() => import('./components/ResultsPage'))
+const FixturesPage = lazy(() => import('./components/FixturesPage'))
+const PlayersPage  = lazy(() => import('./components/PlayersPage'))
+const GalleryPage  = lazy(() => import('./components/GalleryPage'))
+const AnalysePage  = lazy(() => import('./components/AnalysePage'))
+
+// Admin (heavy — only loads when an admin visits)
+const AdminLogin     = lazy(() => import('./components/admin/AdminLogin'))
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'))
+
+// Misc
+const ResetPassword = lazy(() => import('./components/ResetPassword'))
+const NotFound      = lazy(() => import('./components/NotFound'))
+const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'))
+const TermsOfUse    = lazy(() => import('./components/legal/TermsOfUse'))
+const CookiePolicy  = lazy(() => import('./components/legal/CookiePolicy'))
+
+// Lightweight full-screen loader shown while a route chunk downloads
+function RouteFallback() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#060d1f' }}>
+      <div style={{ width: 44, height: 44, border: '4px solid rgba(233,160,32,0.2)', borderTopColor: '#e9a020', borderRadius: '50%', animation: 'appSpin 0.8s linear infinite' }} />
+      <style>{`@keyframes appSpin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  )
+}
 
 // Protects all player-facing routes — redirects to /login if not signed in
 function RequireAuth({ children }) {
@@ -54,6 +73,7 @@ function AppRoutes() {
   return (
     <>
     <ActivityTracker />
+    <Suspense fallback={<RouteFallback />}>
     <Routes>
       {/* Public marketing site */}
       <Route path="/" element={<PublicHome />} />
@@ -100,6 +120,7 @@ function AppRoutes() {
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
     </>
   )
 }
