@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, BarChart2, ShieldCheck, ClipboardList,
-  Menu, X, Home, Calendar, ChevronRight, CalendarDays, Users, LogOut, Image, Search,
+  Menu, X, Home, Calendar, ChevronRight, CalendarDays, Users, LogOut, Image, Search, Globe,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import { useAuth } from '../context/AuthContext'
@@ -112,6 +112,28 @@ export default function Nav() {
                   />
                 )
               })}
+              <motion.a
+                href="/"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.95 }}
+                title="Go to the public website"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  color: 'rgba(255,255,255,.7)', textDecoration: 'none',
+                  background: 'rgba(255,255,255,.08)',
+                  border: '1.5px solid rgba(255,255,255,.15)',
+                  borderRadius: 10, padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontFamily: FONT, fontWeight: 700, fontSize: 13,
+                  marginLeft: 8, minHeight: 38,
+                  transition: 'all 150ms ease',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.15)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.08)' }}
+              >
+                <Globe size={14} strokeWidth={2.5} />
+                Site
+              </motion.a>
               <motion.button
                 onClick={() => signOut()}
                 whileHover={{ scale: 1.03 }}
@@ -124,7 +146,7 @@ export default function Nav() {
                   borderRadius: 10, padding: '8px 14px',
                   cursor: 'pointer',
                   fontFamily: FONT, fontWeight: 700, fontSize: 13,
-                  marginLeft: 8, minHeight: 38,
+                  marginLeft: 6, minHeight: 38,
                   transition: 'all 150ms ease',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.15)' }}
@@ -301,8 +323,24 @@ export default function Nav() {
                 </div>
               </div>
 
-              {/* Logout at bottom */}
-              <div style={{ padding: '0 16px 32px' }}>
+              {/* Public site + Logout at bottom */}
+              <div style={{ padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <motion.a
+                  href="/"
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '14px 16px', borderRadius: 14, width: '100%', boxSizing: 'border-box',
+                    background: 'rgba(255,255,255,.05)',
+                    border: '1px solid rgba(255,255,255,.12)', cursor: 'pointer', textDecoration: 'none',
+                  }}
+                >
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Globe size={19} color="#e9a020" strokeWidth={2.2} />
+                  </div>
+                  <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: '#fff', flex: 1, textAlign: 'left' }}>Public Website</span>
+                  <ChevronRight size={16} color="rgba(255,255,255,.4)" strokeWidth={2} />
+                </motion.a>
                 <motion.button
                   onClick={() => { signOut(); setOpen(false) }}
                   whileTap={{ scale: 0.97 }}

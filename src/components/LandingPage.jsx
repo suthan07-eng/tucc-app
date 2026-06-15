@@ -378,6 +378,16 @@ export default function LandingPage() {
       {/* Gold vignette bottom */}
       <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:500, height:300, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 100%, rgba(233,160,32,.08) 0%, transparent 70%)', pointerEvents:'none' }}/>
 
+      {/* Back to public site */}
+      <button
+        onClick={() => nav('/')}
+        style={{ position:'absolute', top:20, left:20, zIndex:20, display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:10, padding:'8px 14px', color:'rgba(255,255,255,.8)', fontFamily:FONT, fontWeight:600, fontSize:13, cursor:'pointer', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}
+        onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,.15)' }}
+        onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,.08)' }}
+      >
+        ← Back to site
+      </button>
+
       {/* Content */}
       <div style={{ width:'100%', maxWidth:440, padding:'44px 20px 48px', position:'relative', zIndex:10, display:'flex', flexDirection:'column', alignItems:'center' }}>
 
