@@ -278,7 +278,7 @@ export default function TabStatsMatch() {
           disabled={saving}
           style={{
             background: saving ? C.gray2 : C.green,
-            color: C.white,
+            color: '#fff',
             border: 'none',
             borderRadius: 12,
             padding: '14px',

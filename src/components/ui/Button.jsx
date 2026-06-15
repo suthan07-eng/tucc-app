@@ -8,8 +8,8 @@ const sizes = {
 }
 
 const variants = {
-  primary: { background: C.green,        color: C.white,  border: 'none' },
-  danger:  { background: C.red,          color: C.white,  border: 'none' },
+  primary: { background: C.green,        color: '#fff',  border: 'none' },
+  danger:  { background: C.red,          color: '#fff',  border: 'none' },
   ghost:   { background: 'transparent',  color: C.green,  border: `1.5px solid ${C.green}` },
   subtle:  { background: C.greenBg,      color: C.green,  border: `1px solid ${C.gray2}` },
   gold:    { background: C.gold,         color: C.dark,   border: 'none' },

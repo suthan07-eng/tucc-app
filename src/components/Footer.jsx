@@ -37,7 +37,7 @@ export default function Footer() {
         {/* Logo + brand centred */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 24 }}>
           <div style={{
-            width: 52, height: 52, borderRadius: '50%', background: '#fff',
+            width: 52, height: 52, borderRadius: '50%', background: C.white,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 10px rgba(15,56,37,.3)', overflow: 'hidden', marginBottom: 12,
           }}>

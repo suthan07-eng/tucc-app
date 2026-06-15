@@ -121,7 +121,7 @@ export default function TabAvailability() {
         </div>
         <button
           onClick={copyWhatsAppLink}
-          style={{ background: '#25d366', color: C.white, border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ background: '#25d366', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
         >
           📲 Copy WhatsApp Link
         </button>

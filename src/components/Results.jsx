@@ -57,7 +57,7 @@ function TeamLogo({ logo: logoProp, name, size = 36 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      background: '#fff', overflow: 'hidden', flexShrink: 0,
+      background: C.white, overflow: 'hidden', flexShrink: 0,
       border: `2px solid ${C.gray2}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       boxShadow: '0 1px 4px rgba(0,0,0,.1)',
@@ -80,7 +80,7 @@ function ResultCard({ result, index }) {
   const won = us && weWon(result)
 
   const accentColor  = us ? (won ? C.ok : C.red) : C.gray5
-  const accentBg     = us ? (won ? C.okBg : '#fef2f2') : C.white
+  const accentBg     = us ? (won ? C.okBg : 'rgba(239,68,68,0.12)') : C.white
   const accentBorder = us ? (won ? '#bbf7d0' : '#fecaca') : C.gray2
 
   // Shorten team names for display

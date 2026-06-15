@@ -1,35 +1,61 @@
 export const C = {
   // ─── Brand (blue — matches club logo) ───────────────────────────────
-  green:      '#2563eb',   // brand-600  — primary buttons, links, key CTAs  (was: #2563eb green)
-  greenDark:  '#1e3a8a',   // brand-900  — hero blocks, header, footer        (was: #1e3a8a dark green)
-  greenLight: '#1d4ed8',   // brand-700  — hover states                       (was: #1d4ed8 light green)
-  greenBg:    '#eff6ff',   // brand-50   — tinted backgrounds, active-nav      (was: #eff6ff green tint)
+  green:      '#3b82f6',   // primary buttons, links, key CTAs (brighter on dark)
+  greenDark:  '#0d1b3e',   // hero blocks, header, footer (deep navy — matches public site)
+  greenLight: '#60a5fa',   // hover states
+  greenBg:    'rgba(59,130,246,0.14)',  // tinted backgrounds, active-nav
 
-  // Gold — keep as accent (unchanged)
+  // Gold — accent
   gold:       '#e9a020',
 
-  // ─── Neutrals (cool slate — cohesive with blue) ──────────────────────
-  white:      '#ffffff',
-  bg:         'transparent', // page wrappers transparent — texture from App.jsx fixed layer shows through
-  gray1:      '#f1f5f9',   // neutral-100 — alt surfaces, zebra rows           (was: #f1f5f2 green-tinted)
-  gray2:      '#e2e8f0',   // neutral-200 — borders & dividers                 (was: #dde8e2 green-tinted)
-  gray3:      '#94a3b8',   // neutral-400 — placeholder text, muted icons      (was: #8fa898 green-gray)
-  gray4:      '#64748b',   // neutral-500 — secondary text                     (was: #5c7468 green-gray)
-  gray5:      '#334155',   // neutral-700 — body text                          (was: #2d3f38 dark green-gray)
-  dark:       '#0f172a',   // neutral-900 — headings                           (was: #0f172a near-black green)
+  // ─── Neutrals — DARK THEME (portal re-skin; public site unaffected) ──
+  // Card surfaces are translucent so the global liquid-glass rule (blur) shows through.
+  white:      'rgba(15,28,60,0.58)',   // ⬅ primary CARD SURFACE (glass)
+  bg:         'transparent', // page wrappers transparent — dark texture from App.jsx shows through
+  gray1:      'rgba(22,36,80,0.52)',   // raised / alt surface, zebra rows (glass)
+  gray2:      'rgba(255,255,255,0.10)', // borders & dividers
+  gray3:      'rgba(255,255,255,0.42)', // placeholder text, muted icons
+  gray4:      'rgba(255,255,255,0.60)', // secondary text
+  gray5:      'rgba(255,255,255,0.82)', // body text
+  dark:       '#f1f5f9',   // headings (near-white)
 
-  // ─── Semantic (functional states — green survives only here) ─────────
-  red:        '#dc2626',   // danger
-  redBg:      '#fee2e2',
-  ok:         '#16a34a',   // success — "available", wins (only green allowed)
-  okBg:       '#dcfce7',
-  blue:       '#2563eb',
-  blueBg:     '#eff6ff',
+  // ─── Semantic (functional states) ────────────────────────────────────
+  red:        '#ef4444',   // danger
+  redBg:      'rgba(239,68,68,0.14)',
+  ok:         '#22c55e',   // success — "available", wins
+  okBg:       'rgba(34,197,94,0.14)',
+  blue:       '#3b82f6',
+  blueBg:     'rgba(59,130,246,0.14)',
 
-  // ─── Shadows (tinted with brand-blue hue) ────────────────────────────
-  shadow:     'rgba(30, 58, 138, 0.07)',
-  shadowMd:   'rgba(30, 58, 138, 0.11)',
-  shadowLg:   'rgba(30, 58, 138, 0.18)',
+  // ─── Shadows (deeper for dark theme) ─────────────────────────────────
+  shadow:     'rgba(0, 0, 0, 0.25)',
+  shadowMd:   'rgba(0, 0, 0, 0.35)',
+  shadowLg:   'rgba(0, 0, 0, 0.5)',
+}
+
+// ─── Dark portal theme tokens (matches public site; lighter-weight) ────
+// Used for the authenticated player-portal re-skin.
+export const D = {
+  bg:        '#0a1228',   // page base (also set in App texture)
+  surface:   '#0d1b3e',   // primary card surface
+  surface2:  '#111f45',   // raised / nested surface
+  surfaceUp: '#16264f',   // hover / elevated
+  border:    'rgba(255,255,255,0.08)',
+  borderUp:  'rgba(255,255,255,0.16)',
+  text:      '#ffffff',                 // headings
+  textBody:  'rgba(255,255,255,0.72)',  // body
+  textMuted: 'rgba(255,255,255,0.5)',   // secondary
+  textDim:   'rgba(255,255,255,0.35)',  // faint labels
+  gold:      '#e9a020',
+  goldSoft:  'rgba(233,160,32,0.12)',
+  blue:      '#3b82f6',
+  blueSoft:  'rgba(59,130,246,0.12)',
+  green:     '#22c55e',
+  greenSoft: 'rgba(34,197,94,0.12)',
+  red:       '#ef4444',
+  redSoft:   'rgba(239,68,68,0.12)',
+  shadow:    '0 4px 20px rgba(0,0,0,0.35)',
+  shadowLg:  '0 16px 50px rgba(0,0,0,0.45)',
 }
 
 export const FONT = "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"

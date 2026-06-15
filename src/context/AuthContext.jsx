@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
       setUser(u)
       if (u) fetchProfile(u.id).finally(() => setLoading(false))
       else setLoading(false)
-    })
+    }).catch(() => setLoading(false)) // never get stuck on a session-restore error
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

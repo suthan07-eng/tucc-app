@@ -132,17 +132,17 @@ function TextureBackground() {
       position: 'fixed',
       inset: 0,
       zIndex: -1,
-      // Soft blue-tinted base — slightly warmer than pure white, cohesive with brand
-      backgroundColor: '#eef2ff',
+      // Dark navy base — matches the public site (lighter-weight dark for the portal)
+      backgroundColor: '#0a1228',
       backgroundImage: `
-        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(37,99,235,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(99,102,241,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(37,99,235,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(233,160,32,0.07) 0%, transparent 55%),
         repeating-linear-gradient(
           -45deg,
           transparent 0px,
           transparent 18px,
-          rgba(37,99,235,0.028) 18px,
-          rgba(37,99,235,0.028) 19px
+          rgba(255,255,255,0.012) 18px,
+          rgba(255,255,255,0.012) 19px
         )
       `,
     }} />

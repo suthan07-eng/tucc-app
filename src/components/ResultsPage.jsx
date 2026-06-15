@@ -78,7 +78,7 @@ function TeamLogo({ logo: logoProp, name, size = 52 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: size * 0.28,
-      background: '#fff', overflow: 'hidden', flexShrink: 0,
+      background: C.white, overflow: 'hidden', flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       boxShadow: '0 4px 16px rgba(0,0,0,.12)',
       border: '2px solid rgba(255,255,255,.6)',
@@ -123,7 +123,7 @@ function ResultCard({ result, index }) {
     ? won
       ? {
           headerGrad:  'linear-gradient(135deg, #15803d 0%, #3b82f6 100%)',
-          cardBg:      '#f0fdf4',
+          cardBg:      'rgba(34,197,94,0.12)',
           cardBorder:  '#bbf7d0',
           shadow:      '0 8px 32px rgba(21,128,61,.18)',
           glow:        'rgba(21,128,61,.12)',
@@ -134,7 +134,7 @@ function ResultCard({ result, index }) {
         }
       : {
           headerGrad:  'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)',
-          cardBg:      '#fff1f2',
+          cardBg:      'rgba(239,68,68,0.12)',
           cardBorder:  '#fecaca',
           shadow:      '0 8px 32px rgba(190,18,60,.15)',
           glow:        'rgba(190,18,60,.08)',
@@ -422,7 +422,7 @@ export default function ResultsPage() {
 
         <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', position: 'relative' }}>
           <motion.button
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             whileTap={{ scale: 0.95 }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 20 }}
           >
@@ -436,7 +436,7 @@ export default function ResultsPage() {
                 <img src="/logo.png" alt="TUCC" style={{ width: 47, height: 47, objectFit: 'contain' }} />
               </div>
               <div>
-                <h1 style={{ color: C.white, fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>
+                <h1 style={{ color: '#fff', fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>
                   Last 10 Results
                 </h1>
                 <div style={{ color: 'rgba(255,255,255,.45)', fontSize: 12, marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -497,7 +497,7 @@ export default function ResultsPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ background: '#fff1f2', border: '1.5px solid #fecaca', borderRadius: 16, padding: '18px 20px', marginBottom: 20, textAlign: 'center', color: C.red, fontSize: 14, fontWeight: 500 }}>
+          <div style={{ background: 'rgba(239,68,68,0.12)', border: '1.5px solid #fecaca', borderRadius: 16, padding: '18px 20px', marginBottom: 20, textAlign: 'center', color: C.red, fontSize: 14, fontWeight: 500 }}>
             Couldn't load results.{' '}
             <button onClick={() => { setError(false); setLoading(true); load(true) }} style={{ color: C.green, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, fontFamily: FONT, fontSize: 14 }}>
               Try again →
@@ -550,7 +550,7 @@ export default function ResultsPage() {
                 }}
               >
                 <div>
-                  <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.white }}>Full match scorecards</div>
+                  <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: '#fff' }}>Full match scorecards</div>
                   <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>View on play-cricket.com</div>
                 </div>
                 <a

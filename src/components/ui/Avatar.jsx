@@ -42,7 +42,7 @@ export default function Avatar({ name = '', size = 36, shape = 'circle', style }
         height: size,
         borderRadius: radius,
         background: `linear-gradient(135deg, ${bg} 0%, ${bg}cc 100%)`,
-        color: C.white,
+        color: '#fff',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

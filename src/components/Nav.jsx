@@ -11,15 +11,15 @@ import { useAuth } from '../context/AuthContext'
 const EASE = [0.23, 1, 0.32, 1]
 
 const MENU_LINKS = [
-  { path: '/',             label: 'Home',         Icon: Home,          color: '#1d4ed8', bg: '#eff6ff' },
-  { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: '#fffbeb' },
-  { path: '/fixtures',     label: 'Fixtures',     Icon: CalendarDays,  color: '#1d4ed8', bg: '#eff6ff' },
-  { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: '#e0f2fe' },
-  { path: '/players',      label: 'Players',      Icon: Users,         color: '#7c3aed', bg: '#ede9fe' },
-  { path: '/stats',        label: 'Statistics',   Icon: BarChart2,     color: '#6d28d9', bg: '#f5f3ff' },
-  { path: '/availability', label: 'Availability', Icon: Calendar,      color: '#0891b2', bg: '#ecfeff' },
-  { path: '/gallery',      label: 'Gallery',      Icon: Image,         color: '#db2777', bg: '#fdf2f8' },
-  { path: '/analyse',      label: 'Analyse',      Icon: Search,        color: '#0891b2', bg: '#ecfeff' },
+  { path: '/app',          label: 'Home',         Icon: Home,          color: '#1d4ed8', bg: 'rgba(59,130,246,0.12)' },
+  { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: 'rgba(233,160,32,0.12)' },
+  { path: '/fixtures',     label: 'Fixtures',     Icon: CalendarDays,  color: '#1d4ed8', bg: 'rgba(59,130,246,0.12)' },
+  { path: '/results',      label: 'Last Results', Icon: ClipboardList, color: '#0369a1', bg: 'rgba(59,130,246,0.14)' },
+  { path: '/players',      label: 'Players',      Icon: Users,         color: '#7c3aed', bg: 'rgba(168,85,247,0.14)' },
+  { path: '/stats',        label: 'Statistics',   Icon: BarChart2,     color: '#6d28d9', bg: 'rgba(168,85,247,0.12)' },
+  { path: '/availability', label: 'Availability', Icon: Calendar,      color: '#0891b2', bg: 'rgba(6,182,212,0.12)' },
+  { path: '/gallery',      label: 'Gallery',      Icon: Image,         color: '#db2777', bg: 'rgba(236,72,153,0.12)' },
+  { path: '/analyse',      label: 'Analyse',      Icon: Search,        color: '#0891b2', bg: 'rgba(6,182,212,0.12)' },
 ]
 
 const TOP_LINKS = [
@@ -54,9 +54,11 @@ export default function Nav() {
         aria-label="Main navigation"
         style={{
           position: 'sticky', top: 0, zIndex: 200,
-          background: C.greenDark,
-          borderBottom: '1px solid rgba(255,255,255,.08)',
-          boxShadow: '0 2px 20px rgba(0,0,0,.25)',
+          background: 'rgba(10,18,40,0.62)',
+          backdropFilter: 'blur(18px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+          borderBottom: '1px solid rgba(255,255,255,.10)',
+          boxShadow: '0 2px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,0.06)',
         }}
       >
         <div style={{
@@ -66,7 +68,7 @@ export default function Nav() {
         }}>
           {/* Logo + brand */}
           <motion.button
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.14, ease: EASE }}
             aria-label="Go to home"
@@ -212,7 +214,7 @@ export default function Nav() {
                 position: 'fixed', top: 0, right: 0, bottom: 0,
                 width: 'min(320px, 88vw)',
                 zIndex: 210,
-                background: '#fff',
+                background: C.white,
                 display: 'flex', flexDirection: 'column',
                 boxShadow: '-8px 0 40px rgba(0,0,0,.2)',
                 overflowY: 'auto',
@@ -272,7 +274,7 @@ export default function Nav() {
                           padding: '14px 16px',
                           borderRadius: 14,
                           border: `1.5px solid ${isActive ? color + '30' : C.gray2}`,
-                          background: isActive ? bg : '#fff',
+                          background: isActive ? bg : 'rgba(255,255,255,0.04)',
                           cursor: 'pointer', textAlign: 'left', width: '100%',
                           transition: 'all 150ms ease',
                         }}
@@ -325,6 +327,12 @@ export default function Nav() {
 
       {/* ── Responsive CSS ── */}
       <style>{`
+        /* ── Liquid-glass: frost any card using the translucent surface tokens ── */
+        [style*="rgba(15,28,60,0.58)"], [style*="rgba(15, 28, 60, 0.58)"],
+        [style*="rgba(22,36,80,0.52)"], [style*="rgba(22, 36, 80, 0.52)"] {
+          -webkit-backdrop-filter: blur(16px) saturate(150%);
+          backdrop-filter: blur(16px) saturate(150%);
+        }
         /* Hide subtitle & shrink brand at medium widths so nav links fit */
         @media (max-width: 860px) {
           .tucc-nav-brand-text div:last-child { display: none !important; }

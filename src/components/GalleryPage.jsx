@@ -219,7 +219,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
   const inputStyle = (active) => ({
     width:'100%', border:`1.5px solid ${active?'#fde68a':'#e5e7eb'}`, borderRadius:10,
     padding:'10px 13px', fontFamily:FONT, fontSize:13, color:'#1f2937',
-    outline:'none', boxSizing:'border-box', background:active?'#fffbeb':'#fff',
+    outline:'none', boxSizing:'border-box', background:active?'rgba(233,160,32,0.12)':'#fff',
     transition:'border .15s, background .15s',
   })
 
@@ -233,13 +233,13 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
       <motion.div
         initial={{ scale:.94, opacity:0, y:20 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:.94, opacity:0, y:20 }}
         transition={{ type:'spring', damping:24, stiffness:300 }}
-        style={{ background:'#f8fafc', borderRadius:24, width:'100%', maxWidth:860,
+        style={{ background:'rgba(255,255,255,0.03)', borderRadius:24, width:'100%', maxWidth:860,
           maxHeight:'94vh', display:'flex', flexDirection:'column',
           overflow:'hidden', boxShadow:'0 40px 100px rgba(0,0,0,.6)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* ── HEADER ── */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 24px', background:'#fff', borderBottom:'1px solid #e5e7eb', flexShrink:0 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 24px', background: C.white, borderBottom:'1px solid #e5e7eb', flexShrink:0 }}>
           <div>
             <div style={{ fontWeight:900, fontSize:16, color:'#060d2e', fontFamily:FONT }}>
               📸 {items.length > 1 ? `Upload ${items.length} items` : 'New Post'}
@@ -285,7 +285,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
                 maxLength={80}
                 style={{ flex:1, border:'1.5px solid #bae6fd', borderRadius:10, padding:'9px 13px',
                   fontFamily:FONT, fontSize:13, color:'#0c4a6e', outline:'none', boxSizing:'border-box',
-                  background:'#fff', fontWeight:albumInput?600:400 }}
+                  background: C.white, fontWeight:albumInput?600:400 }}
                 onFocus={e => e.target.style.borderColor='#0369a1'}
                 onBlur={e => e.target.style.borderColor='#bae6fd'}
               />
@@ -320,7 +320,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
               border:`2px dashed ${dragging?'#e9a020':'#cbd5e1'}`, borderRadius:16,
               padding: items.length ? '14px 20px' : '40px 20px',
               cursor: uploading?'default':'pointer', textAlign:'center',
-              background: dragging?'#fffbeb':'#fff', transition:'all .2s', flexShrink:0,
+              background: dragging?'rgba(233,160,32,0.12)':'#fff', transition:'all .2s', flexShrink:0,
             }}
           >
             {items.length === 0 ? (
@@ -340,12 +340,12 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
             onChange={e => { addFiles(e.target.files); e.target.value='' }}/>
 
           {globalErr && (
-            <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:10, padding:'10px 14px', fontSize:12, color:'#dc2626', fontFamily:FONT }}>{globalErr}</div>
+            <div style={{ background:'rgba(239,68,68,0.12)', border:'1px solid #fecaca', borderRadius:10, padding:'10px 14px', fontSize:12, color:'#dc2626', fontFamily:FONT }}>{globalErr}</div>
           )}
 
           {/* Apply-to-all strip */}
           {items.length > 1 && !uploading && (
-            <div style={{ background:'#eff6ff', border:'1.5px solid #bfdbfe', borderRadius:14, padding:'14px 16px', display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
+            <div style={{ background:'rgba(59,130,246,0.12)', border:'1.5px solid #bfdbfe', borderRadius:14, padding:'14px 16px', display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
               <span style={{ fontSize:14, flexShrink:0 }}>📌</span>
               <div style={{ flex:1, minWidth:180 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:'#1d4ed8', fontFamily:FONT, marginBottom:5 }}>APPLY SAME TITLE TO ALL</div>
@@ -355,7 +355,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
                   onKeyDown={e => { if(e.key==='Enter') applyMasterTitle() }}
                   placeholder="e.g. DTU CC Dinner & Dance 2023"
                   maxLength={80}
-                  style={{ width:'100%', border:'1.5px solid #bfdbfe', borderRadius:8, padding:'8px 12px', fontFamily:FONT, fontSize:13, color:'#1e3a8a', outline:'none', boxSizing:'border-box', fontWeight:600, background:'#fff' }}
+                  style={{ width:'100%', border:'1.5px solid #bfdbfe', borderRadius:8, padding:'8px 12px', fontFamily:FONT, fontSize:13, color:'#1e3a8a', outline:'none', boxSizing:'border-box', fontWeight:600, background: C.white }}
                 />
               </div>
               <button onClick={applyMasterTitle} disabled={!masterTitle.trim()}
@@ -375,7 +375,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
                   <motion.div key={item.id}
                     initial={{ opacity:0, scale:.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:.9 }}
                     transition={{ type:'spring', damping:22, stiffness:280 }}
-                    style={{ background:'#fff', border:`2px solid ${borderCol}`, borderRadius:18,
+                    style={{ background: C.white, border:`2px solid ${borderCol}`, borderRadius:18,
                       overflow:'hidden', boxShadow:'0 2px 16px rgba(0,0,0,.07)', transition:'border-color .2s' }}
                   >
                     {/* Thumbnail */}
@@ -422,7 +422,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
                           <button
                             onClick={() => regenSuggestions(item)}
                             disabled={item.generating || uploading}
-                            style={{ display:'flex', alignItems:'center', gap:4, background:item.generating?'#f1f5f9':'#fef9c3', border:`1px solid ${item.generating?'#e2e8f0':'#fde68a'}`, borderRadius:8, padding:'4px 10px', cursor:item.generating||uploading?'default':'pointer', transition:'all .15s' }}
+                            style={{ display:'flex', alignItems:'center', gap:4, background:item.generating?'rgba(255,255,255,0.05)':'#fef9c3', border:`1px solid ${item.generating?'#e2e8f0':'#fde68a'}`, borderRadius:8, padding:'4px 10px', cursor:item.generating||uploading?'default':'pointer', transition:'all .15s' }}
                           >
                             {item.generating
                               ? <motion.span animate={{ rotate:360 }} transition={{ duration:.8, repeat:Infinity, ease:'linear' }} style={{ display:'inline-block', fontSize:12 }}>⟳</motion.span>
@@ -459,7 +459,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
                         />
                       </div>
                       {item.error && (
-                        <div style={{ fontSize:11, color:'#dc2626', background:'#fef2f2', borderRadius:8, padding:'6px 10px', fontFamily:FONT }}>⚠️ {item.error}</div>
+                        <div style={{ fontSize:11, color:'#dc2626', background:'rgba(239,68,68,0.12)', borderRadius:8, padding:'6px 10px', fontFamily:FONT }}>⚠️ {item.error}</div>
                       )}
                     </div>
                   </motion.div>
@@ -470,7 +470,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
         </div>
 
         {/* ── FOOTER ── */}
-        <div style={{ padding:'16px 24px', background:'#fff', borderTop:'1px solid #e5e7eb', flexShrink:0, display:'flex', flexDirection:'column', gap:10 }}>
+        <div style={{ padding:'16px 24px', background: C.white, borderTop:'1px solid #e5e7eb', flexShrink:0, display:'flex', flexDirection:'column', gap:10 }}>
           {uploading && (
             <div>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
@@ -480,7 +480,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
                 </span>
                 <span style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, fontWeight:700 }}>{progress}%</span>
               </div>
-              <div style={{ background:'#f1f5f9', borderRadius:99, height:7, overflow:'hidden' }}>
+              <div style={{ background:'rgba(255,255,255,0.05)', borderRadius:99, height:7, overflow:'hidden' }}>
                 <motion.div animate={{ width:`${progress}%` }} transition={{ duration:.3 }}
                   style={{ height:'100%', background:'linear-gradient(90deg,#6366f1,#e9a020)', borderRadius:99 }}/>
               </div>
@@ -620,21 +620,21 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
       id: 'whatsapp',
       label: 'WhatsApp',
       emoji: '💬',
-      bg: '#dcfce7', color: '#15803d', hoverBg: '#bbf7d0',
+      bg: 'rgba(34,197,94,0.16)', color: '#15803d', hoverBg: '#bbf7d0',
       href: `https://wa.me/?text=${shareText}%20${shareUrl}`,
     },
     {
       id: 'facebook',
       label: 'Facebook',
       emoji: '👥',
-      bg: '#eff6ff', color: '#1d4ed8', hoverBg: '#dbeafe',
+      bg: 'rgba(59,130,246,0.12)', color: '#1d4ed8', hoverBg: 'rgba(59,130,246,0.16)',
       href: `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
     },
     {
       id: 'twitter',
       label: 'X (Twitter)',
       emoji: '🐦',
-      bg: '#f0f9ff', color: '#0369a1', hoverBg: '#e0f2fe',
+      bg: '#f0f9ff', color: '#0369a1', hoverBg: 'rgba(59,130,246,0.14)',
       href: `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`,
     },
     {
@@ -664,7 +664,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
         transition={{ type:'spring', damping:26, stiffness:300 }}
         style={{
           display:'flex', flexDirection:'column',
-          background:'#fff', borderRadius:22, overflow:'hidden',
+          background: C.white, borderRadius:22, overflow:'hidden',
           width:'100%', maxWidth:560, maxHeight:'94vh',
           boxShadow:'0 40px 100px rgba(0,0,0,.7)',
         }}
@@ -682,7 +682,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
           </div>
           {isOwner && (
             <button onClick={() => { onDelete(post.id); onClose() }}
-              style={{ border:'none', background:'#fef2f2', color:'#ef4444', cursor:'pointer', fontSize:11, fontFamily:FONT, fontWeight:700, padding:'5px 10px', borderRadius:8 }}>
+              style={{ border:'none', background:'rgba(239,68,68,0.12)', color:'#ef4444', cursor:'pointer', fontSize:11, fontFamily:FONT, fontWeight:700, padding:'5px 10px', borderRadius:8 }}>
               🗑 Delete
             </button>
           )}
@@ -734,13 +734,13 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
         <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }}>
           {/* Like */}
           <motion.button whileTap={{ scale:1.3 }} onClick={() => handleReaction('like')}
-            style={{ border:'none', background: reactions.mine==='like'?'#fef2f2':'transparent', borderRadius:99, padding:'5px 10px', cursor:user?'pointer':'default', display:'flex', alignItems:'center', gap:5, transition:'background .2s' }}>
+            style={{ border:'none', background: reactions.mine==='like'?'rgba(239,68,68,0.12)':'transparent', borderRadius:99, padding:'5px 10px', cursor:user?'pointer':'default', display:'flex', alignItems:'center', gap:5, transition:'background .2s' }}>
             <span style={{ fontSize:20, filter:reactions.mine==='like'?'none':'grayscale(1)', transition:'filter .2s' }}>❤️</span>
             <span style={{ fontSize:13, fontWeight:700, color:reactions.mine==='like'?'#ef4444':'#6b7280', fontFamily:FONT }}>{reactions.likes}</span>
           </motion.button>
           {/* Dislike */}
           <motion.button whileTap={{ scale:1.3 }} onClick={() => handleReaction('dislike')}
-            style={{ border:'none', background:reactions.mine==='dislike'?'#eff6ff':'transparent', borderRadius:99, padding:'5px 10px', cursor:user?'pointer':'default', display:'flex', alignItems:'center', gap:5, transition:'background .2s' }}>
+            style={{ border:'none', background:reactions.mine==='dislike'?'rgba(59,130,246,0.12)':'transparent', borderRadius:99, padding:'5px 10px', cursor:user?'pointer':'default', display:'flex', alignItems:'center', gap:5, transition:'background .2s' }}>
             <span style={{ fontSize:20, filter:reactions.mine==='dislike'?'none':'grayscale(1)', transition:'filter .2s' }}>👎</span>
             <span style={{ fontSize:13, fontWeight:700, color:reactions.mine==='dislike'?'#6366f1':'#6b7280', fontFamily:FONT }}>{reactions.dislikes}</span>
           </motion.button>
@@ -755,8 +755,8 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
 
           {/* Download */}
           <motion.button whileTap={{ scale:.94 }} onClick={handleDownload} disabled={downloading}
-            style={{ display:'flex', alignItems:'center', gap:6, border:'1.5px solid #e5e7eb', borderRadius:10, padding:'7px 13px', background:downloading?'#f9fafb':'#fff', cursor:downloading?'default':'pointer', transition:'all .18s', flexShrink:0 }}
-            onMouseEnter={e => { if(!downloading){ e.currentTarget.style.background='#f0fdf4'; e.currentTarget.style.borderColor='#86efac' }}}
+            style={{ display:'flex', alignItems:'center', gap:6, border:'1.5px solid #e5e7eb', borderRadius:10, padding:'7px 13px', background:downloading?'rgba(255,255,255,0.03)':'#fff', cursor:downloading?'default':'pointer', transition:'all .18s', flexShrink:0 }}
+            onMouseEnter={e => { if(!downloading){ e.currentTarget.style.background='rgba(34,197,94,0.12)'; e.currentTarget.style.borderColor='#86efac' }}}
             onMouseLeave={e => { e.currentTarget.style.background='#fff'; e.currentTarget.style.borderColor='#e5e7eb' }}>
             {downloading
               ? <motion.span animate={{ rotate:360 }} transition={{ duration:.9, repeat:Infinity, ease:'linear' }} style={{ display:'inline-block', fontSize:15 }}>⟳</motion.span>
@@ -788,7 +788,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
               exit={{ opacity:0, y:-8, scaleY:.92 }}
               transition={{ type:'spring', damping:22, stiffness:320 }}
               data-share-sheet="1"
-              style={{ background:'#fafafa', borderBottom:'1px solid #e5e7eb', padding:'14px 16px', flexShrink:0, transformOrigin:'top' }}
+              style={{ background:'rgba(255,255,255,0.03)', borderBottom:'1px solid #e5e7eb', padding:'14px 16px', flexShrink:0, transformOrigin:'top' }}
             >
               <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:.5, fontFamily:FONT, marginBottom:10 }}>
                 Share via
@@ -816,7 +816,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
                 <motion.button
                   whileTap={{ scale:.93 }} whileHover={{ y:-2 }}
                   onClick={copyLink}
-                  style={{ display:'flex', alignItems:'center', gap:7, background: copied?'#f0fdf4':'#f3f4f6', border:`1.5px solid ${copied?'#86efac':'#e5e7eb'}`, borderRadius:12, padding:'9px 15px', cursor:'pointer', transition:'all .15s', flex:'1 1 120px' }}
+                  style={{ display:'flex', alignItems:'center', gap:7, background: copied?'rgba(34,197,94,0.12)':'#f3f4f6', border:`1.5px solid ${copied?'#86efac':'#e5e7eb'}`, borderRadius:12, padding:'9px 15px', cursor:'pointer', transition:'all .15s', flex:'1 1 120px' }}
                 >
                   <span style={{ fontSize:18 }}>{copied ? '✅' : '📋'}</span>
                   <span style={{ fontSize:12, fontWeight:700, color: copied?'#15803d':'#374151', fontFamily:FONT }}>
@@ -838,7 +838,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
           {comments.map(c => (
             <div key={c.id} style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
               <Avatar name={c.player_name} size={28} style={{ flexShrink:0, marginTop:2 }}/>
-              <div style={{ flex:1, background:'#f9fafb', borderRadius:12, padding:'8px 12px' }}>
+              <div style={{ flex:1, background:'rgba(255,255,255,0.03)', borderRadius:12, padding:'8px 12px' }}>
                 <div style={{ fontWeight:700, fontSize:12, color:'#060d2e', fontFamily:FONT, marginBottom:2 }}>{c.player_name}</div>
                 <div style={{ fontSize:13, color:'#374151', fontFamily:FONT, lineHeight:1.5, wordBreak:'break-word' }}>{c.text}</div>
                 <div style={{ fontSize:10, color:'#9ca3af', marginTop:3, fontFamily:FONT }}>{timeAgo(c.created_at)}</div>
@@ -855,7 +855,7 @@ function LightboxModal({ post, user, playerInfo, onClose, onReactionChange, onCo
         </div>
 
         {/* ── COMMENT INPUT (pinned bottom) ── */}
-        <div style={{ borderTop:'1px solid #f0f0f0', padding:'12px 16px', flexShrink:0, background:'#fff' }}>
+        <div style={{ borderTop:'1px solid #f0f0f0', padding:'12px 16px', flexShrink:0, background: C.white }}>
           {user ? (
             <div style={{ display:'flex', gap:9, alignItems:'flex-end' }}>
               <Avatar name={playerInfo?.name || user.email} size={30} style={{ flexShrink:0 }}/>
@@ -1320,7 +1320,7 @@ export default function GalleryPage() {
       </div>
 
       {/* ── Main Tabs (Albums / Photos / Videos) ────────────── */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', position:'sticky', top:56, zIndex:50 }}>
+      <div style={{ background: C.white, borderBottom:'1px solid #e5e7eb', position:'sticky', top:56, zIndex:50 }}>
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'0 16px', display:'flex', gap:0 }}>
           {[
             { id:'albums', label:'📁 Albums',   count: albumNames.length + (noAlbum.length > 0 ? 1 : 0), },

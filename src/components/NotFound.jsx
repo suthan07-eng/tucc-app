@@ -19,7 +19,7 @@ export default function NotFound() {
     >
       {/* Club logo */}
       <div style={{
-        width: 72, height: 72, borderRadius: '50%', background: '#fff',
+        width: 72, height: 72, borderRadius: '50%', background: C.white,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         boxShadow: '0 4px 20px rgba(30,58,138,0.15)', overflow: 'hidden', marginBottom: 28,
       }}>

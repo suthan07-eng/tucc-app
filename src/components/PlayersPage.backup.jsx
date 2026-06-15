@@ -50,11 +50,11 @@ function detectRole(p) {
 }
 
 const ROLE_META = {
-  'Batsman':       { color: '#15803d', bg: '#dcfce7', grad: 'linear-gradient(135deg,#15803d,#3b82f6)', icon: TrendingUp,  label: 'BAT' },
+  'Batsman':       { color: '#15803d', bg: 'rgba(34,197,94,0.16)', grad: 'linear-gradient(135deg,#15803d,#3b82f6)', icon: TrendingUp,  label: 'BAT' },
   'Bowler':        { color: '#be123c', bg: '#ffe4e6', grad: 'linear-gradient(135deg,#be123c,#f43f5e)', icon: Target,      label: 'BOWL' },
-  'All-Rounder':   { color: '#7c3aed', bg: '#ede9fe', grad: 'linear-gradient(135deg,#7c3aed,#a78bfa)', icon: Star,        label: 'AR' },
-  'Wicket-Keeper': { color: '#b45309', bg: '#fef3c7', grad: 'linear-gradient(135deg,#b45309,#f59e0b)', icon: Shield,      label: 'WK' },
-  'Player':        { color: '#475569', bg: '#f1f5f9', grad: 'linear-gradient(135deg,#475569,#94a3b8)', icon: Users,       label: 'PLR' },
+  'All-Rounder':   { color: '#7c3aed', bg: 'rgba(168,85,247,0.14)', grad: 'linear-gradient(135deg,#7c3aed,#a78bfa)', icon: Star,        label: 'AR' },
+  'Wicket-Keeper': { color: '#b45309', bg: 'rgba(233,160,32,0.16)', grad: 'linear-gradient(135deg,#b45309,#f59e0b)', icon: Shield,      label: 'WK' },
+  'Player':        { color: '#475569', bg: 'rgba(255,255,255,0.05)', grad: 'linear-gradient(135deg,#475569,#94a3b8)', icon: Users,       label: 'PLR' },
 }
 
 const HAND_SHORT = s => (s || '').replace('Right Hand', 'RHB').replace('Left Hand', 'LHB').replace('Right-arm', 'RA').replace('Left-arm', 'LA').replace('Slow left-arm orthodox', 'LA spin').replace('Off break (right-arm)', 'RA off-spin').replace(' fast', ' fast')
@@ -115,9 +115,9 @@ function PlayerCard({ player, index, onClick }) {
 
   const statPills = [
     { label: 'GP',   value: matches, color: '#6366f1', bg: '#eef2ff', borderColor: '#c7d2fe' },
-    { label: 'Runs', value: runs,    color: '#15803d', bg: '#dcfce7', borderColor: '#bbf7d0' },
+    { label: 'Runs', value: runs,    color: '#15803d', bg: 'rgba(34,197,94,0.16)', borderColor: '#bbf7d0' },
     { label: 'Wkts', value: wickets, color: '#be123c', bg: '#ffe4e6', borderColor: '#fecdd3' },
-    { label: 'Catch',value: catches, color: '#7c3aed', bg: '#ede9fe', borderColor: '#ddd6fe' },
+    { label: 'Catch',value: catches, color: '#7c3aed', bg: 'rgba(168,85,247,0.14)', borderColor: '#ddd6fe' },
   ].filter(s => s.value != null)
 
   return (
@@ -128,7 +128,7 @@ function PlayerCard({ player, index, onClick }) {
       whileTap={{ scale: 0.97 }}
       onClick={() => onClick(player)}
       style={{
-        background: '#fff',
+        background: C.white,
         borderRadius: 24,
         overflow: 'hidden',
         border: '1px solid rgba(0,0,0,.06)',
@@ -201,7 +201,7 @@ function PlayerCard({ player, index, onClick }) {
             <span style={{ fontFamily: FONT, fontSize: 9, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 0.6 }}>{role}</span>
           </div>
           {player.id && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', borderRadius: 20, padding: '3px 9px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: '3px 9px', border: '1px solid #e2e8f0' }}>
               <span style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: C.gray4 }}>#{player.id}</span>
             </div>
           )}
@@ -210,12 +210,12 @@ function PlayerCard({ player, index, onClick }) {
         {/* Bat / Bowl style chips */}
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 }}>
           {player.batStyle && (
-            <div style={{ background: '#eff6ff', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', border: '1px solid #bfdbfe' }}>
+            <div style={{ background: 'rgba(59,130,246,0.12)', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', border: '1px solid #bfdbfe' }}>
               🏏 {HAND_SHORT(player.batStyle)}
             </div>
           )}
           {player.bowlStyle && (
-            <div style={{ background: '#fff1f2', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', border: '1px solid #fecdd3' }}>
+            <div style={{ background: 'rgba(239,68,68,0.12)', borderRadius: 6, padding: '3px 7px', fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', border: '1px solid #fecdd3' }}>
               🔴 {HAND_SHORT(player.bowlStyle)}
             </div>
           )}
@@ -254,14 +254,14 @@ function PlayerModal({ player, onClose }) {
 
   const allStats = [
     { label: 'Games',   value: matches, color: '#6366f1', bg: '#eef2ff', border: '#c7d2fe' },
-    { label: 'Runs',    value: runs,    color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
-    { label: 'Innings', value: innings, color: '#0369a1', bg: '#e0f2fe', border: '#bae6fd' },
-    { label: 'Highest', value: highest, color: '#b45309', bg: '#fef3c7', border: '#fde68a' },
+    { label: 'Runs',    value: runs,    color: '#15803d', bg: 'rgba(34,197,94,0.16)', border: '#bbf7d0' },
+    { label: 'Innings', value: innings, color: '#0369a1', bg: 'rgba(59,130,246,0.14)', border: '#bae6fd' },
+    { label: 'Highest', value: highest, color: '#b45309', bg: 'rgba(233,160,32,0.16)', border: '#fde68a' },
     { label: 'Average', value: average != null ? Number(average).toFixed(1) : null, color: '#0891b2', bg: '#cffafe', border: '#a5f3fc' },
     { label: 'Wickets', value: wickets, color: '#be123c', bg: '#ffe4e6', border: '#fecdd3' },
-    { label: 'Economy', value: economy != null ? Number(economy).toFixed(2) : null, color: '#7c3aed', bg: '#ede9fe', border: '#ddd6fe' },
-    { label: 'Best',    value: bestWkt != null ? `${bestWkt}wkt` : null, color: '#9f1239', bg: '#fff1f2', border: '#fecdd3' },
-    { label: 'Catches', value: catches, color: '#6d28d9', bg: '#f5f3ff', border: '#ddd6fe' },
+    { label: 'Economy', value: economy != null ? Number(economy).toFixed(2) : null, color: '#7c3aed', bg: 'rgba(168,85,247,0.14)', border: '#ddd6fe' },
+    { label: 'Best',    value: bestWkt != null ? `${bestWkt}wkt` : null, color: '#9f1239', bg: 'rgba(239,68,68,0.12)', border: '#fecdd3' },
+    { label: 'Catches', value: catches, color: '#6d28d9', bg: 'rgba(168,85,247,0.12)', border: '#ddd6fe' },
   ].filter(s => s.value != null && s.value !== '' && s.value !== 0 || s.value === 0 && s.label === 'Runs')
    .filter(s => s.value != null)
 
@@ -280,7 +280,7 @@ function PlayerModal({ player, onClose }) {
         transition={{ type: 'spring', duration: 0.42, bounce: 0.08 }}
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#f8fafc', borderRadius: '32px 32px 0 0',
+          background: 'rgba(255,255,255,0.03)', borderRadius: '32px 32px 0 0',
           width: '100%', maxWidth: MAX_WIDTH,
           maxHeight: '92vh', overflowY: 'auto',
           paddingBottom: 48,
@@ -335,13 +335,13 @@ function PlayerModal({ player, onClose }) {
               <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: C.gray3, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Playing Style</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {player.batStyle && (
-                  <div style={{ flex: 1, minWidth: 120, background: '#eff6ff', borderRadius: 16, padding: '12px 16px', border: '1px solid #bfdbfe' }}>
+                  <div style={{ flex: 1, minWidth: 120, background: 'rgba(59,130,246,0.12)', borderRadius: 16, padding: '12px 16px', border: '1px solid #bfdbfe' }}>
                     <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>🏏 Batting</div>
                     <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#1e3a8a' }}>{player.batStyle}</div>
                   </div>
                 )}
                 {player.bowlStyle && (
-                  <div style={{ flex: 1, minWidth: 120, background: '#fff1f2', borderRadius: 16, padding: '12px 16px', border: '1px solid #fecdd3' }}>
+                  <div style={{ flex: 1, minWidth: 120, background: 'rgba(239,68,68,0.12)', borderRadius: 16, padding: '12px 16px', border: '1px solid #fecdd3' }}>
                     <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: '#be123c', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>🔴 Bowling</div>
                     <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: '#881337' }}>{player.bowlStyle}</div>
                   </div>
@@ -392,7 +392,7 @@ function PlayerModal({ player, onClose }) {
 // ── Skeleton card ─────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', border: `1px solid ${C.gray2}` }}>
+    <div style={{ background: C.white, borderRadius: 24, overflow: 'hidden', border: `1px solid ${C.gray2}` }}>
       {/* Photo area */}
       <div style={{ paddingTop: '72%', background: C.gray1, position: 'relative' }}>
         <div style={{ position: 'absolute', bottom: -24, left: '50%', transform: 'translateX(-50%)', width: '60%', aspectRatio: '1', borderRadius: '50%', background: C.gray2, border: '3px solid #fff' }} />
@@ -481,7 +481,7 @@ export default function PlayersPage() {
                 <motion.div animate={{ scale:[1,1.1,1], opacity:[.4,.1,.4] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
                   style={{ position:'absolute', inset:-8, borderRadius:'50%', background:'radial-gradient(circle,rgba(233,160,32,.4) 0%,transparent 70%)', pointerEvents:'none' }}/>
                 <div style={{ width:68, height:68, borderRadius:'50%', background:'rgba(255,255,255,.06)', border:'3px solid rgba(233,160,32,.6)', boxShadow:'0 0 0 2px rgba(233,160,32,.15), 0 8px 28px rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', position:'relative', zIndex:1 }}>
-                  <div style={{ width:58, height:58, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <div style={{ width:58, height:58, borderRadius:'50%', background: '#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <img src="/logo.png" alt="TUCC" style={{ width:50, height:50, objectFit:'contain' }}/>
                   </div>
                 </div>
@@ -552,7 +552,7 @@ export default function PlayersPage() {
                 paddingLeft: 40, paddingRight: 16, paddingTop: 12, paddingBottom: 12,
                 borderRadius: 14, border: `1.5px solid ${C.gray2}`,
                 fontFamily: FONT, fontSize: 14, color: C.dark,
-                background: '#fff', outline: 'none',
+                background: C.white, outline: 'none',
                 boxShadow: `0 2px 8px ${C.shadow}`,
               }}
             />
@@ -562,7 +562,7 @@ export default function PlayersPage() {
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
             {FILTERS.map(f => {
               const active = filter === f
-              const m = ROLE_META[f] || { color: '#4338ca', bg: '#ede9fe', grad: 'linear-gradient(135deg,#4338ca,#6366f1)' }
+              const m = ROLE_META[f] || { color: '#4338ca', bg: 'rgba(168,85,247,0.14)', grad: 'linear-gradient(135deg,#4338ca,#6366f1)' }
               return (
                 <motion.button
                   key={f}
@@ -596,7 +596,7 @@ export default function PlayersPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ background: '#fff1f2', border: `1.5px solid #fecaca`, borderRadius: 16, padding: '16px', marginBottom: 16, textAlign: 'center', color: C.red, fontFamily: FONT, fontSize: 14 }}>
+          <div style={{ background: 'rgba(239,68,68,0.12)', border: `1.5px solid #fecaca`, borderRadius: 16, padding: '16px', marginBottom: 16, textAlign: 'center', color: C.red, fontFamily: FONT, fontSize: 14 }}>
             Couldn't load squad data.
           </div>
         )}
@@ -607,7 +607,7 @@ export default function PlayersPage() {
             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 20px', background: '#fff', borderRadius: 22, border: `1px solid ${C.gray2}` }}>
+          <div style={{ textAlign: 'center', padding: '48px 20px', background: C.white, borderRadius: 22, border: `1px solid ${C.gray2}` }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🏏</div>
             <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 800, color: C.dark }}>No players found</div>
             <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray3, marginTop: 4 }}>Try a different search or filter.</div>

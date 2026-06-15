@@ -49,7 +49,7 @@ export default function League() {
         <motion.div variants={staggerList} initial="hidden" animate="visible" style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
           <motion.button
             variants={fadeUp}
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 12 }}
           >
             ← Home
@@ -57,7 +57,7 @@ export default function League() {
           <motion.div variants={fadeUp} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <span style={{ fontSize: 38, flexShrink: 0 }}>🏆</span>
             <div>
-              <h1 style={{ color: C.white, fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
+              <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
                 BTCL UK · British Tamil Cricket League
               </h1>
               <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 13, margin: '4px 0 0' }}>
@@ -180,7 +180,7 @@ function FallbackCard() {
           textAlign: 'center',
         }}
       >
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.15)', overflow: 'hidden' }}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.15)', overflow: 'hidden' }}>
           <img src="/logo.png" alt="DTU CC" style={{ width: 72, height: 72, objectFit: 'contain' }} />
         </div>
         <div style={{ color: C.gold, fontWeight: 800, fontSize: 18, letterSpacing: 0.4 }}>
@@ -213,7 +213,7 @@ function FallbackCard() {
               style={{
                 display: 'block',
                 background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`,
-                color: C.white,
+                color: '#fff',
                 padding: '17px 20px',
                 borderRadius: 12,
                 textDecoration: 'none',

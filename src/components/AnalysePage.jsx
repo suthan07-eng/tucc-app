@@ -14,12 +14,12 @@ const EASE = [0.23, 1, 0.32, 1]
 // ── Badge ──────────────────────────────────────────────────────────────────
 function Badge({ label }) {
   const cfg = {
-    AVOID:   { bg: '#fee2e2', text: '#b91c1c', border: '#fca5a5' },
-    CONTAIN: { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' },
-    TARGET:  { bg: '#dcfce7', text: '#15803d', border: '#86efac' },
-    WATCH:   { bg: '#ede9fe', text: '#6d28d9', border: '#c4b5fd' },
+    AVOID:   { bg: 'rgba(239,68,68,0.16)', text: '#b91c1c', border: '#fca5a5' },
+    CONTAIN: { bg: 'rgba(233,160,32,0.16)', text: '#92400e', border: '#fcd34d' },
+    TARGET:  { bg: 'rgba(34,197,94,0.16)', text: '#15803d', border: '#86efac' },
+    WATCH:   { bg: 'rgba(168,85,247,0.14)', text: '#6d28d9', border: '#c4b5fd' },
   }
-  const s = cfg[label] || { bg: '#f1f5f9', text: '#475569', border: '#cbd5e1' }
+  const s = cfg[label] || { bg: 'rgba(255,255,255,0.05)', text: '#475569', border: '#cbd5e1' }
   const icons = { AVOID:'🚫', CONTAIN:'🛡️', TARGET:'🎯', WATCH:'👁️' }
   return (
     <span style={{
@@ -87,7 +87,7 @@ function Stat({ label, value, highlight }) {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '7px 10px', borderRadius: 9,
-      background: highlight ? C.blueBg : '#f8fafc',
+      background: highlight ? C.blueBg : 'rgba(255,255,255,0.03)',
       border: `1px solid ${highlight ? '#bfdbfe' : '#e2e8f0'}`,
       minWidth: 50,
     }}>
@@ -105,7 +105,7 @@ function BatCard({ a, bat }) {
   return (
     <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
       transition={{ duration:0.3, ease:EASE }}
-      style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
+      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
@@ -151,7 +151,7 @@ function BatCard({ a, bat }) {
                 </div>
               )}
               {a.how_to_play && (
-                <div style={{ background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 14px' }}>
+                <div style={{ background:'rgba(59,130,246,0.12)', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 14px' }}>
                   <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:C.green, marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
                   <p style={{ fontFamily:FONT, fontSize:13, color:C.gray5, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
                 </div>
@@ -172,7 +172,7 @@ function BowlCard({ a, bowl }) {
   return (
     <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
       transition={{ duration:0.3, ease:EASE }}
-      style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
+      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
@@ -217,7 +217,7 @@ function BowlCard({ a, bowl }) {
                 </div>
               )}
               {a.how_to_play && (
-                <div style={{ background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 14px' }}>
+                <div style={{ background:'rgba(59,130,246,0.12)', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 14px' }}>
                   <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:C.green, marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
                   <p style={{ fontFamily:FONT, fontSize:13, color:C.gray5, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
                 </div>
@@ -238,7 +238,7 @@ function ArCard({ a, bat, bowl }) {
   return (
     <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
       transition={{ duration:0.3, ease:EASE }}
-      style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
+      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
@@ -268,18 +268,18 @@ function ArCard({ a, bat, bowl }) {
               {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:C.gray5, margin:'0 0 12px' }}>{a.summary}</p>}
               <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                 {bat && (
-                  <div style={{ flex:1, minWidth:130, background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:10, padding:'10px 12px' }}>
+                  <div style={{ flex:1, minWidth:130, background:'rgba(34,197,94,0.12)', border:'1px solid #bbf7d0', borderRadius:10, padding:'10px 12px' }}>
                     <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#15803d', marginBottom:3 }}>BATTING</div>
                     <div style={{ fontFamily:FONT, fontSize:13, color:C.dark }}>{bat.runs} runs · SR {bat.strike_rate} · HS {bat.high_score}{bat.high_score_not_out?'*':''}</div>
                   </div>
                 )}
                 {bowl && (
-                  <div style={{ flex:1, minWidth:130, background:'#fefce8', border:'1px solid #fde68a', borderRadius:10, padding:'10px 12px' }}>
+                  <div style={{ flex:1, minWidth:130, background:'rgba(233,160,32,0.12)', border:'1px solid #fde68a', borderRadius:10, padding:'10px 12px' }}>
                     <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#92400e', marginBottom:3 }}>BOWLING</div>
                     <div style={{ fontFamily:FONT, fontSize:13, color:C.dark }}>{bowl.wickets} wkts · Econ {bowl.economy_rate} · Best {bowl.best_bowling}</div>
                   </div>
                 )}
-                <div style={{ flex:1, minWidth:130, background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 12px' }}>
+                <div style={{ flex:1, minWidth:130, background:'rgba(59,130,246,0.12)', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 12px' }}>
                   <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:C.green, marginBottom:3 }}>COMPOSITE</div>
                   <div style={{ fontFamily:FONT, fontSize:13, color:C.dark }}>
                     Bat {Math.round(a.batting_score??0)} · Bowl {Math.round(a.bowling_score??0)} · Overall {Math.round(a.composite_score)}
@@ -305,7 +305,7 @@ function SortableTable({ rows, cols }) {
   }), [rows, sortKey, dir])
   const toggle = k => { if (sortKey===k) setDir(d=>d==='desc'?'asc':'desc'); else { setSortKey(k); setDir('desc') } }
   return (
-    <div style={{ overflowX:'auto', borderRadius:14, border:'1.5px solid #e2e8f0', background:'#fff' }}>
+    <div style={{ overflowX:'auto', borderRadius:14, border:'1.5px solid #e2e8f0', background: C.white }}>
       <table style={{ width:'100%', borderCollapse:'collapse', fontFamily:FONT }}>
         <thead>
           <tr style={{ background:C.greenDark }}>
@@ -319,9 +319,9 @@ function SortableTable({ rows, cols }) {
         </thead>
         <tbody>
           {sorted.map((row, i) => (
-            <tr key={i} style={{ background:i%2===0?'#fff':'#f8fafc' }}>
+            <tr key={i} style={{ background:i%2===0?'transparent':'rgba(255,255,255,0.03)' }}>
               {cols.map(c => (
-                <td key={c.key} style={{ padding:'9px 12px', fontSize:13, color:c.highlight?C.green:C.dark, fontWeight:c.highlight?700:500, textAlign:c.align||'center', whiteSpace:'nowrap', borderTop:'1px solid #f1f5f9' }}>
+                <td key={c.key} style={{ padding:'9px 12px', fontSize:13, color:c.highlight?C.green:C.dark, fontWeight:c.highlight?700:500, textAlign:c.align||'center', whiteSpace:'nowrap', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
                   {row[c.key] ?? '—'}
                 </td>
               ))}
@@ -347,10 +347,10 @@ function ChartTip({ active, payload, label }) {
 // ── Tab bar ───────────────────────────────────────────────────────────────
 function TabBar({ tabs, active, onChange }) {
   return (
-    <div style={{ display:'flex', gap:5, background:'#f1f5f9', borderRadius:14, padding:5, overflowX:'auto' }}>
+    <div style={{ display:'flex', gap:5, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14, padding:5, overflowX:'auto' }}>
       {tabs.map(t => (
         <motion.button key={t.key} onClick={() => onChange(t.key)} whileTap={{ scale:0.96 }}
-          style={{ flex:'1 0 auto', padding:'9px 14px', borderRadius:10, border:'none', cursor:'pointer', background:active===t.key?'#fff':'none', fontFamily:FONT, fontSize:13, fontWeight:active===t.key?800:500, color:active===t.key?C.dark:C.gray4, boxShadow:active===t.key?'0 2px 8px rgba(30,58,138,.1)':'none', transition:'all 150ms ease', whiteSpace:'nowrap' }}>
+          style={{ flex:'1 0 auto', padding:'9px 14px', borderRadius:10, border:'none', cursor:'pointer', background:active===t.key?C.gold:'none', fontFamily:FONT, fontSize:13, fontWeight:active===t.key?800:500, color:active===t.key?'#1a0a00':C.gray4, boxShadow:active===t.key?'0 2px 10px rgba(233,160,32,.3)':'none', transition:'all 150ms ease', whiteSpace:'nowrap' }}>
           {t.label}
         </motion.button>
       ))}
@@ -410,7 +410,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
   const SectionHeader = ({ icon, title, sub, color = C.green }) => (
     <div style={{ marginBottom:14 }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:2 }}>
-        <div style={{ width:34, height:34, borderRadius:10, background: color === C.green ? C.blueBg : '#fef3c7', border:`1.5px solid ${color === C.green ? '#bfdbfe' : '#fcd34d'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{icon}</div>
+        <div style={{ width:34, height:34, borderRadius:10, background: color === C.green ? C.blueBg : 'rgba(233,160,32,0.16)', border:`1.5px solid ${color === C.green ? '#bfdbfe' : '#fcd34d'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{icon}</div>
         <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark }}>{title}</div>
       </div>
       <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginLeft:44 }}>{sub}</div>
@@ -419,7 +419,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
 
   const PhaseCard = ({ phase, overs, desc, color = '#2563eb', delay = 0 }) => (
     <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay, duration:0.28, ease:EASE }}
-      style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'13px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:14, padding:'13px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
         <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:C.dark }}>{phase}</div>
         <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:color, background:`${color}15`, padding:'3px 8px', borderRadius:20 }}>{overs}</div>
@@ -445,7 +445,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
     )
     return (
       <motion.div initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.28, ease:EASE }}
-        style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'12px 14px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+        style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:14, padding:'12px 14px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
           {a.opponent_players?.photo_url
             ? <div style={{ width:38, height:38, borderRadius:'50%', overflow:'hidden', flexShrink:0, border:`2px solid ${tagColor}40` }}><img src={a.opponent_players.photo_url} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover' }}/></div>
@@ -455,8 +455,8 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
             <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:C.dark }}>{nm}</div>
             <div style={{ display:'flex', gap:6, marginTop:3, flexWrap:'wrap' }}>
               <Badge label={a.tag}/>
-              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'#f1f5f9', borderRadius:6, padding:'2px 7px' }}>{stat1}</span>
-              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'#f1f5f9', borderRadius:6, padding:'2px 7px' }}>{stat2}</span>
+              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'rgba(255,255,255,0.05)', borderRadius:6, padding:'2px 7px' }}>{stat1}</span>
+              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'rgba(255,255,255,0.05)', borderRadius:6, padding:'2px 7px' }}>{stat2}</span>
             </div>
           </div>
         </div>
@@ -533,7 +533,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
             const tagColor = a.tag === 'AVOID' ? '#dc2626' : a.tag === 'TARGET' ? '#16a34a' : '#d97706'
             return (
               <motion.div key={a.id} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.28, ease:EASE }}
-                style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:14, padding:'14px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+                style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:14, padding:'14px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
                   {a.opponent_players?.photo_url
                     ? <div style={{ width:40, height:40, borderRadius:'50%', overflow:'hidden', flexShrink:0 }}><img src={a.opponent_players.photo_url} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover' }}/></div>
@@ -549,18 +549,18 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
                   </div>
                 </div>
                 <div style={{ display:'flex', gap:8 }}>
-                  <div style={{ flex:1, background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:10, padding:'8px 10px' }}>
+                  <div style={{ flex:1, background:'rgba(34,197,94,0.12)', border:'1px solid #bbf7d0', borderRadius:10, padding:'8px 10px' }}>
                     <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#16a34a', marginBottom:4 }}>🏏 BAT</div>
                     <div style={{ fontFamily:FONT, fontSize:12, color:C.dark }}>{bs?.runs ?? '—'} runs @ SR {parseFloat(bs?.strike_rate)?.toFixed(0) ?? '—'}</div>
                     <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>Bat score: {Math.round(a.batting_score||0)}/100</div>
                   </div>
-                  <div style={{ flex:1, background:'#faf5ff', border:'1px solid #e9d5ff', borderRadius:10, padding:'8px 10px' }}>
+                  <div style={{ flex:1, background:'rgba(168,85,247,0.12)', border:'1px solid #e9d5ff', borderRadius:10, padding:'8px 10px' }}>
                     <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#7c3aed', marginBottom:4 }}>🎳 BOWL</div>
                     <div style={{ fontFamily:FONT, fontSize:12, color:C.dark }}>{bw?.wickets ?? '—'} wkts @ {parseFloat(bw?.economy_rate)?.toFixed(2) ?? '—'} econ</div>
                     <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>Bowl score: {Math.round(a.bowling_score||0)}/100</div>
                   </div>
                 </div>
-                {a.scouting_notes && <div style={{ fontFamily:FONT, fontSize:12, color:'#374151', lineHeight:1.6, marginTop:10, padding:'8px 10px', background:'#f8fafc', borderRadius:8, borderLeft:`3px solid ${tagColor}` }}>{a.scouting_notes}</div>}
+                {a.scouting_notes && <div style={{ fontFamily:FONT, fontSize:12, color:'#374151', lineHeight:1.6, marginTop:10, padding:'8px 10px', background:'rgba(255,255,255,0.03)', borderRadius:8, borderLeft:`3px solid ${tagColor}` }}>{a.scouting_notes}</div>}
               </motion.div>
             )
           })}
@@ -569,7 +569,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
 
       {/* === KEY MATCHUP MATRIX === */}
       {avoidBatters.length > 0 && avoidBowlers.length > 0 && (
-        <div style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:16, padding:16, marginBottom:20, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+        <div style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:16, padding:16, marginBottom:20, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
           <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🔑 Key Matchups</div>
           <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:14 }}>Critical individual contests that could decide the match</div>
           {avoidBowlers.slice(0,2).map((bwl, i) => (
@@ -588,7 +588,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
       )}
 
       {/* === BADGE LEGEND === */}
-      <div style={{ background:'#fff', border:'1.5px solid #e2e8f0', borderRadius:16, padding:16 }}>
+      <div style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:16, padding:16 }}>
         <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🏷️ Badge Legend</div>
         {[
           { badge:'AVOID',   desc:'Elite player — do NOT give easy runs/wickets. Maximum respect.' },
@@ -854,7 +854,7 @@ export default function AnalysePage() {
               {activeTab==='batting' && (
                 <motion.div key="batting" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {battingChart.length > 0 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>📊 Total Runs</div>
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={battingChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
@@ -869,7 +869,7 @@ export default function AnalysePage() {
                   )}
 
                   {battingSRChart.length > 0 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>⚡ Strike Rate</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>100 = scoring at 1 run per ball — above is aggressive, below is defensive</div>
                       <ResponsiveContainer width="100%" height={170}>
@@ -886,7 +886,7 @@ export default function AnalysePage() {
                   )}
 
                   {batScatterData.length >= 2 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎯 Runs vs Strike Rate — Threat Quadrant</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-right = most dangerous (high volume + fast). Top-left = slow but lots of runs. Bottom-right = swings hard but scores little.</div>
                       <ResponsiveContainer width="100%" height={200}>
@@ -938,7 +938,7 @@ export default function AnalysePage() {
               {activeTab==='bowling' && (
                 <motion.div key="bowling" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {bowlingChart.length > 0 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🎳 Wickets (min. 10 overs)</div>
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={bowlingChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
@@ -953,7 +953,7 @@ export default function AnalysePage() {
                   )}
 
                   {bowlEconChart.length > 0 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>💰 Economy Rate (best first)</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Lower = harder to score off. Under 5.0 = elite economy. Above 7.0 = exploitable.</div>
                       <ResponsiveContainer width="100%" height={170}>
@@ -970,7 +970,7 @@ export default function AnalysePage() {
                   )}
 
                   {bowlScatterData.length >= 2 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎯 Wickets vs Economy — Danger Quadrant</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-left = dangerous (lots of wickets + cheap). Top-right = wickets but expensive. Bottom-left = safe to face.</div>
                       <ResponsiveContainer width="100%" height={200}>
@@ -1022,7 +1022,7 @@ export default function AnalysePage() {
               {activeTab==='allrounders' && (
                 <motion.div key="ar" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {arAnalysis.length > 1 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>⚡ Bat vs Bowl Contribution</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Normalised 0–100 scale</div>
                       <ResponsiveContainer width="100%" height={180}>
@@ -1042,7 +1042,7 @@ export default function AnalysePage() {
                   )}
 
                   {arScatterData.length >= 2 && (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
+                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
                       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🔮 All-rounder Skill Map</div>
                       <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-right = true all-rounder threat (dangerous bat AND bowl). Axes = normalised 0–100 skill score.</div>
                       <ResponsiveContainer width="100%" height={200}>
@@ -1104,7 +1104,7 @@ function Methodology({ type }) {
     allrounder: 'All-rounder composite: 50% batting score (normalised) + 50% bowling score (normalised). Min. 3 matches and 10 overs.',
   }
   return (
-    <div style={{ marginTop:18, padding:'12px 16px', background:'#f8fafc', border:`1px solid ${C.gray2}`, borderRadius:12, borderLeft:`3px solid ${C.green}` }}>
+    <div style={{ marginTop:18, padding:'12px 16px', background:'rgba(255,255,255,0.03)', border:`1px solid ${C.gray2}`, borderRadius:12, borderLeft:`3px solid ${C.green}` }}>
       <div style={{ fontFamily:FONT, fontWeight:800, fontSize:11, color:C.green, marginBottom:3, textTransform:'uppercase', letterSpacing:0.5 }}>📐 Methodology</div>
       <p style={{ fontFamily:FONT, fontSize:12, color:C.gray5, lineHeight:1.6, margin:0 }}>{notes[type]}</p>
     </div>

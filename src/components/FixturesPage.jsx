@@ -495,7 +495,7 @@ export default function FixturesPage() {
 
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', position:'relative', zIndex:1 }}>
           <motion.button
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             whileTap={{ scale:.95 }}
             style={{ display:'flex', alignItems:'center', gap:6, color:'rgba(255,255,255,.38)', background:'none', border:'none', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:600, padding:0, marginBottom:24 }}
           >
@@ -510,7 +510,7 @@ export default function FixturesPage() {
                 <motion.div animate={{ scale:[1,1.1,1], opacity:[.4,.1,.4] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
                   style={{ position:'absolute', inset:-8, borderRadius:'50%', background:'radial-gradient(circle,rgba(233,160,32,.4) 0%,transparent 70%)', pointerEvents:'none' }}/>
                 <div style={{ width:68, height:68, borderRadius:'50%', background:'rgba(255,255,255,.06)', border:'3px solid rgba(233,160,32,.6)', boxShadow:'0 0 0 2px rgba(233,160,32,.15), 0 8px 28px rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', position:'relative', zIndex:1 }}>
-                  <div style={{ width:58, height:58, borderRadius:'50%', background:'#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <div style={{ width:58, height:58, borderRadius:'50%', background: '#fff', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <img src="/logo.png" alt="TUCC" style={{ width:50, height:50, objectFit:'contain' }}/>
                   </div>
                 </div>

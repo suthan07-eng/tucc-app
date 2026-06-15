@@ -27,10 +27,10 @@ const MEDALS   = ['🥇', '🥈', '🥉']
 
 // Per-tab color themes
 const TAB_THEMES = {
-  batting:  { color: '#2563eb', light: '#1d4ed8', bg: '#eff6ff', grad: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' },
-  bowling:  { color: '#be123c', light: '#f43f5e', bg: '#fff1f2', grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' },
-  fielding: { color: '#6d28d9', light: '#8b5cf6', bg: '#f5f3ff', grad: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)' },
-  matchlog: { color: '#1d4ed8', light: '#3b82f6', bg: '#eff6ff', grad: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' },
+  batting:  { color: '#2563eb', light: '#1d4ed8', bg: 'rgba(59,130,246,0.12)', grad: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' },
+  bowling:  { color: '#be123c', light: '#f43f5e', bg: 'rgba(239,68,68,0.12)', grad: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' },
+  fielding: { color: '#6d28d9', light: '#8b5cf6', bg: 'rgba(168,85,247,0.12)', grad: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)' },
+  matchlog: { color: '#1d4ed8', light: '#3b82f6', bg: 'rgba(59,130,246,0.12)', grad: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' },
 }
 
 // ── Custom tooltip ────────────────────────────────────────
@@ -38,7 +38,7 @@ function ChartTooltip({ active, payload, label, unit = '', color }) {
   if (!active || !payload?.length) return null
   return (
     <div style={{
-      background: '#fff', borderRadius: 12, padding: '10px 14px',
+      background: C.white, borderRadius: 12, padding: '10px 14px',
       boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`,
       fontFamily: FONT, minWidth: 120,
     }}>
@@ -71,7 +71,7 @@ function RunsBarChart({ data, color }) {
   ]
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#2563eb,#1d4ed8)', borderRadius: 99 }} />
         <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Runs This Season</span>
@@ -128,7 +128,7 @@ function AvgSRChart({ data, color }) {
   }
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 8px', marginBottom: 28 }}>
+    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 8px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#0369a1,#0ea5e9)', borderRadius: 99 }} />
         <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Average vs Strike Rate</span>
@@ -146,7 +146,7 @@ function AvgSRChart({ data, color }) {
             if (!active || !payload?.length) return null
             const d = payload[0]?.payload
             return (
-              <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
+              <div style={{ background: C.white, borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: C.dark, marginBottom: 6 }}>{d?.name}</div>
                 <div style={{ fontSize: 11, color: C.gray3 }}>Avg: <b style={{ color }}>{d?.avg?.toFixed(1)}</b></div>
                 <div style={{ fontSize: 11, color: C.gray3 }}>SR: <b style={{ color }}>{d?.sr?.toFixed(1)}</b></div>
@@ -174,7 +174,7 @@ function WicketsBarChart({ data, color }) {
   const BAR_COLORS = ['#be123c','#e11d48','#f43f5e','#fb7185','#be123c','#e11d48','#f43f5e','#fb7185']
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#be123c,#f43f5e)', borderRadius: 99 }} />
         <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Wickets This Season</span>
@@ -221,7 +221,7 @@ function EconomyChart({ data, color }) {
   }
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#0891b2,#06b6d4)', borderRadius: 99 }} />
@@ -247,7 +247,7 @@ function EconomyChart({ data, color }) {
             if (!active || !payload?.length) return null
             const econ = payload[0]?.value
             return (
-              <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
+              <div style={{ background: C.white, borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: C.dark, marginBottom: 4 }}>{label}</div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: getColor(econ) }}>Economy: {econ?.toFixed(2)}</div>
               </div>
@@ -279,7 +279,7 @@ function FieldingChart({ data }) {
   if (!fielders.length) return null
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#6d28d9,#8b5cf6)', borderRadius: 99 }} />
@@ -313,7 +313,7 @@ function FieldingChart({ data }) {
           <Tooltip content={({ active, payload, label }) => {
             if (!active || !payload?.length) return null
             return (
-              <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
+              <div style={{ background: C.white, borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: `1px solid ${C.gray2}`, fontFamily: FONT }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: C.dark, marginBottom: 6 }}>{label}</div>
                 {payload.map((p, i) => p.value > 0 && (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
@@ -1014,7 +1014,7 @@ export default function Stats() {
         transition: 'background 400ms ease',
       }}>
         <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
-          <motion.button onClick={() => nav('/')} whileTap={{ scale: 0.96 }} transition={{ duration: 0.14 }}
+          <motion.button onClick={() => nav('/app')} whileTap={{ scale: 0.96 }} transition={{ duration: 0.14 }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,.55)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 16 }}
           >
             <ArrowLeft size={14} strokeWidth={2} /> Home
@@ -1027,12 +1027,12 @@ export default function Stats() {
                   <img src="/logo.png" alt="TUCC" style={{ width: 40, height: 40, objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <h1 style={{ color: C.white, fontSize: 23, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>Player Statistics</h1>
+                  <h1 style={{ color: '#fff', fontSize: 23, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>Player Statistics</h1>
                   <div style={{ color: 'rgba(255,255,255,.45)', fontSize: 12, marginTop: 2 }}>Tamil United CC · {season} Season</div>
                 </div>
               </div>
               <select value={season} onChange={e => setSeason(e.target.value)}
-                style={{ background: 'rgba(255,255,255,.15)', color: C.white, border: '1.5px solid rgba(255,255,255,.25)', borderRadius: 10, padding: '8px 14px', fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: 'pointer', outline: 'none' }}
+                style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: '1.5px solid rgba(255,255,255,.25)', borderRadius: 10, padding: '8px 14px', fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: 'pointer', outline: 'none' }}
               >
                 {SEASONS.map(s => <option key={s} value={s} style={{ color: C.dark, background: C.white }}>{s} Season</option>)}
               </select>

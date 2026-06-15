@@ -74,10 +74,10 @@ function detectRole(player) {
 
 // ─── Role config ──────────────────────────────────────────────────────────────
 const ROLE_CONFIG = {
-  'Batsman':       { grad: 'linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%)', accent: '#3b82f6', light: '#eff6ff', text: '#1e40af', icon: '🏏' },
-  'Bowler':        { grad: 'linear-gradient(135deg,#92400e 0%,#f59e0b 100%)', accent: '#f59e0b', light: '#fffbeb', text: '#92400e', icon: '🎯' },
+  'Batsman':       { grad: 'linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%)', accent: '#3b82f6', light: 'rgba(59,130,246,0.12)', text: '#1e40af', icon: '🏏' },
+  'Bowler':        { grad: 'linear-gradient(135deg,#92400e 0%,#f59e0b 100%)', accent: '#f59e0b', light: 'rgba(233,160,32,0.12)', text: '#92400e', icon: '🎯' },
   'All-Rounder':   { grad: 'linear-gradient(135deg,#065f46 0%,#10b981 100%)', accent: '#10b981', light: '#ecfdf5', text: '#065f46', icon: '⚡' },
-  'Wicket-Keeper': { grad: 'linear-gradient(135deg,#581c87 0%,#a855f7 100%)', accent: '#a855f7', light: '#faf5ff', text: '#581c87', icon: '🧤' },
+  'Wicket-Keeper': { grad: 'linear-gradient(135deg,#581c87 0%,#a855f7 100%)', accent: '#a855f7', light: 'rgba(168,85,247,0.12)', text: '#581c87', icon: '🧤' },
 }
 // For combined roles like "Batsman / Wicket-Keeper", pick config of the primary (first) role
 function getRoleConfig(role) {
@@ -193,7 +193,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
         boxShadow: medal
           ? `0 0 0 2px ${medal.glow}, 0 8px 32px rgba(30,58,138,0.18)`
           : `0 4px 20px rgba(30,58,138,0.10)`,
-        background: '#fff',
+        background: C.white,
         border: medal ? `2px solid ${medal.bg}` : `1.5px solid ${C.gray2}`,
         cursor: 'pointer',
       }}
@@ -277,7 +277,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
       </div>
 
       {/* ── Expand toggle ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 18px', background: '#fafafa', borderBottom: expanded ? `1px solid ${C.gray2}` : 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 18px', background: 'rgba(255,255,255,0.03)', borderBottom: expanded ? `1px solid ${C.gray2}` : 'none' }}>
         <span style={{ fontFamily: FONT, fontSize: 11.5, color: C.gray4, fontWeight: 600 }}>
           {expanded ? 'Hide profile' : hasCache ? 'View profile & breakdown' : 'View score breakdown'}
         </span>
@@ -299,20 +299,20 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
             style={{ overflow: 'hidden' }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ padding: '16px 18px 20px', background: '#fff' }}>
+            <div style={{ padding: '16px 18px 20px', background: C.white }}>
 
               {/* Score breakdown */}
               <div style={{ background: `linear-gradient(135deg,${rc.light},#fff)`, border: `1px solid ${rc.accent}25`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
                 <div style={{ fontFamily: FONT, fontSize: 10, color: rc.text, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 }}>Score Breakdown</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {bat && (
-                    <div style={{ flex: '1 1 90px', background: '#fff', borderRadius: 10, padding: '8px 12px', border: `1px solid ${C.gray2}`, textAlign: 'center' }}>
+                    <div style={{ flex: '1 1 90px', background: C.white, borderRadius: 10, padding: '8px 12px', border: `1px solid ${C.gray2}`, textAlign: 'center' }}>
                       <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: C.green }}>{batScore}</div>
                       <div style={{ fontFamily: FONT, fontSize: 9, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 }}>⚡ Batting</div>
                     </div>
                   )}
                   {bowl && (bowl.overs || 0) >= 4 && (
-                    <div style={{ flex: '1 1 90px', background: '#fff', borderRadius: 10, padding: '8px 12px', border: `1px solid ${C.gray2}`, textAlign: 'center' }}>
+                    <div style={{ flex: '1 1 90px', background: C.white, borderRadius: 10, padding: '8px 12px', border: `1px solid ${C.gray2}`, textAlign: 'center' }}>
                       <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: C.gold }}>{bowlScore}</div>
                       <div style={{ fontFamily: FONT, fontSize: 9, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 }}>🎯 Bowling</div>
                     </div>
@@ -337,7 +337,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
                   {((cachedScore.strengths || []).length > 0 || (cachedScore.development_areas || []).length > 0) && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
                       {(cachedScore.strengths || []).filter(Boolean).length > 0 && (
-                        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 14px' }}>
+                        <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 14px' }}>
                           <div style={{ fontFamily: FONT, fontSize: 10, color: '#15803d', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>✓ Strengths</div>
                           {(cachedScore.strengths || []).filter(Boolean).map((s, i) => (
                             <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'flex-start' }}>
@@ -348,7 +348,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
                         </div>
                       )}
                       {(cachedScore.development_areas || []).filter(Boolean).length > 0 && (
-                        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 14px' }}>
+                        <div style={{ background: 'rgba(233,160,32,0.12)', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 14px' }}>
                           <div style={{ fontFamily: FONT, fontSize: 10, color: '#92400e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>→ Growth Areas</div>
                           {(cachedScore.development_areas || []).filter(Boolean).map((d, i) => (
                             <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'flex-start' }}>
@@ -417,7 +417,7 @@ function LeaderRow({ player, rank, cachedScore, onClick }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 16px',
-        background: '#fff',
+        background: C.white,
         borderRadius: 14,
         border: medal ? `1.5px solid ${medal.bg}` : `1px solid ${C.gray2}`,
         boxShadow: medal ? `0 2px 12px rgba(30,58,138,0.12)` : `0 1px 6px rgba(30,58,138,0.06)`,
@@ -729,7 +729,7 @@ export default function PlayersPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search players by name…"
-            style={{ width: '100%', boxSizing: 'border-box', fontFamily: FONT, fontSize: 13, color: C.dark, background: '#fff', border: `1.5px solid ${C.gray2}`, borderRadius: 12, padding: '10px 14px 10px 36px', outline: 'none', transition: 'border-color 0.2s' }}
+            style={{ width: '100%', boxSizing: 'border-box', fontFamily: FONT, fontSize: 13, color: C.dark, background: C.white, border: `1.5px solid ${C.gray2}`, borderRadius: 12, padding: '10px 14px 10px 36px', outline: 'none', transition: 'border-color 0.2s' }}
             onFocus={e => e.target.style.borderColor = C.green}
             onBlur={e => e.target.style.borderColor = C.gray2}
           />
@@ -749,7 +749,7 @@ export default function PlayersPage() {
                   fontFamily: FONT, fontWeight: tab === activeTab ? 700 : 500, fontSize: 12,
                   padding: '7px 14px', borderRadius: 20,
                   border: `1.5px solid ${tab === activeTab ? C.green : C.gray2}`,
-                  background: tab === activeTab ? C.green : '#fff',
+                  background: tab === activeTab ? C.green : 'rgba(255,255,255,0.05)',
                   color: tab === activeTab ? '#fff' : C.gray4,
                   cursor: 'pointer', transition: 'all .18s',
                 }}
@@ -762,7 +762,7 @@ export default function PlayersPage() {
           {/* View mode toggle */}
           <div style={{ display: 'flex', background: C.gray1, borderRadius: 10, padding: 3, gap: 2, flexShrink: 0 }}>
             {[{ id: 'cards', icon: '⊞' }, { id: 'list', icon: '≡' }].map(v => (
-              <button key={v.id} onClick={() => setViewMode(v.id)} style={{ fontFamily: FONT, fontSize: 14, padding: '5px 12px', borderRadius: 8, border: 'none', background: viewMode === v.id ? '#fff' : 'transparent', color: viewMode === v.id ? C.dark : C.gray3, cursor: 'pointer', boxShadow: viewMode === v.id ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all .15s' }}>
+              <button key={v.id} onClick={() => setViewMode(v.id)} style={{ fontFamily: FONT, fontSize: 14, padding: '5px 12px', borderRadius: 8, border: 'none', background: viewMode === v.id ? 'rgba(255,255,255,0.12)' : 'transparent', color: viewMode === v.id ? '#fff' : C.gray3, cursor: 'pointer', boxShadow: 'none', transition: 'all .15s' }}>
                 {v.icon}
               </button>
             ))}
@@ -771,7 +771,7 @@ export default function PlayersPage() {
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
-            style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, background: '#fff', border: `1.5px solid ${C.gray2}`, borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}
+            style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, background: C.white, border: `1.5px solid ${C.gray2}`, borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}
           >
             <option value="score">Sort: Score ↓</option>
             <option value="name">Sort: Name A–Z</option>
@@ -814,7 +814,7 @@ export default function PlayersPage() {
                   { title: '⚖️ Role Weights', text: 'Batters/WK: 80/20 · Bowlers: 20/80 · All-rounders: 50/50 + bonus' },
                   { title: '📊 Confidence', text: 'Scores shrunk for <4 matches to prevent small-sample inflation' },
                 ].map(x => (
-                  <div key={x.title} style={{ background: '#fff', borderRadius: 10, padding: '10px 12px', border: `1px solid ${C.gray2}` }}>
+                  <div key={x.title} style={{ background: C.white, borderRadius: 10, padding: '10px 12px', border: `1px solid ${C.gray2}` }}>
                     <div style={{ fontWeight: 700, color: C.dark, marginBottom: 4, fontSize: 12 }}>{x.title}</div>
                     <div style={{ fontSize: 11, color: C.gray4 }}>{x.text}</div>
                   </div>
@@ -939,7 +939,7 @@ export default function PlayersPage() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
               transition={{ ease: [0.32, 0.72, 0, 1] }}
-              style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', borderRadius: 24, background: '#fff' }}
+              style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', borderRadius: 24, background: C.white }}
               onClick={e => e.stopPropagation()}
             >
               <PlayerCard

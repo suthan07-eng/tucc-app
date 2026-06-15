@@ -55,7 +55,7 @@ function SponsorBanner() {
         {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <div style={{
-            background: '#fff',
+            background: C.white,
             borderRadius: 12,
             padding: '10px 24px',
             boxShadow: '0 2px 16px rgba(0,0,0,.25)',
@@ -93,9 +93,9 @@ const WMO_MAP = [
   { max: 48, icon: '🌫️', label: 'Foggy',        hi: '#e2e8f0', lo: '#94a3b8' },
   { max: 57, icon: '🌦️', label: 'Drizzle',      hi: '#bfdbfe', lo: '#3b82f6' },
   { max: 67, icon: '🌧️', label: 'Rain',         hi: '#93c5fd', lo: '#1d4ed8' },
-  { max: 77, icon: '❄️',  label: 'Snow',         hi: '#e0f2fe', lo: '#0369a1' },
+  { max: 77, icon: '❄️',  label: 'Snow',         hi: 'rgba(59,130,246,0.14)', lo: '#0369a1' },
   { max: 82, icon: '🌦️', label: 'Showers',      hi: '#bfdbfe', lo: '#3b82f6' },
-  { max: 86, icon: '🌨️', label: 'Snow shower',  hi: '#e0f2fe', lo: '#0369a1' },
+  { max: 86, icon: '🌨️', label: 'Snow shower',  hi: 'rgba(59,130,246,0.14)', lo: '#0369a1' },
   { max: 99, icon: '⛈️',  label: 'Thunderstorm', hi: '#ddd6fe', lo: '#7c3aed' },
 ]
 function getWmo(code) {
@@ -161,7 +161,7 @@ function FixLogoSmall({ logo, name, size = 52 }) {
     </div>
   )
   return (
-    <div style={{ width: size, height: size, borderRadius: size * 0.22, background: '#fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 14px rgba(0,0,0,.12)', border: '2px solid rgba(255,255,255,.7)' }}>
+    <div style={{ width: size, height: size, borderRadius: size * 0.22, background: C.white, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 14px rgba(0,0,0,.12)', border: '2px solid rgba(255,255,255,.7)' }}>
       <img src={logo} alt={name} style={{ width: '88%', height: '88%', objectFit: 'contain' }} onError={() => setErr(true)} />
     </div>
   )
@@ -396,20 +396,20 @@ function SeasonSnapshot() {
 
   const stats = row
     ? [
-        { label: 'Played',  value: row.p   ?? '—', color: '#2563eb', bg: '#eff6ff' },
-        { label: 'Won',     value: row.w   ?? '—', color: '#15803d', bg: '#dcfce7' },
-        { label: 'Lost',    value: row.l   ?? '—', color: '#be123c', bg: '#fff1f2' },
-        { label: 'Points',  value: row.pts ?? '—', color: '#b45309', bg: '#fffbeb' },
-        { label: 'NRR',     value: row.nrr ?? '—', color: '#6d28d9', bg: '#f5f3ff' },
-        { label: 'Position',value: row.pos  ? `#${row.pos}` : '—', color: '#0891b2', bg: '#ecfeff' },
+        { label: 'Played',  value: row.p   ?? '—', color: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+        { label: 'Won',     value: row.w   ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.12)' },
+        { label: 'Lost',    value: row.l   ?? '—', color: '#f87171', bg: 'rgba(239,68,68,0.12)' },
+        { label: 'Points',  value: row.pts ?? '—', color: '#fbbf24', bg: 'rgba(233,160,32,0.12)' },
+        { label: 'NRR',     value: row.nrr ?? '—', color: '#c084fc', bg: 'rgba(168,85,247,0.12)' },
+        { label: 'Position',value: row.pos  ? `#${row.pos}` : '—', color: '#22d3ee', bg: 'rgba(6,182,212,0.12)' },
       ]
     : [
-        { label: 'Played',  value: '5',    color: '#2563eb', bg: '#eff6ff' },
-        { label: 'Won',     value: '0',    color: '#15803d', bg: '#dcfce7' },
-        { label: 'Lost',    value: '5',    color: '#be123c', bg: '#fff1f2' },
-        { label: 'Points',  value: '33',   color: '#b45309', bg: '#fffbeb' },
-        { label: 'NRR',     value: '-2.85',color: '#6d28d9', bg: '#f5f3ff' },
-        { label: 'Position',value: '#8',   color: '#0891b2', bg: '#ecfeff' },
+        { label: 'Played',  value: '5',    color: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+        { label: 'Won',     value: '0',    color: '#4ade80', bg: 'rgba(34,197,94,0.12)' },
+        { label: 'Lost',    value: '5',    color: '#f87171', bg: 'rgba(239,68,68,0.12)' },
+        { label: 'Points',  value: '33',   color: '#fbbf24', bg: 'rgba(233,160,32,0.12)' },
+        { label: 'NRR',     value: '-2.85',color: '#c084fc', bg: 'rgba(168,85,247,0.12)' },
+        { label: 'Position',value: '#8',   color: '#22d3ee', bg: 'rgba(6,182,212,0.12)' },
       ]
 
   return (
@@ -630,7 +630,7 @@ function ResultsTeaser() {
         <ClipboardList size={22} color={C.gold} strokeWidth={2} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.white }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: '#fff' }}>
           Last 10 Results
         </div>
         <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>
@@ -657,10 +657,10 @@ function fmtShort(d) {
 }
 
 const ROLE_STYLE = {
-  Batsman:         { bg: '#eff6ff', color: '#2563eb' },
-  Bowler:          { bg: '#fef2f2', color: '#dc2626' },
-  'All-Rounder':   { bg: '#f5f3ff', color: '#7c3aed' },
-  'Wicket-Keeper': { bg: '#fffbeb', color: '#d97706' },
+  Batsman:         { bg: 'rgba(59,130,246,0.12)', color: '#2563eb' },
+  Bowler:          { bg: 'rgba(239,68,68,0.12)', color: '#dc2626' },
+  'All-Rounder':   { bg: 'rgba(168,85,247,0.12)', color: '#7c3aed' },
+  'Wicket-Keeper': { bg: 'rgba(233,160,32,0.12)', color: '#d97706' },
   Player:          { bg: '#f3f4f6', color: '#6b7280' },
 }
 
@@ -851,7 +851,7 @@ export default function Home() {
                     <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>live</span>
                   </span>
                 </motion.div>
-                <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 30, fontWeight: 900, margin: 0, lineHeight: 1.15, letterSpacing: -0.5, textWrap: 'balance' }}>
+                <motion.h1 variants={fadeUp} style={{ color: '#fff', fontSize: 30, fontWeight: 900, margin: 0, lineHeight: 1.15, letterSpacing: -0.5, textWrap: 'balance' }}>
                   Tamil United CC vs {displayOpponent}
                 </motion.h1>
                 <motion.div variants={fadeUp} style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
@@ -874,7 +874,7 @@ export default function Home() {
                   </motion.div>
                 )}
                 <motion.div variants={fadeUp} style={{ marginTop: 16 }}>
-                  <button onClick={() => nav('/league')} style={{ background: 'rgba(255,255,255,.15)', color: C.white, border: '1.5px solid rgba(255,255,255,.35)', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
+                  <button onClick={() => nav('/league')} style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: '1.5px solid rgba(255,255,255,.35)', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
                     🏆 BTCL League →
                   </button>
                 </motion.div>
@@ -1336,7 +1336,7 @@ function SelectedXICard({ match, teamSelection }) {
                     height: 24,
                     borderRadius: 6,
                     background: C.green,
-                    color: C.white,
+                    color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1394,7 +1394,7 @@ function SelectedXICard({ match, teamSelection }) {
                   {s.is_wicketkeeper && (
                     <span
                       style={{
-                        background: '#fffbeb',
+                        background: 'rgba(233,160,32,0.12)',
                         color: '#d97706',
                         padding: '2px 7px',
                         borderRadius: 99,
@@ -1444,7 +1444,7 @@ function SelectedXICard({ match, teamSelection }) {
                     height: 24,
                     borderRadius: 6,
                     background: C.gray3,
-                    color: C.white,
+                    color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

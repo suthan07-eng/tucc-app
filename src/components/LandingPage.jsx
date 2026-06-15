@@ -310,7 +310,7 @@ export default function LandingPage() {
   const [busy, setBusy]             = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
 
-  useEffect(() => { if (!loading && user) nav('/', { replace: true }) }, [user, loading])
+  useEffect(() => { if (!loading && user) nav('/app', { replace: true }) }, [user, loading])
 
   async function handleSubmit(e) {
     e.preventDefault(); setErr(''); setBusy(true)
@@ -325,7 +325,7 @@ export default function LandingPage() {
       }
       if (mode === 'login') {
         await signIn(email, password)
-        nav('/', { replace: true })
+        nav('/app', { replace: true })
       } else {
         if (!fullName.trim()) { setErr('Please enter your full name.'); setBusy(false); return }
         const r = await fetch('/api/auth-signup', {
@@ -335,7 +335,7 @@ export default function LandingPage() {
         const data = await r.json()
         if (!r.ok) throw new Error(data.error||'Signup failed')
         await signIn(email, password)
-        nav('/', { replace: true })
+        nav('/app', { replace: true })
       }
     } catch(e) { setErr(e.message||'Something went wrong.') }
     setBusy(false)
@@ -390,7 +390,7 @@ export default function LandingPage() {
           {/* Real logo with white background */}
           <div style={{
             width:100, height:100, borderRadius:'50%', margin:'0 auto 16px',
-            background:'#fff',
+            background: '#fff',
             boxShadow:'0 0 0 4px rgba(233,160,32,.5), 0 0 0 8px rgba(233,160,32,.13), 0 24px 60px rgba(0,0,0,.6)',
             display:'flex', alignItems:'center', justifyContent:'center',
             overflow:'hidden',
@@ -552,7 +552,7 @@ export default function LandingPage() {
             <div style={{ flex:1, height:1, background:'rgba(233,160,32,.2)' }}/>
           </div>
           <div style={{ display:'flex', justifyContent:'center' }}>
-            <div style={{ background:'#fff', borderRadius:12, padding:'10px 28px', boxShadow:'0 4px 20px rgba(0,0,0,.35)', display:'inline-flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ background: '#fff', borderRadius:12, padding:'10px 28px', boxShadow:'0 4px 20px rgba(0,0,0,.35)', display:'inline-flex', alignItems:'center', justifyContent:'center' }}>
               <img src="/sponsor-praba.jpg" alt="Praba Restaurant & Bar" style={{ height:40, width:'auto', objectFit:'contain', display:'block' }}/>
             </div>
           </div>

@@ -303,12 +303,12 @@ export default function Availability() {
         >
           <motion.button
             variants={fadeUp}
-            onClick={() => nav('/')}
+            onClick={() => nav('/app')}
             style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 10 }}
           >
             ← Home
           </motion.button>
-          <motion.h1 variants={fadeUp} style={{ color: C.white, fontSize: 22, fontWeight: 800, margin: 0 }}>
+          <motion.h1 variants={fadeUp} style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0 }}>
             Submit Availability
           </motion.h1>
           {selectedMatch && (
