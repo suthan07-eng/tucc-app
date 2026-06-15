@@ -323,25 +323,17 @@ function HeroSlideshow({ photos }) {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
       <AnimatePresence mode="sync">
-        <motion.div
+        <motion.img
           key={photos[idx]}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          src={photos[idx]}
+          alt=""
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.0, ease: 'easeInOut' }}
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          {/* Blurred fill so there are no empty bars around the full photo */}
-          <img
-            src={photos[idx]} alt="" aria-hidden="true"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'blur(22px) brightness(0.55)', transform: 'scale(1.1)' }}
-          />
-          {/* Full photo — never cropped */}
-          <img
-            src={photos[idx]} alt=""
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
-          />
-        </motion.div>
+          transition={{ opacity: { duration: 1.0, ease: 'easeInOut' }, scale: { duration: 6, ease: 'easeOut' } }}
+          className="hero-slide-img"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%' }}
+        />
       </AnimatePresence>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(6,13,31,0.72) 0%, rgba(13,27,62,0.55) 60%, rgba(6,13,31,0.68) 100%)' }} />
     </div>
