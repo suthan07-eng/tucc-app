@@ -17,7 +17,7 @@
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body {
-        background: #eef2ff;
+        background: #060d1f;
         font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       }
       /* Tabular nums for all numeric data */
@@ -150,6 +150,27 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      /* Auto-recover from a stale cached page referencing JS chunks that no
+         longer exist after a deploy (common cause of a blank page on mobile). */
+      (function () {
+        function reloadOnce() {
+          try {
+            if (sessionStorage.getItem('tucc_chunk_reload')) return;
+            sessionStorage.setItem('tucc_chunk_reload', '1');
+          } catch (e) {}
+          location.reload();
+        }
+        window.addEventListener('vite:preloadError', reloadOnce);
+        window.addEventListener('error', function (e) {
+          var msg = (e && e.message) || '';
+          if (/dynamically imported module|module script failed|Failed to fetch|Importing a module/i.test(msg)) reloadOnce();
+        });
+        window.addEventListener('load', function () {
+          try { sessionStorage.removeItem('tucc_chunk_reload'); } catch (e) {}
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
