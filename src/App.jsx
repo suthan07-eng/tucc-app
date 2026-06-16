@@ -1,43 +1,66 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, Component } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { useActivityLog, useButtonTracking } from './hooks/useActivityLog'
 
+// Lazy import with one retry + reload-on-stale-chunk, so a transient/stale
+// chunk fetch never leaves the user on a blank screen.
+function lazyWithRetry(factory) {
+  return lazy(() =>
+    factory().catch(() =>
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          factory().then(resolve).catch((err) => {
+            try {
+              if (!sessionStorage.getItem('tucc_chunk_reload')) {
+                sessionStorage.setItem('tucc_chunk_reload', '1')
+                window.location.reload()
+                return
+              }
+            } catch (e) {}
+            reject(err)
+          })
+        }, 400)
+      })
+    )
+  )
+}
+
 // Public marketing pages (code-split so each route loads on demand)
-const PublicHome       = lazy(() => import('./public/pages/PublicHome'))
-const PublicAbout      = lazy(() => import('./public/pages/PublicAbout'))
-const PublicCommittee  = lazy(() => import('./public/pages/PublicCommittee'))
-const PublicMembership = lazy(() => import('./public/pages/PublicMembership'))
-const PublicJoin       = lazy(() => import('./public/pages/PublicJoin'))
-const PublicGallery    = lazy(() => import('./public/pages/PublicGallery'))
-const PublicContact    = lazy(() => import('./public/pages/PublicContact'))
-const PublicSponsors   = lazy(() => import('./public/pages/PublicSponsors'))
-const PublicPlayers    = lazy(() => import('./public/pages/PublicPlayers'))
+const PublicHome       = lazyWithRetry(() => import('./public/pages/PublicHome'))
+const PublicAbout      = lazyWithRetry(() => import('./public/pages/PublicAbout'))
+const PublicCommittee  = lazyWithRetry(() => import('./public/pages/PublicCommittee'))
+const PublicMembership = lazyWithRetry(() => import('./public/pages/PublicMembership'))
+const PublicJoin       = lazyWithRetry(() => import('./public/pages/PublicJoin'))
+const PublicGallery    = lazyWithRetry(() => import('./public/pages/PublicGallery'))
+const PublicContact    = lazyWithRetry(() => import('./public/pages/PublicContact'))
+const PublicSponsors   = lazyWithRetry(() => import('./public/pages/PublicSponsors'))
+const PublicPlayers    = lazyWithRetry(() => import('./public/pages/PublicPlayers'))
 
 // Auth / member dashboard
-const LandingPage  = lazy(() => import('./components/LandingPage'))
-const Home         = lazy(() => import('./components/Home'))
-const Register     = lazy(() => import('./components/Register'))
-const Availability = lazy(() => import('./components/Availability'))
-const Success      = lazy(() => import('./components/Success'))
-const League       = lazy(() => import('./components/League'))
-const Stats        = lazy(() => import('./components/Stats'))
-const ResultsPage  = lazy(() => import('./components/ResultsPage'))
-const FixturesPage = lazy(() => import('./components/FixturesPage'))
-const PlayersPage  = lazy(() => import('./components/PlayersPage'))
-const GalleryPage  = lazy(() => import('./components/GalleryPage'))
-const AnalysePage  = lazy(() => import('./components/AnalysePage'))
+const LandingPage  = lazyWithRetry(() => import('./components/LandingPage'))
+const Home         = lazyWithRetry(() => import('./components/Home'))
+const Register     = lazyWithRetry(() => import('./components/Register'))
+const Availability = lazyWithRetry(() => import('./components/Availability'))
+const Success      = lazyWithRetry(() => import('./components/Success'))
+const League       = lazyWithRetry(() => import('./components/League'))
+const Stats        = lazyWithRetry(() => import('./components/Stats'))
+const ResultsPage  = lazyWithRetry(() => import('./components/ResultsPage'))
+const FixturesPage = lazyWithRetry(() => import('./components/FixturesPage'))
+const PlayersPage  = lazyWithRetry(() => import('./components/PlayersPage'))
+const GalleryPage  = lazyWithRetry(() => import('./components/GalleryPage'))
+const AnalysePage  = lazyWithRetry(() => import('./components/AnalysePage'))
 
 // Admin (heavy — only loads when an admin visits)
-const AdminLogin     = lazy(() => import('./components/admin/AdminLogin'))
-const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'))
+const AdminLogin     = lazyWithRetry(() => import('./components/admin/AdminLogin'))
+const AdminDashboard = lazyWithRetry(() => import('./components/admin/AdminDashboard'))
 
 // Misc
-const ResetPassword = lazy(() => import('./components/ResetPassword'))
-const NotFound      = lazy(() => import('./components/NotFound'))
-const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'))
-const TermsOfUse    = lazy(() => import('./components/legal/TermsOfUse'))
-const CookiePolicy  = lazy(() => import('./components/legal/CookiePolicy'))
+const ResetPassword = lazyWithRetry(() => import('./components/ResetPassword'))
+const NotFound      = lazyWithRetry(() => import('./components/NotFound'))
+const PrivacyPolicy = lazyWithRetry(() => import('./components/legal/PrivacyPolicy'))
+const TermsOfUse    = lazyWithRetry(() => import('./components/legal/TermsOfUse'))
+const CookiePolicy  = lazyWithRetry(() => import('./components/legal/CookiePolicy'))
 
 // Lightweight full-screen loader shown while a route chunk downloads
 function RouteFallback() {
@@ -47,6 +70,41 @@ function RouteFallback() {
       <style>{`@keyframes appSpin{to{transform:rotate(360deg)}}`}</style>
     </div>
   )
+}
+
+// Catches any render/chunk error so the user never sees a blank screen —
+// offers a one-tap reload instead.
+class RouteErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { failed: false } }
+  static getDerivedStateFromError() { return { failed: true } }
+  componentDidCatch(err) {
+    const msg = (err && err.message) || ''
+    // Stale chunk after a deploy → reload once to fetch the fresh build
+    if (/dynamically imported module|module script failed|Failed to fetch|Importing a module/i.test(msg)) {
+      try {
+        if (!sessionStorage.getItem('tucc_chunk_reload')) {
+          sessionStorage.setItem('tucc_chunk_reload', '1')
+          window.location.reload()
+        }
+      } catch (e) {}
+    }
+  }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, background: '#060d1f', color: '#fff', fontFamily: "'Outfit', sans-serif", textAlign: 'center', padding: 24 }}>
+          <div style={{ fontSize: 40 }}>🏏</div>
+          <div style={{ fontSize: 18, fontWeight: 800 }}>Just a moment…</div>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', maxWidth: 320, lineHeight: 1.5 }}>The page didn’t finish loading. Tap below to reload.</div>
+          <button onClick={() => { try { sessionStorage.removeItem('tucc_chunk_reload') } catch (e) {} window.location.reload() }}
+            style={{ background: '#e9a020', color: '#1a0a00', border: 'none', borderRadius: 12, padding: '12px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>
+            Reload
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 // Protects all player-facing routes — redirects to /login if not signed in
@@ -73,6 +131,7 @@ function AppRoutes() {
   return (
     <>
     <ActivityTracker />
+    <RouteErrorBoundary>
     <Suspense fallback={<RouteFallback />}>
     <Routes>
       {/* Public marketing site */}
@@ -121,6 +180,7 @@ function AppRoutes() {
       <Route path="*" element={<NotFound />} />
     </Routes>
     </Suspense>
+    </RouteErrorBoundary>
     </>
   )
 }
