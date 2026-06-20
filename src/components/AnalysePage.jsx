@@ -8,6 +8,8 @@ import {
 import { supabase } from '../supabase'
 import Nav from './Nav'
 import { C, FONT, MAX_WIDTH } from '../constants'
+import statsJson from '../data/stats-2026.json'
+import { loadMergedStats } from '../utils/statsOverlay'
 
 const EASE = [0.23, 1, 0.32, 1]
 
@@ -659,10 +661,135 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────
+// ── Head-to-head comparison: TUCC vs opponent ────────────────────────────────
+function CompareTab({ oppName, oppBat, oppBowl, our }) {
+  const num = v => Number(v) || 0
+  const oBat  = (oppBat  || []).map(b => ({ name:b.opponent_players?.player_name||'', runs:num(b.runs), sr:num(b.strike_rate), fifties:num(b.fifties), hundreds:num(b.hundreds), hs:num(b.high_score) }))
+  const oBowl = (oppBowl || []).map(b => ({ name:b.opponent_players?.player_name||'', wkts:num(b.wickets), econ:num(b.economy_rate), overs:num(b.overs), five:num(b.five_wkt_haul) }))
+  const tBat  = (our?.batting || []).map(b => ({ name:b.name, runs:num(b.runs), sr:num(b.strike_rate), fifties:num(b.fifties), hundreds:num(b.hundreds), hs:num(b.highest) }))
+  const tBowl = (our?.bowling || []).map(b => ({ name:b.name, wkts:num(b.wickets), econ:num(b.economy), overs:num(b.overs), five:num(b.five_fers) }))
+
+  const agg = (bat, bowl) => {
+    const top5 = [...bat].sort((a,b)=>b.runs-a.runs).slice(0,5)
+    const topScorer = top5[0] || { name:'—', runs:0 }
+    const top5Runs = top5.reduce((s,b)=>s+b.runs,0)
+    const qualSR = bat.filter(b=>b.runs>=40)
+    const bestSR = qualSR.length ? qualSR.reduce((m,b)=>b.sr>m.sr?b:m) : { name:'—', sr:0 }
+    const milestones = bat.reduce((s,b)=>s+b.fifties+b.hundreds,0)
+    const totalWkts = bowl.reduce((s,b)=>s+b.wkts,0)
+    const topBowler = bowl.length ? bowl.reduce((m,b)=>b.wkts>m.wkts?b:m) : { name:'—', wkts:0 }
+    const qualE = bowl.filter(b=>b.overs>=10)
+    const bestEcon = qualE.length ? qualE.reduce((m,b)=>b.econ<m.econ?b:m) : { name:'—', econ:0 }
+    const fiveH = bowl.reduce((s,b)=>s+b.five,0)
+    const ars = bat.filter(b=>b.runs>=30 && bowl.find(w=>w.name===b.name && (w.overs>=8||w.wkts>=3))).length
+    return { topScorer, top5Runs, bestSR, milestones, totalWkts, topBowler, bestEcon, fiveH, ars }
+  }
+  const T = agg(tBat, tBowl), O = agg(oBat, oBowl)
+  const TUCC = 'Tamil United CC'
+
+  const Row = ({ label, t, o, betterHigh = true, fmt = v => v }) => {
+    const tn = Number(t), on = Number(o)
+    const tWin = betterHigh ? tn > on : tn < on
+    const oWin = betterHigh ? on > tn : on < tn
+    const cell = (val, win) => (
+      <div style={{ flex:1, textAlign:'center', padding:'8px 6px', borderRadius:10,
+        background: win ? 'rgba(34,197,94,0.16)' : 'rgba(255,255,255,0.04)',
+        border:`1px solid ${win ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.08)'}` }}>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:16, color: win ? '#4ade80' : '#fff' }}>{fmt(val)}</div>
+      </div>
+    )
+    return (
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+        {cell(t, tWin)}
+        <div style={{ width:96, flexShrink:0, textAlign:'center', fontFamily:FONT, fontSize:10.5, fontWeight:700, letterSpacing:0.4, textTransform:'uppercase', color:T_MUTE }}>{label}</div>
+        {cell(o, oWin)}
+      </div>
+    )
+  }
+
+  const Section = ({ icon, title, edge, comment, children }) => (
+    <div style={{ ...GLASS, padding:'16px 16px 18px', marginBottom:16 }}>
+      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:15, ...TITLE_GRAD, marginBottom:12 }}>{icon} {title}</div>
+      {children}
+      <div style={{ marginTop:12, padding:'11px 13px', borderRadius:12, background:'rgba(255,255,255,0.05)',
+        borderLeft:`3px solid ${edge==='TUCC' ? '#4ade80' : edge==='OPP' ? '#f87171' : '#c084fc'}` }}>
+        <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, letterSpacing:0.6, textTransform:'uppercase', color: edge==='TUCC' ? '#4ade80' : edge==='OPP' ? '#f87171' : '#c084fc', marginBottom:3 }}>
+          {edge==='TUCC' ? `✅ Edge: ${TUCC}` : edge==='OPP' ? `⚠️ Edge: ${oppName}` : '⚖️ Evenly matched'}
+        </div>
+        <p style={{ fontFamily:FONT, fontSize:12.5, lineHeight:1.55, color:T_BODY, margin:0 }}>{comment}</p>
+      </div>
+    </div>
+  )
+
+  const batEdge  = T.top5Runs === O.top5Runs ? 'EVEN' : T.top5Runs > O.top5Runs ? 'TUCC' : 'OPP'
+  const bowlEdge = T.totalWkts === O.totalWkts ? (T.bestEcon.econ <= O.bestEcon.econ ? 'TUCC' : 'OPP') : T.totalWkts > O.totalWkts ? 'TUCC' : 'OPP'
+  const arEdge   = T.ars === O.ars ? 'EVEN' : T.ars > O.ars ? 'TUCC' : 'OPP'
+  const score = [batEdge, bowlEdge, arEdge]
+  const tWins = score.filter(e=>e==='TUCC').length, oWins = score.filter(e=>e==='OPP').length
+  const overall = tWins === oWins ? 'EVEN' : tWins > oWins ? 'TUCC' : 'OPP'
+
+  const lead = (edge, tName, oName) => edge==='TUCC' ? tName : edge==='OPP' ? oName : `${tName} & ${oName}`
+
+  return (
+    <motion.div key="compare" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
+      <div style={{ ...eyebrowStyle, marginBottom:8 }}>Head to Head</div>
+      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD, marginBottom:4 }}>{TUCC} vs {oppName}</div>
+      <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:16 }}>Season comparison across batting, bowling and all-round strength. Green = stronger side.</div>
+
+      {/* Column headers */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+        <div style={{ flex:1, textAlign:'center', fontFamily:FONT, fontWeight:800, fontSize:13, color:'#60a5fa' }}>{TUCC}</div>
+        <div style={{ width:96, flexShrink:0, textAlign:'center', fontFamily:FONT, fontSize:11, color:T_MUTE }}>vs</div>
+        <div style={{ flex:1, textAlign:'center', fontFamily:FONT, fontWeight:800, fontSize:13, color:'#f472b6' }}>{oppName}</div>
+      </div>
+
+      <Section icon="🏏" title="Batting" edge={batEdge}
+        comment={`${lead(batEdge, TUCC, oppName)} ${batEdge==='EVEN'?'are level for top-order firepower':'have the stronger top order'} (top-5 runs ${T.top5Runs} vs ${O.top5Runs}). ${T.topScorer.name} (${T.topScorer.runs}) is our danger man; watch ${O.topScorer.name} (${O.topScorer.runs}) for them. Best strike rates: ${T.bestSR.name} ${T.bestSR.sr} vs ${O.bestSR.name} ${O.bestSR.sr}.`}>
+        <Row label="Top-5 runs" t={T.top5Runs} o={O.top5Runs}/>
+        <Row label="Top scorer" t={T.topScorer.runs} o={O.topScorer.runs}/>
+        <Row label="Best SR" t={T.bestSR.sr} o={O.bestSR.sr} fmt={v=>Number(v).toFixed(1)}/>
+        <Row label="50s + 100s" t={T.milestones} o={O.milestones}/>
+      </Section>
+
+      <Section icon="🎳" title="Bowling" edge={bowlEdge}
+        comment={`${lead(bowlEdge, TUCC, oppName)} ${bowlEdge==='EVEN'?'are evenly matched with the ball':'have the stronger attack'} (wickets ${T.totalWkts} vs ${O.totalWkts}). Spearheads: ${T.topBowler.name} (${T.topBowler.wkts} wkts) vs ${O.topBowler.name} (${O.topBowler.wkts} wkts). Tightest economy: ${T.bestEcon.name} ${T.bestEcon.econ} vs ${O.bestEcon.name} ${O.bestEcon.econ}.`}>
+        <Row label="Total wkts" t={T.totalWkts} o={O.totalWkts}/>
+        <Row label="Top bowler wkts" t={T.topBowler.wkts} o={O.topBowler.wkts}/>
+        <Row label="Best econ" t={T.bestEcon.econ} o={O.bestEcon.econ} betterHigh={false} fmt={v=>Number(v).toFixed(2)}/>
+        <Row label="5-wkt hauls" t={T.fiveH} o={O.fiveH}/>
+      </Section>
+
+      <Section icon="⚡" title="All-rounders" edge={arEdge}
+        comment={`${lead(arEdge, TUCC, oppName)} ${arEdge==='EVEN'?'have similar all-round depth':'carry more genuine all-round options'} (${T.ars} vs ${O.ars} players contributing with bat and ball). All-rounders swing tight games — match-ups here matter.`}>
+        <Row label="All-rounders" t={T.ars} o={O.ars}/>
+      </Section>
+
+      {/* Overall verdict */}
+      <div style={{ ...GLASS, padding:'18px 18px 20px', background:'linear-gradient(150deg, rgba(124,58,237,0.4), rgba(37,99,235,0.34) 60%, rgba(20,184,166,0.22))' }}>
+        <div style={{ fontFamily:FONT, fontSize:10.5, fontWeight:800, letterSpacing:1, textTransform:'uppercase', color:'rgba(255,255,255,0.7)', marginBottom:6 }}>🧠 Overall Verdict</div>
+        <div style={{ fontFamily:FONT, fontWeight:900, fontSize:20, color:'#fff', marginBottom:8 }}>
+          {overall==='TUCC' ? `${TUCC} favoured (${tWins}–${oWins})` : overall==='OPP' ? `${oppName} favoured (${oWins}–${tWins})` : `Too close to call (${tWins}–${oWins})`}
+        </div>
+        <p style={{ fontFamily:FONT, fontSize:13, lineHeight:1.65, color:'rgba(255,255,255,0.88)', margin:0 }}>
+          {overall==='TUCC'
+            ? `We hold the edge in ${tWins} of 3 departments. Play to our strengths, keep ${O.topScorer.name} and ${O.topBowler.name} quiet, and the game is ours to lose.`
+            : overall==='OPP'
+            ? `${oppName} look stronger on paper (${oWins} of 3 departments). Neutralise ${O.topScorer.name} early and target their weaker discipline — discipline and smart match-ups can close the gap.`
+            : `An even contest — it will come down to match-ups and who handles pressure better. Win the ${batEdge==='OPP'?'batting':'bowling'} battle and we tip it our way.`}
+        </p>
+        <div style={{ fontFamily:FONT, fontSize:11, color:'rgba(255,255,255,0.55)', marginTop:10 }}>
+          Batting: {lead(batEdge,'TUCC',oppName==='—'?'Opp':oppName.split(' ')[0])} · Bowling: {lead(bowlEdge,'TUCC',oppName.split(' ')[0])} · All-round: {lead(arEdge,'TUCC',oppName.split(' ')[0])}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 const TABS = [
   { key:'batting',     label:'🏏 Batting' },
   { key:'bowling',     label:'🎳 Bowling' },
   { key:'allrounders', label:'⚡ All-rounders' },
+  { key:'compare',     label:'⚔️ vs TUCC' },
   { key:'matchplan',   label:'📋 Match Plan' },
 ]
 
@@ -680,6 +807,10 @@ export default function AnalysePage() {
   const [arAnalysis,   setArAnalysis]   = useState([])
 
   const [activeTab, setActiveTab] = useState('batting')
+  const [ourStats, setOurStats] = useState(statsJson)
+
+  // 0. Load our team's stats (Excel + admin overlay) for the comparison tab
+  useEffect(() => { loadMergedStats('2026').then(setOurStats).catch(() => {}) }, [])
 
   // 1. Load opponents list
   useEffect(() => {
@@ -1135,6 +1266,11 @@ export default function AnalysePage() {
                   </div>
                   <Methodology type="allrounder"/>
                 </motion.div>
+              )}
+
+              {/* ── COMPARE: vs TUCC ── */}
+              {activeTab==='compare' && (
+                <CompareTab oppName={selectedOpp?.name || 'Opponent'} oppBat={batStats} oppBowl={bowlStats} our={ourStats}/>
               )}
 
               {/* ── MATCH PLAN ── */}
