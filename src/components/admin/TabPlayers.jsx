@@ -383,6 +383,29 @@ function EditPlayerModal({ player, onClose, onSaved }) {
   )
 }
 
+// ── BTCL squad sync (add-only, runs in the browser — CORS allowed) ────────
+const BTCL_TEAM_API = 'https://admin.btcluk.com/api/teamPlayer/286253'
+// BTCL stores a few names swapped/formal — map to the familiar club name
+const BTCL_NAME_FIX = { 2233: 'Ajanthan Navaratnam', 4927: 'Krishen Daniel', 6296: 'Shenal Daniel Anthony', 7348: 'Malindu Maduranga' }
+function btclTitle(s) { return String(s || '').toLowerCase().replace(/\s+/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase()) }
+function btclCleanName(p) { return BTCL_NAME_FIX[p.PlayerID] || btclTitle(`${p.Forename || ''} ${p.Surname || ''}`) }
+function btclRole(p) {
+  const s = `${p.BowlStyle || ''} ${p.BatStyle || ''}`
+  if (/wicket|keeper/i.test(s)) return 'Wicket-Keeper'
+  if ((p.BowlStyle || '').trim() && (p.BatStyle || '').trim()) return 'All-Rounder'
+  if ((p.BowlStyle || '').trim()) return 'Bowler'
+  return 'Batsman'
+}
+function nameTokens(s) { return new Set(String(s || '').toLowerCase().replace(/[^a-z ]/g, ' ').split(/\s+/).filter(t => t.length > 1)) }
+// Treat as the same person if tokens match in any order, or one name's tokens
+// are a subset of the other (e.g. "Kajenth" ⊂ "Kajenth Thanabalasingham").
+function samePlayer(a, b) {
+  const ta = nameTokens(a), tb = nameTokens(b)
+  if (!ta.size || !tb.size) return false
+  if ([...ta].sort().join(' ') === [...tb].sort().join(' ')) return true
+  return [...ta].every(t => tb.has(t)) || [...tb].every(t => ta.has(t))
+}
+
 export default function TabPlayers() {
   const toast = useToast()
   const [players, setPlayers] = useState([])
@@ -390,6 +413,42 @@ export default function TabPlayers() {
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState(null)
   const [editingPlayer, setEditingPlayer] = useState(null)
+  const [syncing, setSyncing] = useState(false)
+
+  async function syncFromBTCL() {
+    setSyncing(true)
+    try {
+      const res = await fetch(BTCL_TEAM_API, { headers: { Accept: 'application/json' } })
+      if (!res.ok) throw new Error('BTCL returned ' + res.status)
+      const squad = (await res.json()).filter(p => p && (p.Forename || p.Surname))
+      const toAdd = []
+      for (const p of squad) {
+        const name = btclCleanName(p)
+        if (!players.some(ex => samePlayer(ex.name, name)) && !toAdd.some(a => samePlayer(a.name, name))) {
+          toAdd.push({ name, role: btclRole(p) })
+        }
+      }
+      if (toAdd.length === 0) {
+        toast(`✅ Up to date — all ${squad.length} BTCL players are already in your roster`)
+        return
+      }
+      const ok = window.confirm(
+        `BTCL squad has ${squad.length} players.\n\n${toAdd.length} new player(s) will be ADDED to your roster ` +
+        `(existing players, their phone & email are NOT changed):\n\n` +
+        toAdd.map(p => `• ${p.name}  (${p.role})`).join('\n') +
+        `\n\nAdd them now?`
+      )
+      if (!ok) return
+      const { error } = await supabase.from('players').insert(toAdd)
+      if (error) throw error
+      toast(`✅ Added ${toAdd.length} player(s) from BTCL`)
+      await loadData()
+    } catch (e) {
+      toast('BTCL sync failed: ' + (e.message || e), 'error')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   useEffect(() => { loadData() }, [])
 
@@ -466,12 +525,22 @@ export default function TabPlayers() {
         <div style={{ fontWeight: 700, color: AC.dark, fontFamily: FONT, fontSize: 15 }}>
           {loading ? <Skeleton width={140} height={16} /> : `${players.length} registered player${players.length !== 1 ? 's' : ''}`}
         </div>
-        <button
-          onClick={exportCSV}
-          style={{ background: AC.greenBg, color: AC.green, border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          ⬇ Export CSV
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={syncFromBTCL}
+            disabled={syncing}
+            title="Fetch the latest squad from BTCL and add any new players (existing players are not changed)"
+            style={{ background: AC.blueBg, color: AC.blue, border: 'none', borderRadius: 8, padding: '8px 14px', cursor: syncing ? 'not-allowed' : 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, opacity: syncing ? 0.6 : 1 }}
+          >
+            {syncing ? '⏳ Syncing…' : '🔄 Update from BTCL'}
+          </button>
+          <button
+            onClick={exportCSV}
+            style={{ background: AC.greenBg, color: AC.green, border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            ⬇ Export CSV
+          </button>
+        </div>
       </div>
 
       <Card style={{ padding: 0, overflow: 'hidden' }}>
