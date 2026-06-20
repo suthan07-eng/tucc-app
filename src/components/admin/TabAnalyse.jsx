@@ -93,16 +93,16 @@ function parseBattingExcel(buffer) {
     const name = get(1); if (!name || typeof name !== 'string') continue
     rows.push({
       player_name:       String(name).trim(),
-      matches:           Number(get(2))  || 0,
-      innings:           Number(get(3))  || 0,
-      not_outs:          Number(get(4))  || 0,
-      runs:              Number(get(5))  || 0,
-      high_score:        Number(String(get(6)||'0').replace('*','')) || 0,
+      matches:           Math.round(Number(get(2)) || 0),
+      innings:           Math.round(Number(get(3)) || 0),
+      not_outs:          Math.round(Number(get(4)) || 0),
+      runs:              Math.round(Number(get(5)) || 0),
+      high_score:        Math.round(Number(String(get(6)||'0').replace('*','')) || 0),
       high_score_not_out: String(get(6)||'').includes('*'),
       avg:               Number(get(7))  || 0,
       strike_rate:       Number(get(9))  || 0,
-      fifties:           Number(get(10)) || 0,
-      hundreds:          Number(get(11)) || 0,
+      fifties:           Math.round(Number(get(10)) || 0),
+      hundreds:          Math.round(Number(get(11)) || 0),
     })
   }
   return rows
@@ -118,13 +118,13 @@ function parseBowlingExcel(buffer) {
     const name = get(1); if (!name || typeof name !== 'string') continue
     rows.push({
       player_name:   String(name).trim(),
-      matches:       Number(get(2))  || 0,
+      matches:       Math.round(Number(get(2)) || 0),
       overs:         Number(get(3))  || 0,
-      maidens:       Number(get(4))  || 0,
-      runs:          Number(get(5))  || 0,
-      wickets:       Number(get(6))  || 0,
+      maidens:       Math.round(Number(get(4)) || 0),
+      runs:          Math.round(Number(get(5)) || 0),
+      wickets:       Math.round(Number(get(6)) || 0),
       best_bowling:  String(get(7)  || ''),
-      five_wkt_haul: Number(get(8))  || 0,
+      five_wkt_haul: Math.round(Number(get(8)) || 0),
       economy_rate:  Number(get(9))  || 0,
       strike_rate:   Number(get(10)) || 0,
       average:       Number(get(11)) || 0,
@@ -395,9 +395,9 @@ export default function TabAnalyse() {
           const { error: bErr } = await supabase.from('opponent_batting_stats').insert(
             batRows.filter(r => playerMap[r.player_name]).map(r => ({
               opponent_id: oppId, player_id: playerMap[r.player_name],
-              matches: r.matches, innings: r.innings, not_outs: r.not_outs,
-              runs: r.runs, high_score: r.high_score, high_score_not_out: r.high_score_not_out,
-              avg: r.avg, strike_rate: r.strike_rate, fifties: r.fifties, hundreds: r.hundreds,
+              matches: Math.round(r.matches||0), innings: Math.round(r.innings||0), not_outs: Math.round(r.not_outs||0),
+              runs: Math.round(r.runs||0), high_score: Math.round(r.high_score||0), high_score_not_out: r.high_score_not_out,
+              avg: r.avg, strike_rate: r.strike_rate, fifties: Math.round(r.fifties||0), hundreds: Math.round(r.hundreds||0),
             }))
           )
           if (bErr) throw bErr
@@ -409,9 +409,9 @@ export default function TabAnalyse() {
           const { error: boErr } = await supabase.from('opponent_bowling_stats').insert(
             bowlRows.filter(r => playerMap[r.player_name]).map(r => ({
               opponent_id: oppId, player_id: playerMap[r.player_name],
-              matches: r.matches, overs: r.overs, maidens: r.maidens,
-              runs: r.runs, wickets: r.wickets, best_bowling: r.best_bowling,
-              five_wkt_haul: r.five_wkt_haul, economy_rate: r.economy_rate,
+              matches: Math.round(r.matches||0), overs: r.overs, maidens: Math.round(r.maidens||0),
+              runs: Math.round(r.runs||0), wickets: Math.round(r.wickets||0), best_bowling: r.best_bowling,
+              five_wkt_haul: Math.round(r.five_wkt_haul||0), economy_rate: r.economy_rate,
               strike_rate: r.strike_rate, average: r.average,
             }))
           )
