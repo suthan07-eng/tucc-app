@@ -290,6 +290,56 @@ function Steps({ current, steps }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────
+// Auto-compose a team scouting report from the computed top performers
+function buildReport(name, season, bat, bowl) {
+  const b = bat || [], w = bowl || []
+  if (!b.length && !w.length) return ''
+  const p = [`${name} ${season} scouting report.`]
+  if (b[0]) {
+    const t = b[0]
+    const milestone = t.hundreds > 0 ? ` including ${t.hundreds} century${t.hundreds > 1 ? 'ies' : ''}` : t.fifties > 0 ? ` with ${t.fifties} fifty${t.fifties > 1 ? 'ies' : ''}` : ''
+    p.push(`${t.player_name} is their leading run-scorer — ${t.runs} runs at SR ${t.strike_rate} (HS ${t.high_score})${milestone} — the key wicket to take early.`)
+  }
+  const others = b.slice(1, 3).filter(Boolean)
+  if (others.length) p.push(`${others.map(o => `${o.player_name} (${o.runs} runs)`).join(' and ')} add top-order depth.`)
+  if (w[0]) {
+    const t = w[0]
+    p.push(`${t.player_name} leads the attack with ${t.wickets} wickets at economy ${t.economy_rate}${t.best_bowling ? ` (best ${t.best_bowling})` : ''}.`)
+  }
+  p.push('Contain the top order early and look to score through the middle overs.')
+  return p.join(' ')
+}
+
+// Pull opponent player photos from BTCL by name-matching the squad (browser-side; BTCL allows CORS)
+function btclTeamId(url) {
+  const m = String(url || '').match(/team-profile\/\d+\/(\d+)/) || String(url || '').match(/teamPlayer\/(\d+)/) || String(url || '').match(/(\d{5,})\s*$/)
+  return m ? m[1] : null
+}
+const _ptoks = s => new Set(String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(t => t.length > 2))
+const _PSTOP = new Set(['mohamed', 'singh', 'kumar'])
+async function fetchBtclPhotos(teamId) {
+  const res = await fetch(`https://admin.btcluk.com/api/teamPlayer/${teamId}`, { headers: { Accept: 'application/json' } })
+  if (!res.ok) throw new Error('BTCL team ' + teamId + ' returned ' + res.status)
+  const list = await res.json()
+  return (Array.isArray(list) ? list : []).filter(p => p.Photo).map(p => ({
+    tokens: _ptoks(`${p.Forename || ''} ${p.Surname || ''}`),
+    url: 'https://admin.btcluk.com/players/' + encodeURI(p.Photo),
+  }))
+}
+function matchPhoto(playerName, squad) {
+  const pt = [..._ptoks(playerName)]
+  let best = null, score = 0
+  for (const s of squad) {
+    const shared = pt.filter(t => s.tokens.has(t))
+    const sig = shared.filter(t => !_PSTOP.has(t))
+    const subset = pt.length > 0 && pt.every(t => s.tokens.has(t))
+    if (!(subset || sig.length >= 2)) continue
+    const sc = sig.length + (subset ? 1 : 0)
+    if (sc > score) { score = sc; best = s.url }
+  }
+  return best
+}
+
 export default function TabAnalyse() {
   const toast = useToast()
   const [opponents, setOpponents] = useState([])
@@ -405,11 +455,16 @@ export default function TabAnalyse() {
     try {
       let oppId = editId
 
+      // Notes: use the admin's text if provided, otherwise auto-generate a report from the stats
+      const reportNotes = (notes && notes.trim())
+        ? notes.trim()
+        : buildReport(oppName.trim(), season, batScored, bowlScored)
+
       // Upsert opponent row
       if (editId) {
         const { error } = await supabase.from('opponents').update({
           name: oppName.trim(), season, match_date: matchDate || null,
-          btcluk_profile_url: btclUrl || null, play_cricket_url: pcUrl || null, notes: notes || null,
+          btcluk_profile_url: btclUrl || null, play_cricket_url: pcUrl || null, notes: reportNotes || null,
         }).eq('id', editId)
         if (error) throw error
         // If re-uploading stats, wipe and re-seed players
@@ -419,7 +474,7 @@ export default function TabAnalyse() {
       } else {
         const { data, error } = await supabase.from('opponents').insert({
           name: oppName.trim(), season, match_date: matchDate || null,
-          btcluk_profile_url: btclUrl || null, play_cricket_url: pcUrl || null, notes: notes || null,
+          btcluk_profile_url: btclUrl || null, play_cricket_url: pcUrl || null, notes: reportNotes || null,
         }).select('id').single()
         if (error) throw error
         oppId = data.id
@@ -441,6 +496,22 @@ export default function TabAnalyse() {
         if (pErr) throw pErr
 
         const playerMap = Object.fromEntries(playerData.map(p => [p.player_name, p.id]))
+
+        // Auto-fetch opponent photos from BTCL (name-matched) when a BTCL team URL is given
+        if (btclUrl) {
+          try {
+            const teamId = btclTeamId(btclUrl)
+            if (teamId) {
+              const squad = await fetchBtclPhotos(teamId)
+              let matched = 0
+              for (const pl of playerData) {
+                const url = matchPhoto(pl.player_name, squad)
+                if (url) { await supabase.from('opponent_players').update({ photo_url: url }).eq('id', pl.id); matched++ }
+              }
+              toast(`📸 Matched ${matched}/${playerData.length} player photos from BTCL`)
+            }
+          } catch (e) { console.warn('BTCL photo sync failed:', e); toast('⚠️ Could not fetch BTCL photos (saved without them)') }
+        }
 
         // Insert batting stats
         if (batRows.length > 0) {

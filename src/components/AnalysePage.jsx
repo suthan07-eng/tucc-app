@@ -870,14 +870,15 @@ export default function AnalysePage() {
               value={selectedId||''}
               onChange={e => setSelectedId(e.target.value)}
               style={{
-                fontFamily:FONT, fontSize:13, fontWeight:700, color:C.dark,
-                background:'rgba(255,255,255,.95)', border:'none', borderRadius:10,
-                padding:'9px 14px', cursor:'pointer', maxWidth:320, width:'100%',
-                outline:'none',
+                fontFamily:FONT, fontSize:13, fontWeight:700, color:'#fff',
+                background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.18)', borderRadius:10,
+                padding:'10px 14px', cursor:'pointer', maxWidth:320, width:'100%',
+                outline:'none', colorScheme:'dark',
+                backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)',
               }}
             >
               {opponents.map(o => (
-                <option key={o.id} value={o.id}>
+                <option key={o.id} value={o.id} style={{ background:'#0d1b3e', color:'#fff' }}>
                   {o.name} — {o.season}{o.match_date ? ` (${new Date(o.match_date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})})` : ''}
                 </option>
               ))}
