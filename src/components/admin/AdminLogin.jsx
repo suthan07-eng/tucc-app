@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { C, FONT, ADMIN_EMAIL, ADMIN_PASSWORD } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Field, { Input } from '../ui/Field'
@@ -48,7 +49,7 @@ export default function AdminLogin() {
     <div
       style={{
         minHeight: '100vh',
-        background: C.bg,
+        background: AC.bg,
         fontFamily: FONT,
         display: 'flex',
         flexDirection: 'column',
@@ -72,8 +73,8 @@ export default function AdminLogin() {
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 2px 12px rgba(0,0,0,.12)', overflow: 'hidden' }}>
             <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
           </div>
-          <h1 style={{ fontSize: 21, fontWeight: 800, color: C.dark, margin: 0 }}>Admin Login</h1>
-          <p style={{ color: C.gray3, fontSize: 13, marginTop: 6 }}>Tamil United Cricket Club</p>
+          <h1 style={{ fontSize: 21, fontWeight: 800, color: AC.dark, margin: 0 }}>Admin Login</h1>
+          <p style={{ color: AC.gray3, fontSize: 13, marginTop: 6 }}>Tamil United Cricket Club</p>
         </motion.div>
 
         <Card>
@@ -107,10 +108,10 @@ export default function AdminLogin() {
           </form>
         </Card>
 
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: C.gray3 }}>
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: AC.gray3 }}>
           <button
             onClick={() => nav('/')}
-            style={{ color: C.gray3, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13 }}
+            style={{ color: AC.gray3, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13 }}
           >
             ← Back to home
           </button>

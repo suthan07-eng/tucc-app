@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Field, { Input, Textarea, Select } from '../ui/Field'
@@ -112,7 +113,7 @@ export default function TabPOTW() {
     toast('Cleared — Player of the Week hidden from site')
   }
 
-  if (loading) return <div style={{ color: C.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
+  if (loading) return <div style={{ color: AC.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -127,7 +128,7 @@ export default function TabPOTW() {
 
       {/* Match info */}
       <Card>
-        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.dark, marginBottom: 14 }}>Match Info</div>
+        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: AC.dark, marginBottom: 14 }}>Match Info</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Field label="Match Date">
             <Input placeholder="31 May 2026" value={matchDate} onChange={e => setMatchDate(e.target.value)} />
@@ -142,8 +143,8 @@ export default function TabPOTW() {
       <Card>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ fontSize: 18 }}>🏏</span>
-          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.dark }}>Best Batter</div>
-          <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3 }}>(50+ runs)</span>
+          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: AC.dark }}>Best Batter</div>
+          <span style={{ fontFamily: FONT, fontSize: 11, color: AC.gray3 }}>(50+ runs)</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Field label="Player">
@@ -176,8 +177,8 @@ export default function TabPOTW() {
       <Card>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ fontSize: 18 }}>🎯</span>
-          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.dark }}>Best Bowler</div>
-          <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3 }}>(3+ wickets)</span>
+          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: AC.dark }}>Best Bowler</div>
+          <span style={{ fontFamily: FONT, fontSize: 11, color: AC.gray3 }}>(3+ wickets)</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Field label="Player">
@@ -213,7 +214,7 @@ export default function TabPOTW() {
       {existingId && (
         <button
           onClick={clear}
-          style={{ background: 'none', border: `1px solid ${C.gray2}`, borderRadius: 10, padding: '10px', fontFamily: FONT, fontSize: 13, color: C.gray3, cursor: 'pointer' }}
+          style={{ background: 'none', border: `1px solid ${AC.gray2}`, borderRadius: 10, padding: '10px', fontFamily: FONT, fontSize: 13, color: AC.gray3, cursor: 'pointer' }}
         >
           🗑 Clear & Hide Player of the Week
         </button>

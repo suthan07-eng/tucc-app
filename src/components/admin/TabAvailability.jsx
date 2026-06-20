@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Avatar from '../ui/Avatar'
 import { Skeleton } from '../ui/Loader'
@@ -92,7 +93,7 @@ export default function TabAvailability() {
       {/* Match selector */}
       {allMatches.length > 0 && (
         <Card style={{ padding: '14px 18px' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.gray4, marginBottom: 6, textTransform: 'uppercase', letterSpacing: .5 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: AC.gray4, marginBottom: 6, textTransform: 'uppercase', letterSpacing: .5 }}>
             Viewing match
           </div>
           <Select value={selectedMatchId || ''} onChange={handleMatchChange}>
@@ -105,7 +106,7 @@ export default function TabAvailability() {
             ))}
           </Select>
           {selectedMatch && (
-            <div style={{ fontSize: 12, color: C.gray3, marginTop: 6 }}>
+            <div style={{ fontSize: 12, color: AC.gray3, marginTop: 6 }}>
               {selectedMatch.venue || 'Venue TBC'} · {selectedMatch.time || 'Time TBC'} · {selectedMatch.format || 'T20'}
             </div>
           )}
@@ -115,9 +116,9 @@ export default function TabAvailability() {
       {/* Summary + copy link */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Pill count={available.length}   label="Available"   color={C.ok}    bg={C.okBg}  loading={loading} />
-          <Pill count={unavailable.length} label="Unavailable" color={C.red}   bg={C.redBg} loading={loading} />
-          <Pill count={pending.length}     label="Pending"     color={C.gray4} bg={C.gray1} loading={loading} />
+          <Pill count={available.length}   label="Available"   color={AC.ok}    bg={AC.okBg}  loading={loading} />
+          <Pill count={unavailable.length} label="Unavailable" color={AC.red}   bg={AC.redBg} loading={loading} />
+          <Pill count={pending.length}     label="Pending"     color={AC.gray4} bg={AC.gray1} loading={loading} />
         </div>
         <button
           onClick={copyWhatsAppLink}
@@ -129,7 +130,7 @@ export default function TabAvailability() {
 
       {/* Available */}
       <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } }}>
-      <Section title={`✅ Available (${available.length})`} color={C.ok}>
+      <Section title={`✅ Available (${available.length})`} color={AC.ok}>
         {loading ? <SkeletonRows /> : available.length === 0 ? (
           <Empty text="No available responses yet" />
         ) : available.map((r) => {
@@ -138,7 +139,7 @@ export default function TabAvailability() {
           return (
             <PlayerRow key={r.id} player={p}
               meta={new Date(r.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-              extra={r.reason && <div style={{ fontSize: 12, color: C.gray4, marginTop: 4, fontStyle: 'italic' }}>"{r.reason}"</div>}
+              extra={r.reason && <div style={{ fontSize: 12, color: AC.gray4, marginTop: 4, fontStyle: 'italic' }}>"{r.reason}"</div>}
             />
           )
         })}
@@ -147,7 +148,7 @@ export default function TabAvailability() {
 
       {/* Unavailable */}
       <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } }}>
-      <Section title={`❌ Unavailable (${unavailable.length})`} color={C.red}>
+      <Section title={`❌ Unavailable (${unavailable.length})`} color={AC.red}>
         {loading ? <SkeletonRows /> : unavailable.length === 0 ? (
           <Empty text="Everyone's available so far 🎉" />
         ) : unavailable.map((r) => {
@@ -156,7 +157,7 @@ export default function TabAvailability() {
           return (
             <PlayerRow key={r.id} player={p}
               extra={r.reason && (
-                <div style={{ fontSize: 12, background: C.redBg, border: '1px solid #fecaca', borderRadius: 6, padding: '6px 10px', marginTop: 8, color: C.red, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 12, background: AC.redBg, border: '1px solid #fecaca', borderRadius: 6, padding: '6px 10px', marginTop: 8, color: AC.red, lineHeight: 1.5 }}>
                   <strong>Reason:</strong> {r.reason}
                 </div>
               )}
@@ -168,7 +169,7 @@ export default function TabAvailability() {
 
       {/* Pending */}
       <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } }}>
-      <Section title={`⏳ Pending (${pending.length})`} color={C.gray4}>
+      <Section title={`⏳ Pending (${pending.length})`} color={AC.gray4}>
         {loading ? <SkeletonRows /> : pending.length === 0 ? (
           <Empty text="All players have responded!" />
         ) : pending.map((p) => (
@@ -213,16 +214,16 @@ function Section({ title, color, children }) {
 
 function PlayerRow({ player, extra, right, meta }) {
   return (
-    <div style={{ padding: '10px 0', borderBottom: `1px solid ${C.gray1}`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+    <div style={{ padding: '10px 0', borderBottom: `1px solid ${AC.gray1}`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <Avatar name={player.name} size={36} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: C.dark }}>{player.name}</div>
-        <div style={{ fontSize: 12, color: C.gray3 }}>{player.role} · {player.phone}</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: AC.dark }}>{player.name}</div>
+        <div style={{ fontSize: 12, color: AC.gray3 }}>{player.role} · {player.phone}</div>
         {extra}
       </div>
       {(right || meta) && (
         <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          {meta && <span style={{ fontSize: 11, color: C.gray3 }}>{meta}</span>}
+          {meta && <span style={{ fontSize: 11, color: AC.gray3 }}>{meta}</span>}
           {right}
         </div>
       )}
@@ -243,5 +244,5 @@ function SkeletonRows() {
 }
 
 function Empty({ text }) {
-  return <div style={{ textAlign: 'center', padding: '14px 0', color: C.gray3, fontSize: 13 }}>{text}</div>
+  return <div style={{ textAlign: 'center', padding: '14px 0', color: AC.gray3, fontSize: 13 }}>{text}</div>
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 
 function adminFetch(url, opts = {}) {
   const token = import.meta.env.VITE_ADMIN_API_TOKEN || ''
@@ -146,7 +147,7 @@ function GenerateProfilesPanel() {
   }, [btclPlayers, generating, toast])
 
   return (
-    <div style={{ background: '#FFFBEB', border: `1px solid ${C.gold}50`, borderRadius: 14, padding: '16px 20px', marginBottom: 20 }}>
+    <div style={{ background: '#FFFBEB', border: `1px solid ${AC.gold}50`, borderRadius: 14, padding: '16px 20px', marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 200 }}>
           <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: '#92400E', marginBottom: 4 }}>
@@ -172,8 +173,8 @@ function GenerateProfilesPanel() {
           onClick={handleGenerate}
           disabled={generating || loadingPlayers}
           style={{
-            background: generating ? C.gray2 : 'linear-gradient(135deg, #D97706, #F59E0B)',
-            color: generating ? C.gray4 : '#fff',
+            background: generating ? AC.gray2 : 'linear-gradient(135deg, #D97706, #F59E0B)',
+            color: generating ? AC.gray4 : '#fff',
             fontFamily: FONT, fontWeight: 800, fontSize: 13,
             border: 'none', borderRadius: 12, padding: '11px 20px',
             cursor: (generating || loadingPlayers) ? 'not-allowed' : 'pointer',
@@ -277,10 +278,10 @@ function EditPlayerModal({ player, onClose, onSaved }) {
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:22 }}>
           <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#2563eb,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>✏️</div>
           <div>
-            <div style={{ fontWeight:800, fontSize:15, color:C.dark }}>Edit Player</div>
-            <div style={{ fontSize:12, color:C.gray3, marginTop:1 }}>{player.name}</div>
+            <div style={{ fontWeight:800, fontSize:15, color:AC.dark }}>Edit Player</div>
+            <div style={{ fontSize:12, color:AC.gray3, marginTop:1 }}>{player.name}</div>
           </div>
-          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', fontSize:22, color:C.gray3, lineHeight:1, padding:4 }}>×</button>
+          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', fontSize:22, color:AC.gray3, lineHeight:1, padding:4 }}>×</button>
         </div>
 
         <form onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:16 }}>
@@ -288,10 +289,10 @@ function EditPlayerModal({ player, onClose, onSaved }) {
           {/* ── Role multi-select ── */}
           <div>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <label style={{ fontSize:12, fontWeight:700, color:C.gray4, textTransform:'uppercase', letterSpacing:.5 }}>
+              <label style={{ fontSize:12, fontWeight:700, color:AC.gray4, textTransform:'uppercase', letterSpacing:.5 }}>
                 Player Role
               </label>
-              <span style={{ fontSize:11, color:C.gray3 }}>Select one or more</span>
+              <span style={{ fontSize:11, color:AC.gray3 }}>Select one or more</span>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
               {ROLES.map(r => {
@@ -303,9 +304,9 @@ function EditPlayerModal({ player, onClose, onSaved }) {
                     style={{
                       padding:'10px 12px', borderRadius:10, cursor:'pointer', fontFamily:FONT,
                       fontWeight: active ? 700 : 500, fontSize:13,
-                      border: `2px solid ${active ? C.green : C.gray2}`,
-                      background: active ? C.greenBg : '#fff',
-                      color: active ? C.green : C.gray5,
+                      border: `2px solid ${active ? AC.green : AC.gray2}`,
+                      background: active ? AC.greenBg : '#fff',
+                      color: active ? AC.green : AC.gray5,
                       display:'flex', alignItems:'center', gap:7,
                       transition:'all .15s', position:'relative',
                     }}
@@ -313,7 +314,7 @@ function EditPlayerModal({ player, onClose, onSaved }) {
                     <span style={{ fontSize:15 }}>{ROLE_ICONS[r]}</span>
                     {r}
                     {active && (
-                      <span style={{ marginLeft:'auto', width:16, height:16, borderRadius:'50%', background:C.green, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <span style={{ marginLeft:'auto', width:16, height:16, borderRadius:'50%', background:AC.green, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                         <svg width={9} height={9} viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2 4-4" stroke="#fff" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     )}
@@ -322,38 +323,38 @@ function EditPlayerModal({ player, onClose, onSaved }) {
               })}
             </div>
             {/* Preview combined role */}
-            <div style={{ marginTop:8, padding:'8px 12px', background:C.gray1, borderRadius:8, fontSize:12, color:C.gray5 }}>
-              <span style={{ color:C.gray3 }}>Will be saved as: </span>
-              <strong style={{ color:C.dark }}>{combinedRole}</strong>
+            <div style={{ marginTop:8, padding:'8px 12px', background:AC.gray1, borderRadius:8, fontSize:12, color:AC.gray5 }}>
+              <span style={{ color:AC.gray3 }}>Will be saved as: </span>
+              <strong style={{ color:AC.dark }}>{combinedRole}</strong>
             </div>
           </div>
 
-          <div style={{ borderTop:`1px solid ${C.gray2}`, paddingTop:16 }}>
-            <div style={{ fontSize:12, fontWeight:700, color:C.gray4, textTransform:'uppercase', letterSpacing:.5, marginBottom:12 }}>Login Credentials</div>
+          <div style={{ borderTop:`1px solid ${AC.gray2}`, paddingTop:16 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:AC.gray4, textTransform:'uppercase', letterSpacing:.5, marginBottom:12 }}>Login Credentials</div>
 
             {/* Email */}
             <div style={{ marginBottom:12 }}>
-              <label style={{ fontSize:12, color:C.gray4, display:'block', marginBottom:6 }}>Email</label>
+              <label style={{ fontSize:12, color:AC.gray4, display:'block', marginBottom:6 }}>Email</label>
               <input
                 type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="player@example.com"
-                style={{ width:'100%', border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'10px 14px', fontFamily:FONT, fontSize:14, color:C.dark, outline:'none', boxSizing:'border-box' }}
+                style={{ width:'100%', border:`1.5px solid ${AC.gray2}`, borderRadius:10, padding:'10px 14px', fontFamily:FONT, fontSize:14, color:AC.dark, outline:'none', boxSizing:'border-box' }}
               />
             </div>
 
             {/* Password */}
             <div>
-              <label style={{ fontSize:12, color:C.gray4, display:'block', marginBottom:6 }}>
-                New Password <span style={{ color:C.gray3, fontWeight:400 }}>(leave blank to keep unchanged)</span>
+              <label style={{ fontSize:12, color:AC.gray4, display:'block', marginBottom:6 }}>
+                New Password <span style={{ color:AC.gray3, fontWeight:400 }}>(leave blank to keep unchanged)</span>
               </label>
-              <div style={{ display:'flex', alignItems:'center', border:`1.5px solid ${C.gray2}`, borderRadius:10, overflow:'hidden' }}>
+              <div style={{ display:'flex', alignItems:'center', border:`1.5px solid ${AC.gray2}`, borderRadius:10, overflow:'hidden' }}>
                 <input
                   type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="Min 6 characters"
-                  style={{ flex:1, border:'none', padding:'10px 14px', fontFamily:FONT, fontSize:14, color:C.dark, outline:'none' }}
+                  style={{ flex:1, border:'none', padding:'10px 14px', fontFamily:FONT, fontSize:14, color:AC.dark, outline:'none' }}
                 />
                 <button type="button" onClick={() => setShowPass(v => !v)}
-                  style={{ background:'none', border:'none', cursor:'pointer', padding:'0 12px', color:C.gray3, fontSize:15 }}>
+                  style={{ background:'none', border:'none', cursor:'pointer', padding:'0 12px', color:AC.gray3, fontSize:15 }}>
                   {showPass ? '🙈' : '👁'}
                 </button>
               </div>
@@ -368,11 +369,11 @@ function EditPlayerModal({ player, onClose, onSaved }) {
 
           <div style={{ display:'flex', gap:10 }}>
             <button type="button" onClick={onClose}
-              style={{ flex:1, padding:'12px 0', borderRadius:10, border:`1.5px solid ${C.gray2}`, background:'#fff', color:C.gray4, fontFamily:FONT, fontSize:14, fontWeight:700, cursor:'pointer' }}>
+              style={{ flex:1, padding:'12px 0', borderRadius:10, border:`1.5px solid ${AC.gray2}`, background:'#fff', color:AC.gray4, fontFamily:FONT, fontSize:14, fontWeight:700, cursor:'pointer' }}>
               Cancel
             </button>
             <button type="submit" disabled={busy}
-              style={{ flex:2, padding:'12px 0', borderRadius:10, border:'none', background: busy?C.gray2:'linear-gradient(135deg,#2563eb,#4f46e5)', color:'#fff', fontFamily:FONT, fontSize:14, fontWeight:800, cursor:busy?'not-allowed':'pointer', boxShadow: busy?'none':'0 4px 16px rgba(37,99,235,.3)' }}>
+              style={{ flex:2, padding:'12px 0', borderRadius:10, border:'none', background: busy?AC.gray2:'linear-gradient(135deg,#2563eb,#4f46e5)', color:'#fff', fontFamily:FONT, fontSize:14, fontWeight:800, cursor:busy?'not-allowed':'pointer', boxShadow: busy?'none':'0 4px 16px rgba(37,99,235,.3)' }}>
               {busy ? 'Saving…' : '💾 Save Changes'}
             </button>
           </div>
@@ -462,12 +463,12 @@ export default function TabPlayers() {
       <GenerateProfilesPanel />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, color: C.dark, fontFamily: FONT, fontSize: 15 }}>
+        <div style={{ fontWeight: 700, color: AC.dark, fontFamily: FONT, fontSize: 15 }}>
           {loading ? <Skeleton width={140} height={16} /> : `${players.length} registered player${players.length !== 1 ? 's' : ''}`}
         </div>
         <button
           onClick={exportCSV}
-          style={{ background: C.greenBg, color: C.green, border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ background: AC.greenBg, color: AC.green, border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
         >
           ⬇ Export CSV
         </button>
@@ -488,7 +489,7 @@ export default function TabPlayers() {
             ))}
           </div>
         ) : players.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: C.gray3, fontFamily: FONT, fontSize: 14 }}>
+          <div style={{ padding: 40, textAlign: 'center', color: AC.gray3, fontFamily: FONT, fontSize: 14 }}>
             No players registered yet
           </div>
         ) : (
@@ -498,21 +499,21 @@ export default function TabPlayers() {
             return (
               <div
                 key={p.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px 12px 20px', borderBottom: i < players.length - 1 ? `1px solid ${C.gray1}` : 'none', opacity: isDeleting ? 0.5 : 1, transition: 'opacity .2s' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px 12px 20px', borderBottom: i < players.length - 1 ? `1px solid ${AC.gray1}` : 'none', opacity: isDeleting ? 0.5 : 1, transition: 'opacity .2s' }}
               >
-                <span style={{ color: C.gray3, fontSize: 11, fontWeight: 700, width: 22, textAlign: 'right', flexShrink: 0 }}>
+                <span style={{ color: AC.gray3, fontSize: 11, fontWeight: 700, width: 22, textAlign: 'right', flexShrink: 0 }}>
                   {i + 1}
                 </span>
                 <Avatar name={p.name} size={38} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: C.dark }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: C.gray3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: AC.dark }}>{p.name}</div>
+                  <div style={{ fontSize: 12, color: AC.gray3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.email} · {p.phone}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                    <span style={{ fontSize: 11, color: C.gray4, background: C.gray1, borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>
+                    <span style={{ fontSize: 11, color: AC.gray4, background: AC.gray1, borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>
                       {p.role}
                     </span>
                     <Badge variant={status} style={{ fontSize: 11, padding: '2px 8px' }}>
@@ -525,15 +526,15 @@ export default function TabPlayers() {
                     title={`Edit login credentials for ${p.name}`}
                     style={{
                       width: 32, height: 32, borderRadius: 8,
-                      border: `1.5px solid ${C.gray2}`,
-                      background: C.white, color: '#2563eb',
+                      border: `1.5px solid ${AC.gray2}`,
+                      background: AC.white, color: '#2563eb',
                       cursor: 'pointer', display: 'flex',
                       alignItems: 'center', justifyContent: 'center',
                       fontSize: 15, flexShrink: 0,
                       transition: 'background .15s, border-color .15s',
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.borderColor = '#2563eb' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = C.white; e.currentTarget.style.borderColor = C.gray2 }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = AC.white; e.currentTarget.style.borderColor = AC.gray2 }}
                   >
                     ✏️
                   </button>
@@ -544,15 +545,15 @@ export default function TabPlayers() {
                     title={`Remove ${p.name}`}
                     style={{
                       width: 32, height: 32, borderRadius: 8,
-                      border: `1.5px solid ${C.gray2}`,
-                      background: C.white, color: C.red,
+                      border: `1.5px solid ${AC.gray2}`,
+                      background: AC.white, color: AC.red,
                       cursor: isDeleting ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center',
                       justifyContent: 'center', fontSize: 15,
                       flexShrink: 0, transition: 'background .15s, border-color .15s',
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = C.redBg; e.currentTarget.style.borderColor = C.red }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = C.white; e.currentTarget.style.borderColor = C.gray2 }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = AC.redBg; e.currentTarget.style.borderColor = AC.red }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = AC.white; e.currentTarget.style.borderColor = AC.gray2 }}
                   >
                     🗑
                   </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Button from '../ui/Button'
 import Field, { Select } from '../ui/Field'
 import { useToast } from '../Toast'
@@ -147,10 +148,10 @@ export default function TabStatsMatch() {
     setSaving(false)
   }
 
-  const n = { type: 'number', min: '0', style: { padding: '6px 8px', fontSize: 13, width: '100%', border: `1px solid ${C.gray2}`, borderRadius: 8, fontFamily: FONT } }
+  const n = { type: 'number', min: '0', style: { padding: '6px 8px', fontSize: 13, width: '100%', border: `1px solid ${AC.gray2}`, borderRadius: 8, fontFamily: FONT } }
   const match = matches.find((m) => m.id === matchId)
 
-  if (loading) return <div style={{ color: C.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
+  if (loading) return <div style={{ color: AC.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -163,7 +164,7 @@ export default function TabStatsMatch() {
       </Field>
 
       {match && (
-        <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, marginTop: -4 }}>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray3, marginTop: -4 }}>
           Season: {match.season || '—'} · Enter batting and/or bowling for each player who participated.
         </div>
       )}
@@ -181,9 +182,9 @@ export default function TabStatsMatch() {
           <div
             key={p.id}
             style={{
-              background: C.white,
+              background: AC.white,
               borderRadius: 12,
-              border: `1.5px solid ${hasAny ? C.green : C.gray2}`,
+              border: `1.5px solid ${hasAny ? AC.green : AC.gray2}`,
               overflow: 'hidden',
             }}
           >
@@ -197,20 +198,20 @@ export default function TabStatsMatch() {
               }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: FONT, fontWeight: 600, fontSize: 14, color: C.dark }}>{p.name}</div>
-                <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, marginTop: 2 }}>
+                <div style={{ fontFamily: FONT, fontWeight: 600, fontSize: 14, color: AC.dark }}>{p.name}</div>
+                <div style={{ fontFamily: FONT, fontSize: 11, color: AC.gray3, marginTop: 2 }}>
                   {p.role}
                   {hasBatted  && ` · 🏏 ${f.bat_runs ?? 0}${f.bat_not_out ? '*' : ''}`}
                   {hasBowled  && ` · ⚡ ${f.bowl_wickets ?? 0}/${f.bowl_runs ?? 0}`}
                   {hasField   && ` · 🧤 ${num(f.field_catches) || 0}c`}
                 </div>
               </div>
-              <span style={{ color: C.gray3, fontSize: 18, lineHeight: 1 }}>{isOpen ? '▲' : '▼'}</span>
+              <span style={{ color: AC.gray3, fontSize: 18, lineHeight: 1 }}>{isOpen ? '▲' : '▼'}</span>
             </button>
 
             {/* Expanded form */}
             {isOpen && (
-              <div style={{ padding: '0 14px 16px', borderTop: `1px solid ${C.gray1}` }}>
+              <div style={{ padding: '0 14px 16px', borderTop: `1px solid ${AC.gray1}` }}>
 
                 {/* Batting */}
                 <div style={{ marginTop: 12 }}>
@@ -220,7 +221,7 @@ export default function TabStatsMatch() {
                       checked={f.bat_did_bat}
                       onChange={(e) => setField(p.id, 'bat_did_bat', e.target.checked)}
                     />
-                    <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark }}>🏏 Batted</span>
+                    <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.greenDark }}>🏏 Batted</span>
                   </label>
                   {f.bat_did_bat && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
@@ -245,7 +246,7 @@ export default function TabStatsMatch() {
                       checked={f.bowl_did_bowl}
                       onChange={(e) => setField(p.id, 'bowl_did_bowl', e.target.checked)}
                     />
-                    <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark }}>⚡ Bowled</span>
+                    <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.greenDark }}>⚡ Bowled</span>
                   </label>
                   {f.bowl_did_bowl && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
@@ -259,7 +260,7 @@ export default function TabStatsMatch() {
 
                 {/* Fielding */}
                 <div style={{ marginTop: 12 }}>
-                  <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark, marginBottom: 10 }}>🧤 Fielding</div>
+                  <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.greenDark, marginBottom: 10 }}>🧤 Fielding</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
                     <SmallField label="Catches"><input {...n} value={f.field_catches} onChange={(e) => setField(p.id, 'field_catches', e.target.value)} /></SmallField>
                     <SmallField label="Run Outs"><input {...n} value={f.field_run_outs} onChange={(e) => setField(p.id, 'field_run_outs', e.target.value)} /></SmallField>
@@ -277,7 +278,7 @@ export default function TabStatsMatch() {
           onClick={saveAll}
           disabled={saving}
           style={{
-            background: saving ? C.gray2 : C.green,
+            background: saving ? AC.gray2 : AC.green,
             color: '#fff',
             border: 'none',
             borderRadius: 12,
@@ -299,7 +300,7 @@ export default function TabStatsMatch() {
 function SmallField({ label, children }) {
   return (
     <div>
-      <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray4, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontFamily: FONT, fontSize: 11, color: AC.gray4, marginBottom: 4 }}>{label}</div>
       {children}
     </div>
   )

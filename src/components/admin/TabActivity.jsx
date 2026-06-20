@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Avatar from '../ui/Avatar'
 import { Skeleton } from '../ui/Loader'
@@ -61,7 +62,7 @@ function PlayerLoginCard({ player, lastLogin, lastLog }) {
     <div style={{
       display:'flex', alignItems:'center', gap:12,
       padding:'13px 16px',
-      borderBottom:`1px solid ${C.gray1}`,
+      borderBottom:`1px solid ${AC.gray1}`,
     }}>
       <div style={{ position:'relative', flexShrink:0 }}>
         <Avatar name={player.name} size={36}/>
@@ -71,17 +72,17 @@ function PlayerLoginCard({ player, lastLogin, lastLog }) {
       </div>
 
       <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontWeight:700, fontSize:13, color:C.dark, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+        <div style={{ fontWeight:700, fontSize:13, color:AC.dark, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
           {player.name}
         </div>
-        <div style={{ fontSize:11, color:C.gray3, marginTop:1, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+        <div style={{ fontSize:11, color:AC.gray3, marginTop:1, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
           <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{player.email}</span>
           {lastLog && (
             <span style={{ display:'inline-flex', alignItems:'center', gap:3, flexShrink:0 }}>
               <span title={`Device: ${lastLog.device_type}`}>{deviceIcon}</span>
               <span title={`Browser: ${lastLog.browser}`}>{browserIcon}</span>
               <span title={`OS: ${lastLog.os}`}>{osIcon}</span>
-              <span style={{ color:C.gray4 }}>{lastLog.device_type} · {lastLog.browser} · {lastLog.os}</span>
+              <span style={{ color:AC.gray4 }}>{lastLog.device_type} · {lastLog.browser} · {lastLog.os}</span>
             </span>
           )}
         </div>
@@ -92,18 +93,18 @@ function PlayerLoginCard({ player, lastLogin, lastLog }) {
           <>
             <div style={{
               fontSize:12, fontWeight:700,
-              color: isRecent ? '#15803d' : C.gray4,
-              background: isRecent ? '#dcfce7' : C.gray1,
+              color: isRecent ? '#15803d' : AC.gray4,
+              background: isRecent ? '#dcfce7' : AC.gray1,
               borderRadius:99, padding:'2px 9px', display:'inline-block',
             }}>
               {timeAgo(lastLogin)}
             </div>
-            <div style={{ fontSize:10, color:C.gray3, marginTop:3 }}>
+            <div style={{ fontSize:10, color:AC.gray3, marginTop:3 }}>
               {new Date(lastLogin).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}
             </div>
           </>
         ) : (
-          <span style={{ fontSize:11, color:C.gray3, background:C.gray1, borderRadius:99, padding:'2px 9px' }}>
+          <span style={{ fontSize:11, color:AC.gray3, background:AC.gray1, borderRadius:99, padding:'2px 9px' }}>
             Never logged in
           </span>
         )}
@@ -124,7 +125,7 @@ function LogRow({ log }) {
   return (
     <div style={{
       display:'flex', alignItems:'flex-start', gap:10,
-      padding:'10px 16px', borderBottom:`1px solid ${C.gray1}`,
+      padding:'10px 16px', borderBottom:`1px solid ${AC.gray1}`,
     }}>
       {/* Event type badge */}
       <div style={{
@@ -140,14 +141,14 @@ function LogRow({ log }) {
       <div style={{ flex:1, minWidth:0 }}>
         {/* Row 1: name + event type + page */}
         <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
-          <span style={{ fontWeight:700, fontSize:12, color:C.dark }}>
+          <span style={{ fontWeight:700, fontSize:12, color:AC.dark }}>
             {log.player_name || log.player_email}
           </span>
           <span style={{ fontSize:11, color:meta.color, background:meta.bg, borderRadius:99, padding:'1px 7px', fontWeight:700, flexShrink:0 }}>
             {meta.label}
           </span>
           {log.event_type === 'page_view' && (
-            <span style={{ fontSize:11, color:C.gray4 }}>
+            <span style={{ fontSize:11, color:AC.gray4 }}>
               {pageIcon} {log.page_label || log.page}
             </span>
           )}
@@ -160,20 +161,20 @@ function LogRow({ log }) {
 
         {/* Row 2: device + duration */}
         <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:3, flexWrap:'wrap' }}>
-          <span style={{ fontSize:10, color:C.gray3, display:'flex', alignItems:'center', gap:3 }}>
+          <span style={{ fontSize:10, color:AC.gray3, display:'flex', alignItems:'center', gap:3 }}>
             {devIcon} {log.device_type || '—'}
           </span>
-          <span style={{ fontSize:10, color:C.gray3 }}>·</span>
-          <span style={{ fontSize:10, color:C.gray3, display:'flex', alignItems:'center', gap:3 }}>
+          <span style={{ fontSize:10, color:AC.gray3 }}>·</span>
+          <span style={{ fontSize:10, color:AC.gray3, display:'flex', alignItems:'center', gap:3 }}>
             {brwIcon} {log.browser || '—'}
           </span>
-          <span style={{ fontSize:10, color:C.gray3 }}>·</span>
-          <span style={{ fontSize:10, color:C.gray3, display:'flex', alignItems:'center', gap:3 }}>
+          <span style={{ fontSize:10, color:AC.gray3 }}>·</span>
+          <span style={{ fontSize:10, color:AC.gray3, display:'flex', alignItems:'center', gap:3 }}>
             {osIcon} {log.os || '—'}
           </span>
           {duration && (
             <>
-              <span style={{ fontSize:10, color:C.gray3 }}>·</span>
+              <span style={{ fontSize:10, color:AC.gray3 }}>·</span>
               <span style={{ fontSize:10, color:'#7c3aed', background:'#f3e8ff', borderRadius:99, padding:'1px 7px', fontWeight:700 }}>
                 ⏱ {duration}
               </span>
@@ -183,7 +184,7 @@ function LogRow({ log }) {
       </div>
 
       {/* Time */}
-      <div style={{ fontSize:11, color:C.gray3, flexShrink:0, textAlign:'right', lineHeight:1.5 }}>
+      <div style={{ fontSize:11, color:AC.gray3, flexShrink:0, textAlign:'right', lineHeight:1.5 }}>
         <div style={{ fontWeight:700 }}>{timeAgo(log.created_at)}</div>
         <div style={{ fontSize:10 }}>
           {new Date(log.created_at).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}
@@ -325,9 +326,9 @@ export default function TabActivity() {
 
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
-        <div style={{ fontWeight:800, fontSize:16, color:C.dark }}>🕵️ Player Activity & Login Tracker</div>
+        <div style={{ fontWeight:800, fontSize:16, color:AC.dark }}>🕵️ Player Activity & Login Tracker</div>
         <button onClick={() => load(true)} disabled={refreshing}
-          style={{ background:C.gray1, color:C.gray4, border:'none', borderRadius:8, padding:'7px 13px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:5, opacity:refreshing?0.6:1 }}>
+          style={{ background:AC.gray1, color:AC.gray4, border:'none', borderRadius:8, padding:'7px 13px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:5, opacity:refreshing?0.6:1 }}>
           {refreshing ? '⏳' : '🔄'} Refresh
         </button>
       </div>
@@ -350,9 +351,9 @@ export default function TabActivity() {
 
       {/* Last Login section */}
       <div>
-        <div style={{ fontWeight:700, fontSize:13, color:C.dark, marginBottom:10, display:'flex', alignItems:'center', gap:8 }}>
+        <div style={{ fontWeight:700, fontSize:13, color:AC.dark, marginBottom:10, display:'flex', alignItems:'center', gap:8 }}>
           🕐 Last Login — All Players
-          <span style={{ fontSize:11, color:C.gray3, fontWeight:500 }}>sorted by most recent · device shown from last session</span>
+          <span style={{ fontSize:11, color:AC.gray3, fontWeight:500 }}>sorted by most recent · device shown from last session</span>
         </div>
         <Card style={{ padding:0, overflow:'hidden' }}>
           {loadingTop ? (
@@ -368,7 +369,7 @@ export default function TabActivity() {
               ))}
             </div>
           ) : sortedPlayers.length === 0 ? (
-            <div style={{ padding:32, textAlign:'center', color:C.gray3, fontSize:13 }}>No players found</div>
+            <div style={{ padding:32, textAlign:'center', color:AC.gray3, fontSize:13 }}>No players found</div>
           ) : sortedPlayers.map(p => (
             <PlayerLoginCard
               key={p.id} player={p}
@@ -381,25 +382,25 @@ export default function TabActivity() {
 
       {/* Activity log */}
       <div>
-        <div style={{ fontWeight:700, fontSize:13, color:C.dark, marginBottom:10 }}>
+        <div style={{ fontWeight:700, fontSize:13, color:AC.dark, marginBottom:10 }}>
           📋 Activity Log
-          <span style={{ fontSize:11, color:C.gray3, fontWeight:500, marginLeft:8 }}>
+          <span style={{ fontSize:11, color:AC.gray3, fontWeight:500, marginLeft:8 }}>
             last 300 events · auto-refreshes every 30s
           </span>
         </div>
 
         {/* Filter bar */}
         <div style={{ display:'flex', gap:8, marginBottom:12, flexWrap:'wrap' }}>
-          <div style={{ display:'flex', background:C.gray1, borderRadius:10, padding:3, gap:1 }}>
+          <div style={{ display:'flex', background:AC.gray1, borderRadius:10, padding:3, gap:1 }}>
             {FILTERS.map(f => (
               <button key={f.id} onClick={() => setFilter(f.id)}
-                style={{ padding:'6px 11px', borderRadius:8, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:11, fontWeight:700, transition:'all .15s', background:filter===f.id?'#fff':'transparent', color:filter===f.id?C.dark:C.gray3, boxShadow:filter===f.id?'0 1px 4px rgba(0,0,0,.1)':'none', whiteSpace:'nowrap' }}>
+                style={{ padding:'6px 11px', borderRadius:8, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:11, fontWeight:700, transition:'all .15s', background:filter===f.id?'#fff':'transparent', color:filter===f.id?AC.dark:AC.gray3, boxShadow:filter===f.id?'0 1px 4px rgba(0,0,0,.1)':'none', whiteSpace:'nowrap' }}>
                 {f.label}
               </button>
             ))}
           </div>
           <select value={playerFilter} onChange={e => setPlayerFilter(e.target.value)}
-            style={{ border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:playerFilter?C.dark:C.gray3, outline:'none', minWidth:180, background:'#fff', cursor:'pointer' }}>
+            style={{ border:`1.5px solid ${AC.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:playerFilter?AC.dark:AC.gray3, outline:'none', minWidth:180, background:'#fff', cursor:'pointer' }}>
             <option value="">👤 All players</option>
             {players.map(p => (
               <option key={p.id} value={p.name}>{p.name}</option>
@@ -422,7 +423,7 @@ export default function TabActivity() {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div style={{ padding:40, textAlign:'center', color:C.gray3, fontFamily:FONT, fontSize:14 }}>
+            <div style={{ padding:40, textAlign:'center', color:AC.gray3, fontFamily:FONT, fontSize:14 }}>
               {logs.length === 0
                 ? '📭 No activity yet — events will appear here as players use the app.'
                 : 'No events match your filter.'}

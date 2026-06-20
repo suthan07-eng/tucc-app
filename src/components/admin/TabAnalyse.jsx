@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import * as XLSX from 'xlsx'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import { useToast } from '../Toast'
 
 // ── Composite scoring (mirrors AnalysePage methodology) ────────────────────
@@ -136,16 +137,16 @@ function parseBowlingExcel(buffer) {
 function Inp({ label, value, onChange, type = 'text', placeholder, required }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: 'block', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: C.gray5, marginBottom: 5 }}>
-        {label}{required && <span style={{ color: C.red }}> *</span>}
+      <label style={{ display: 'block', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: AC.gray5, marginBottom: 5 }}>
+        {label}{required && <span style={{ color: AC.red }}> *</span>}
       </label>
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         style={{
           width: '100%', padding: '10px 12px', borderRadius: 10,
-          border: `1.5px solid ${C.gray2}`, fontFamily: FONT, fontSize: 13,
-          color: C.dark, background: '#fff', outline: 'none', boxSizing: 'border-box',
+          border: `1.5px solid ${AC.gray2}`, fontFamily: FONT, fontSize: 13,
+          color: AC.dark, background: '#fff', outline: 'none', boxSizing: 'border-box',
         }}
       />
     </div>
@@ -161,10 +162,10 @@ function Btn({ children, onClick, variant = 'primary', disabled, loading, small 
     opacity: disabled ? 0.6 : 1, transition: 'all 150ms ease',
   }
   const vars = {
-    primary:  { background: C.green,   color: '#fff' },
+    primary:  { background: AC.green,   color: '#fff' },
     danger:   { background: '#fee2e2', color: '#b91c1c' },
-    ghost:    { background: '#f1f5f9', color: C.gray5 },
-    gold:     { background: C.gold,    color: '#fff' },
+    ghost:    { background: '#f1f5f9', color: AC.gray5 },
+    gold:     { background: AC.gold,    color: '#fff' },
   }
   return (
     <button onClick={onClick} disabled={disabled || loading} style={{ ...base, ...vars[variant] }}>
@@ -175,8 +176,8 @@ function Btn({ children, onClick, variant = 'primary', disabled, loading, small 
 
 function Section({ title, children }) {
   return (
-    <div style={{ background: '#fff', border: `1.5px solid ${C.gray2}`, borderRadius: 16, padding: '18px 16px', marginBottom: 18 }}>
-      {title && <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 15, color: C.dark, marginBottom: 14, borderBottom: `1px solid ${C.gray2}`, paddingBottom: 10 }}>{title}</div>}
+    <div style={{ background: '#fff', border: `1.5px solid ${AC.gray2}`, borderRadius: 16, padding: '18px 16px', marginBottom: 18 }}>
+      {title && <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 15, color: AC.dark, marginBottom: 14, borderBottom: `1px solid ${AC.gray2}`, paddingBottom: 10 }}>{title}</div>}
       {children}
     </div>
   )
@@ -186,13 +187,13 @@ function Section({ title, children }) {
 function OpponentCard({ opp, onEdit, onDelete }) {
   const [confirming, setConfirming] = useState(false)
   return (
-    <div style={{ background: '#fff', border: `1.5px solid ${C.gray2}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: C.greenDark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: FONT, fontWeight: 900, fontSize: 16, color: '#fff' }}>
+    <div style={{ background: '#fff', border: `1.5px solid ${AC.gray2}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: AC.greenDark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: FONT, fontWeight: 900, fontSize: 16, color: '#fff' }}>
         {opp.name.slice(0, 2).toUpperCase()}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: C.dark }}>{opp.name}</div>
-        <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray4 }}>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: AC.dark }}>{opp.name}</div>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray4 }}>
           Season {opp.season}
           {opp.match_date ? ` · ${new Date(opp.match_date).toLocaleDateString('en-GB', { day:'numeric', month:'short' })}` : ''}
           {opp.player_count ? ` · ${opp.player_count} players` : ''}
@@ -214,19 +215,19 @@ function Steps({ current, steps }) {
     <div style={{ display: 'flex', gap: 0, marginBottom: 20 }}>
       {steps.map((s, i) => (
         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-          {i > 0 && <div style={{ position: 'absolute', left: 0, top: 14, width: '50%', height: 2, background: i <= current ? C.green : C.gray2 }} />}
-          {i < steps.length - 1 && <div style={{ position: 'absolute', right: 0, top: 14, width: '50%', height: 2, background: i < current ? C.green : C.gray2 }} />}
+          {i > 0 && <div style={{ position: 'absolute', left: 0, top: 14, width: '50%', height: 2, background: i <= current ? AC.green : AC.gray2 }} />}
+          {i < steps.length - 1 && <div style={{ position: 'absolute', right: 0, top: 14, width: '50%', height: 2, background: i < current ? AC.green : AC.gray2 }} />}
           <div style={{
             width: 28, height: 28, borderRadius: '50%', zIndex: 1,
-            background: i < current ? C.green : i === current ? C.green : C.gray2,
+            background: i < current ? AC.green : i === current ? AC.green : AC.gray2,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: FONT, fontWeight: 800, fontSize: 12,
-            color: i <= current ? '#fff' : C.gray4,
-            boxShadow: i === current ? `0 0 0 4px ${C.blueBg}` : 'none',
+            color: i <= current ? '#fff' : AC.gray4,
+            boxShadow: i === current ? `0 0 0 4px ${AC.blueBg}` : 'none',
           }}>
             {i < current ? '✓' : i + 1}
           </div>
-          <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: i === current ? 700 : 400, color: i <= current ? C.green : C.gray4, marginTop: 4, textAlign: 'center', whiteSpace: 'nowrap' }}>
+          <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: i === current ? 700 : 400, color: i <= current ? AC.green : AC.gray4, marginTop: 4, textAlign: 'center', whiteSpace: 'nowrap' }}>
             {s}
           </div>
         </div>
@@ -469,8 +470,8 @@ export default function TabAnalyse() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: C.dark }}>🔍 Opposition Scouting</div>
-          <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray4, marginTop: 2 }}>
+          <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: AC.dark }}>🔍 Opposition Scouting</div>
+          <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray4, marginTop: 2 }}>
             Add opponents, upload stats Excel files, and auto-generate scouting reports.
           </div>
         </div>
@@ -478,12 +479,12 @@ export default function TabAnalyse() {
       </div>
 
       {loading ? (
-        <div style={{ fontFamily: FONT, color: C.gray4, padding: 20, textAlign: 'center' }}>Loading…</div>
+        <div style={{ fontFamily: FONT, color: AC.gray4, padding: 20, textAlign: 'center' }}>Loading…</div>
       ) : opponents.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px 20px', background: '#fff', borderRadius: 16, border: `1.5px solid ${C.gray2}` }}>
+        <div style={{ textAlign: 'center', padding: '40px 20px', background: '#fff', borderRadius: 16, border: `1.5px solid ${AC.gray2}` }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🏏</div>
-          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, color: C.dark, marginBottom: 6 }}>No opponents yet</div>
-          <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray4, marginBottom: 16 }}>Add your first opponent to start building scouting reports.</div>
+          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, color: AC.dark, marginBottom: 6 }}>No opponents yet</div>
+          <div style={{ fontFamily: FONT, fontSize: 13, color: AC.gray4, marginBottom: 16 }}>Add your first opponent to start building scouting reports.</div>
           <Btn onClick={openAdd}>+ Add First Opponent</Btn>
         </div>
       ) : (
@@ -499,9 +500,9 @@ export default function TabAnalyse() {
         </div>
       )}
 
-      <div style={{ marginTop: 20, padding: '12px 16px', background: '#f8fafc', border: `1px solid ${C.gray2}`, borderRadius: 12, borderLeft: `3px solid ${C.green}` }}>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 11, color: C.green, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>📐 Excel format expected</div>
-        <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.7 }}>
+      <div style={{ marginTop: 20, padding: '12px 16px', background: '#f8fafc', border: `1px solid ${AC.gray2}`, borderRadius: 12, borderLeft: `3px solid ${AC.green}` }}>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 11, color: AC.green, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>📐 Excel format expected</div>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray5, lineHeight: 1.7 }}>
           <strong>Batting:</strong> Col B = Name, C = M, D = Inn, E = NO, F = Runs, G = HS (append * if not-out), H = Avg, J = SR, K = 50s, L = 100s<br />
           <strong>Bowling:</strong> Col B = Name, C = M, D = Overs, E = Mdns, F = Runs, G = Wkts, H = BB, I = 5W, J = Econ, K = SR, L = Avg
         </div>
@@ -515,10 +516,10 @@ export default function TabAnalyse() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => { setView('list'); resetWizard() }}
-          style={{ background: '#f1f5f9', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontFamily: FONT, fontSize: 13, color: C.gray5 }}>
+          style={{ background: '#f1f5f9', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontFamily: FONT, fontSize: 13, color: AC.gray5 }}>
           ← Back
         </button>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 16, color: C.dark }}>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 16, color: AC.dark }}>
           {editId ? 'Edit Opponent' : 'Add New Opponent'}
         </div>
       </div>
@@ -534,9 +535,9 @@ export default function TabAnalyse() {
           <Inp label="BTCL profile URL" value={btclUrl} onChange={setBtclUrl} placeholder="https://btcluk.com/..." />
           <Inp label="Play-Cricket URL" value={pcUrl} onChange={setPcUrl} placeholder="https://play-cricket.com/..." />
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: C.gray5, marginBottom: 5 }}>Notes</label>
+            <label style={{ display: 'block', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: AC.gray5, marginBottom: 5 }}>Notes</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${C.gray2}`, fontFamily: FONT, fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${AC.gray2}`, fontFamily: FONT, fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }} />
           </div>
           <Btn onClick={() => { if (!oppName.trim()) { toast('Name is required'); return } setStep(1) }}>
             Next →
@@ -548,9 +549,9 @@ export default function TabAnalyse() {
       {step === 1 && (
         <Section title="Upload Stats Files">
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>🏏 Batting Stats (Excel)</div>
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>🏏 Batting Stats (Excel)</div>
             <div style={{
-              border: `2px dashed ${batFile ? C.green : C.gray2}`,
+              border: `2px dashed ${batFile ? AC.green : AC.gray2}`,
               borderRadius: 12, padding: '20px 16px', textAlign: 'center', cursor: 'pointer',
               background: batFile ? '#f0fdf4' : '#fafafa',
               transition: 'all 200ms ease',
@@ -559,14 +560,14 @@ export default function TabAnalyse() {
               <input ref={batRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleBatFile} />
               {batFile
                 ? <div style={{ fontFamily: FONT, fontSize: 13, color: '#15803d', fontWeight: 700 }}>✅ {batFile.name} ({batRows.length} players)</div>
-                : <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray4 }}>Click to upload batting.xlsx</div>}
+                : <div style={{ fontFamily: FONT, fontSize: 13, color: AC.gray4 }}>Click to upload batting.xlsx</div>}
             </div>
           </div>
 
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>🎳 Bowling Stats (Excel)</div>
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>🎳 Bowling Stats (Excel)</div>
             <div style={{
-              border: `2px dashed ${bowlFile ? C.green : C.gray2}`,
+              border: `2px dashed ${bowlFile ? AC.green : AC.gray2}`,
               borderRadius: 12, padding: '20px 16px', textAlign: 'center', cursor: 'pointer',
               background: bowlFile ? '#f0fdf4' : '#fafafa',
             }}
@@ -574,12 +575,12 @@ export default function TabAnalyse() {
               <input ref={bowlRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleBowlFile} />
               {bowlFile
                 ? <div style={{ fontFamily: FONT, fontSize: 13, color: '#15803d', fontWeight: 700 }}>✅ {bowlFile.name} ({bowlRows.length} players)</div>
-                : <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray4 }}>Click to upload bowling.xlsx</div>}
+                : <div style={{ fontFamily: FONT, fontSize: 13, color: AC.gray4 }}>Click to upload bowling.xlsx</div>}
             </div>
           </div>
 
           {(batRows.length > 0 || bowlRows.length > 0) && (
-            <div style={{ background: C.blueBg, border: `1px solid #bfdbfe`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontFamily: FONT, fontSize: 12, color: C.gray5 }}>
+            <div style={{ background: AC.blueBg, border: `1px solid #bfdbfe`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontFamily: FONT, fontSize: 12, color: AC.gray5 }}>
               Parsed: <strong>{batRows.length}</strong> batting rows, <strong>{bowlRows.length}</strong> bowling rows.
               {batRows.length > 0 && <span> Top batter: {batRows.sort((a,b)=>b.runs-a.runs)[0]?.player_name} ({batRows.sort((a,b)=>b.runs-a.runs)[0]?.runs} runs).</span>}
             </div>
@@ -600,10 +601,10 @@ export default function TabAnalyse() {
         <Section title="Preview Parsed Data">
           {batRows.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>Top 5 Batters (by runs)</div>
-              <div style={{ overflowX: 'auto', borderRadius: 10, border: `1px solid ${C.gray2}` }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>Top 5 Batters (by runs)</div>
+              <div style={{ overflowX: 'auto', borderRadius: 10, border: `1px solid ${AC.gray2}` }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT }}>
-                  <thead><tr style={{ background: C.greenDark }}>
+                  <thead><tr style={{ background: AC.greenDark }}>
                     {['Player','M','Inn','Runs','Avg','SR','50s','100s'].map(h => (
                       <th key={h} style={{ padding:'8px 10px', color:'rgba(255,255,255,0.8)', fontSize:11, fontWeight:700, whiteSpace:'nowrap' }}>{h}</th>
                     ))}
@@ -611,10 +612,10 @@ export default function TabAnalyse() {
                   <tbody>
                     {[...batRows].sort((a,b)=>b.runs-a.runs).slice(0,5).map((r,i) => (
                       <tr key={i} style={{ background: i%2===0?'#fff':'#f8fafc' }}>
-                        <td style={{ padding:'8px 10px', fontSize:12, color:C.dark, fontWeight:600 }}>{r.player_name}</td>
+                        <td style={{ padding:'8px 10px', fontSize:12, color:AC.dark, fontWeight:600 }}>{r.player_name}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.matches}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.innings}</td>
-                        <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center', fontWeight:700, color:C.green }}>{r.runs}</td>
+                        <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center', fontWeight:700, color:AC.green }}>{r.runs}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.avg}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.strike_rate}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.fifties}</td>
@@ -629,10 +630,10 @@ export default function TabAnalyse() {
 
           {bowlRows.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>Top 5 Bowlers (by wickets)</div>
-              <div style={{ overflowX: 'auto', borderRadius: 10, border: `1px solid ${C.gray2}` }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>Top 5 Bowlers (by wickets)</div>
+              <div style={{ overflowX: 'auto', borderRadius: 10, border: `1px solid ${AC.gray2}` }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT }}>
-                  <thead><tr style={{ background: C.greenDark }}>
+                  <thead><tr style={{ background: AC.greenDark }}>
                     {['Player','Overs','Wkts','Econ','Avg','Best'].map(h => (
                       <th key={h} style={{ padding:'8px 10px', color:'rgba(255,255,255,0.8)', fontSize:11, fontWeight:700, whiteSpace:'nowrap' }}>{h}</th>
                     ))}
@@ -640,7 +641,7 @@ export default function TabAnalyse() {
                   <tbody>
                     {[...bowlRows].sort((a,b)=>b.wickets-a.wickets).slice(0,5).map((r,i) => (
                       <tr key={i} style={{ background: i%2===0?'#fff':'#f8fafc' }}>
-                        <td style={{ padding:'8px 10px', fontSize:12, color:C.dark, fontWeight:600 }}>{r.player_name}</td>
+                        <td style={{ padding:'8px 10px', fontSize:12, color:AC.dark, fontWeight:600 }}>{r.player_name}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.overs}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center', fontWeight:700, color:'#7c3aed' }}>{r.wickets}</td>
                         <td style={{ padding:'8px 10px', fontSize:12, textAlign:'center' }}>{r.economy_rate}</td>
@@ -666,12 +667,12 @@ export default function TabAnalyse() {
         <Section title="Review & Save">
           {batScored.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>🏏 Top 6 Batters (Composite Score)</div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>🏏 Top 6 Batters (Composite Score)</div>
               {batScored.slice(0, 6).map((r, i) => (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'8px 12px', background: i%2===0?'#f8fafc':'#fff', borderRadius:8, marginBottom:4, fontFamily:FONT, fontSize:13 }}>
                   <span><strong>#{i+1}</strong> {r.player_name}</span>
                   <span style={{ display:'flex', gap:10 }}>
-                    <span style={{ color:C.green, fontWeight:700 }}>Score: {r.composite}</span>
+                    <span style={{ color:AC.green, fontWeight:700 }}>Score: {r.composite}</span>
                     <span style={{
                       fontWeight:700, fontSize:11,
                       color: tagFromScore(r.composite,i+1)==='AVOID'?'#b91c1c':tagFromScore(r.composite,i+1)==='TARGET'?'#15803d':'#92400e'
@@ -683,7 +684,7 @@ export default function TabAnalyse() {
           )}
           {bowlScored.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>🎳 Top 6 Bowlers (Composite Score)</div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>🎳 Top 6 Bowlers (Composite Score)</div>
               {bowlScored.slice(0, 6).map((r, i) => (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'8px 12px', background: i%2===0?'#f8fafc':'#fff', borderRadius:8, marginBottom:4, fontFamily:FONT, fontSize:13 }}>
                   <span><strong>#{i+1}</strong> {r.player_name}</span>
@@ -697,11 +698,11 @@ export default function TabAnalyse() {
           )}
           {arScored.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, marginBottom: 8 }}>⚡ Top 6 All-rounders</div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.dark, marginBottom: 8 }}>⚡ Top 6 All-rounders</div>
               {arScored.slice(0, 6).map((r, i) => (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'8px 12px', background: i%2===0?'#f8fafc':'#fff', borderRadius:8, marginBottom:4, fontFamily:FONT, fontSize:13 }}>
                   <span><strong>#{i+1}</strong> {r.player_name}</span>
-                  <span style={{ color:C.green, fontWeight:700 }}>Bat: {r.bat_score} · Bowl: {r.bowl_score} · Overall: {r.composite}</span>
+                  <span style={{ color:AC.green, fontWeight:700 }}>Bat: {r.bat_score} · Bowl: {r.bowl_score} · Overall: {r.composite}</span>
                 </div>
               ))}
             </div>

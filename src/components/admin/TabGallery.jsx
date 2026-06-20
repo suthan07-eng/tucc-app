@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../../supabase'
 import { useAuth } from '../../context/AuthContext'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Avatar from '../ui/Avatar'
 import { Skeleton } from '../ui/Loader'
@@ -133,8 +134,8 @@ function AdminUploadModal({ onClose, onPosted, existingAlbums = [] }) {
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
           <div>
-            <div style={{ fontWeight:800, fontSize:14, color:C.dark, fontFamily:FONT }}>📤 Upload as Admin {items.length>1?`— ${items.length} items`:''}</div>
-            <div style={{ fontSize:11, color:C.gray3, fontFamily:FONT, marginTop:1 }}>Select multiple photos & videos at once</div>
+            <div style={{ fontWeight:800, fontSize:14, color:AC.dark, fontFamily:FONT }}>📤 Upload as Admin {items.length>1?`— ${items.length} items`:''}</div>
+            <div style={{ fontSize:11, color:AC.gray3, fontFamily:FONT, marginTop:1 }}>Select multiple photos & videos at once</div>
           </div>
           <button onClick={onClose} disabled={uploading} style={{ width:30, height:30, borderRadius:'50%', border:'none', background:'#f3f4f6', cursor:'pointer', fontSize:16, color:'#6b7280', display:'flex', alignItems:'center', justifyContent:'center', opacity:uploading?.5:1 }}>×</button>
         </div>
@@ -195,7 +196,7 @@ function AdminUploadModal({ onClose, onPosted, existingAlbums = [] }) {
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center' }}>
                 <span style={{ fontSize:18 }}>➕</span>
-                <span style={{ fontSize:13, fontWeight:700, color:dragging?'#e9a020':C.gray4, fontFamily:FONT }}>Add more files ({items.length}/{MAX_FILES})</span>
+                <span style={{ fontSize:13, fontWeight:700, color:dragging?'#e9a020':AC.gray4, fontFamily:FONT }}>Add more files ({items.length}/{MAX_FILES})</span>
               </div>
             )}
           </div>
@@ -230,9 +231,9 @@ function AdminUploadModal({ onClose, onPosted, existingAlbums = [] }) {
                   </div>
                   <div style={{ flex:1, padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
                     <input value={item.title} onChange={e=>updateItem(item.id,{title:e.target.value})} placeholder="Title (e.g. Match Day 🏏)" disabled={uploading} maxLength={80}
-                      style={{ border:'1.5px solid #e5e7eb', borderRadius:7, padding:'5px 9px', fontFamily:FONT, fontSize:12, color:C.dark, outline:'none', boxSizing:'border-box', fontWeight:700 }}/>
+                      style={{ border:'1.5px solid #e5e7eb', borderRadius:7, padding:'5px 9px', fontFamily:FONT, fontSize:12, color:AC.dark, outline:'none', boxSizing:'border-box', fontWeight:700 }}/>
                     <textarea value={item.caption} onChange={e=>updateItem(item.id,{caption:e.target.value})} placeholder="Caption…" disabled={uploading} maxLength={300} rows={2}
-                      style={{ border:'1.5px solid #e5e7eb', borderRadius:7, padding:'5px 9px', fontFamily:FONT, fontSize:12, color:C.dark, resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4 }}/>
+                      style={{ border:'1.5px solid #e5e7eb', borderRadius:7, padding:'5px 9px', fontFamily:FONT, fontSize:12, color:AC.dark, resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.4 }}/>
                     {item.error && <div style={{ fontSize:11, color:'#dc2626', fontFamily:FONT }}>{item.error}</div>}
                   </div>
                   {!uploading && <button onClick={()=>removeItem(item.id)} style={{ width:32, background:'transparent', border:'none', cursor:'pointer', color:'#d1d5db', fontSize:17, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'10px 6px 0', flexShrink:0 }}
@@ -248,8 +249,8 @@ function AdminUploadModal({ onClose, onPosted, existingAlbums = [] }) {
           {uploading && (
             <div>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                <span style={{ fontSize:12, fontWeight:700, color:C.dark, fontFamily:FONT }}>Uploading {items.filter(x=>x.status==='done').length} of {items.length}…</span>
-                <span style={{ fontSize:12, color:C.gray3, fontFamily:FONT }}>{progress}%</span>
+                <span style={{ fontSize:12, fontWeight:700, color:AC.dark, fontFamily:FONT }}>Uploading {items.filter(x=>x.status==='done').length} of {items.length}…</span>
+                <span style={{ fontSize:12, color:AC.gray3, fontFamily:FONT }}>{progress}%</span>
               </div>
               <div style={{ background:'#f3f4f6', borderRadius:99, height:5, overflow:'hidden' }}>
                 <motion.div animate={{width:`${progress}%`}} transition={{duration:.3}} style={{height:'100%',background:'linear-gradient(90deg,#e9a020,#f59e0b)',borderRadius:99}}/>
@@ -276,15 +277,15 @@ function CommentRow({ comment, onDelete }) {
       <Avatar name={comment.player_name} size={26} style={{ flexShrink:0, marginTop:2 }}/>
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2, flexWrap:'wrap' }}>
-          <span style={{ fontWeight:700, fontSize:11, color:C.dark, fontFamily:FONT }}>{comment.player_name}</span>
-          <span style={{ fontSize:10, color:C.gray3, fontFamily:FONT }}>{timeAgo(comment.created_at)}</span>
+          <span style={{ fontWeight:700, fontSize:11, color:AC.dark, fontFamily:FONT }}>{comment.player_name}</span>
+          <span style={{ fontSize:10, color:AC.gray3, fontFamily:FONT }}>{timeAgo(comment.created_at)}</span>
         </div>
         <div style={{ fontSize:12, color:'#374151', fontFamily:FONT, wordBreak:'break-word', lineHeight:1.4 }}>{comment.text}</div>
       </div>
       <button onClick={() => onDelete(comment.id)}
-        style={{ border:'none', background:'transparent', color:C.gray3, cursor:'pointer', fontSize:16, fontWeight:700, padding:'2px 4px', flexShrink:0 }}
+        style={{ border:'none', background:'transparent', color:AC.gray3, cursor:'pointer', fontSize:16, fontWeight:700, padding:'2px 4px', flexShrink:0 }}
         onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
-        onMouseLeave={e => e.currentTarget.style.color=C.gray3}
+        onMouseLeave={e => e.currentTarget.style.color=AC.gray3}
         title="Delete comment"
       >×</button>
     </div>
@@ -346,8 +347,8 @@ function AdminPostCard({ post, onDelete, onAlbumChange, albumNames }) {
       <div style={{ padding:'10px 12px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:6 }}>
           <Avatar name={post.player_name} size={22}/>
-          <span style={{ fontSize:11, fontWeight:700, color:C.dark, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1 }}>{post.player_name}</span>
-          <span style={{ fontSize:9, color:C.gray3, fontFamily:FONT, flexShrink:0 }}>{timeAgo(post.created_at)}</span>
+          <span style={{ fontSize:11, fontWeight:700, color:AC.dark, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1 }}>{post.player_name}</span>
+          <span style={{ fontSize:9, color:AC.gray3, fontFamily:FONT, flexShrink:0 }}>{timeAgo(post.created_at)}</span>
         </div>
         {/* Album badge — click to edit */}
         {!editingAlbum ? (
@@ -406,20 +407,20 @@ function AdminPostCard({ post, onDelete, onAlbumChange, albumNames }) {
             </div>
           </div>
         )}
-        {post.title && <div style={{ fontSize:12, fontWeight:800, color:C.dark, fontFamily:FONT, marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{post.title}</div>}
+        {post.title && <div style={{ fontSize:12, fontWeight:800, color:AC.dark, fontFamily:FONT, marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{post.title}</div>}
         {post.caption && <div style={{ fontSize:11, color:'#374151', fontFamily:FONT, lineHeight:1.4, marginBottom:8, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{post.caption}</div>}
 
         {/* Counts */}
         <div style={{ display:'flex', gap:12, marginBottom:8 }}>
-          <span style={{ fontSize:11, color:C.gray4, fontFamily:FONT }}>❤️ {post._likeCount||0}</span>
-          <span style={{ fontSize:11, color:C.gray4, fontFamily:FONT }}>👎 {post._dislikeCount||0}</span>
-          <span style={{ fontSize:11, color:C.gray4, fontFamily:FONT }}>💬 {post._commentCount||0}</span>
+          <span style={{ fontSize:11, color:AC.gray4, fontFamily:FONT }}>❤️ {post._likeCount||0}</span>
+          <span style={{ fontSize:11, color:AC.gray4, fontFamily:FONT }}>👎 {post._dislikeCount||0}</span>
+          <span style={{ fontSize:11, color:AC.gray4, fontFamily:FONT }}>💬 {post._commentCount||0}</span>
         </div>
 
         {/* Comments toggle */}
         {(post._commentCount||0) > 0 && (
           <button onClick={loadComments}
-            style={{ border:`1px solid ${showComments ? '#e9a020' : C.gray2}`, borderRadius:8, padding:'5px 10px', background:'transparent', cursor:'pointer', fontFamily:FONT, fontSize:11, fontWeight:700, color: showComments ? '#e9a020' : C.gray4, width:'100%', transition:'all .15s' }}>
+            style={{ border:`1px solid ${showComments ? '#e9a020' : AC.gray2}`, borderRadius:8, padding:'5px 10px', background:'transparent', cursor:'pointer', fontFamily:FONT, fontSize:11, fontWeight:700, color: showComments ? '#e9a020' : AC.gray4, width:'100%', transition:'all .15s' }}>
             {showComments ? '▲ Hide' : `💬 Moderate ${post._commentCount} comment${post._commentCount>1?'s':''}`}
           </button>
         )}
@@ -428,7 +429,7 @@ function AdminPostCard({ post, onDelete, onAlbumChange, albumNames }) {
           {showComments && comments && (
             <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} exit={{ opacity:0, height:0 }} style={{ marginTop:8 }}>
               {comments.map(c => <CommentRow key={c.id} comment={c} onDelete={deleteComment}/>)}
-              {comments.length === 0 && <div style={{ fontSize:11, color:C.gray3, fontFamily:FONT, textAlign:'center', padding:'6px 0' }}>No comments</div>}
+              {comments.length === 0 && <div style={{ fontSize:11, color:AC.gray3, fontFamily:FONT, textAlign:'center', padding:'6px 0' }}>No comments</div>}
             </motion.div>
           )}
         </AnimatePresence>
@@ -506,7 +507,7 @@ export default function TabGallery() {
 
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
-        <div style={{ fontWeight:800, fontSize:16, color:C.dark }}>📸 Gallery Management</div>
+        <div style={{ fontWeight:800, fontSize:16, color:AC.dark }}>📸 Gallery Management</div>
         <button onClick={() => setShowUpload(true)}
           style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:10, padding:'9px 16px', fontFamily:FONT, fontSize:12, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
           + Upload Post
@@ -550,11 +551,11 @@ export default function TabGallery() {
 
       {/* Filter bar */}
       <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
-        <div style={{ display:'flex', background:C.gray1, borderRadius:10, padding:3 }}>
+        <div style={{ display:'flex', background:AC.gray1, borderRadius:10, padding:3 }}>
           {[{id:'all',label:'All'},{id:'image',label:'🖼 Photos'},{id:'video',label:'🎬 Videos'}].map(f => (
             <button key={f.id} onClick={() => setFilterBy(f.id)}
               style={{ padding:'6px 12px', borderRadius:8, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:11, fontWeight:700, transition:'all .15s',
-                background:filterBy===f.id?'#fff':'transparent', color:filterBy===f.id?C.dark:C.gray3,
+                background:filterBy===f.id?'#fff':'transparent', color:filterBy===f.id?AC.dark:AC.gray3,
                 boxShadow:filterBy===f.id?'0 1px 4px rgba(0,0,0,.1)':'none', whiteSpace:'nowrap' }}>
               {f.label}
             </button>
@@ -562,7 +563,7 @@ export default function TabGallery() {
         </div>
         {albumNames.length > 0 && (
           <select value={filterAlbum} onChange={e => setFilterAlbum(e.target.value)}
-            style={{ border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:C.dark, outline:'none', background:'#fff', cursor:'pointer', maxWidth:220 }}>
+            style={{ border:`1.5px solid ${AC.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:AC.dark, outline:'none', background:'#fff', cursor:'pointer', maxWidth:220 }}>
             <option value="">📁 All Albums</option>
             {albumNames.map(n => <option key={n} value={n}>📁 {n}</option>)}
           </select>
@@ -570,9 +571,9 @@ export default function TabGallery() {
         <input
           value={searchName} onChange={e => setSearchName(e.target.value)}
           placeholder="🔍 Filter by player name…"
-          style={{ border:`1.5px solid ${C.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:C.dark, outline:'none', minWidth:180, background:'#fff' }}
+          style={{ border:`1.5px solid ${AC.gray2}`, borderRadius:10, padding:'7px 12px', fontFamily:FONT, fontSize:12, color:AC.dark, outline:'none', minWidth:180, background:'#fff' }}
         />
-        <span style={{ fontSize:12, color:C.gray3, fontFamily:FONT }}>
+        <span style={{ fontSize:12, color:AC.gray3, fontFamily:FONT }}>
           {filtered.length} post{filtered.length!==1?'s':''}
         </span>
       </div>
@@ -589,7 +590,7 @@ export default function TabGallery() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div style={{ textAlign:'center', padding:'40px 20px', color:C.gray3, fontSize:14, fontFamily:FONT }}>
+        <div style={{ textAlign:'center', padding:'40px 20px', color:AC.gray3, fontSize:14, fontFamily:FONT }}>
           {posts.length === 0 ? '📷 No posts yet — upload one!' : 'No posts match this filter.'}
         </div>
       ) : (

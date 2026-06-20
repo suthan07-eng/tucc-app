@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '../../supabase'
 import { C, FONT, FORMATS } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Field, { Input, Textarea, Select } from '../ui/Field'
@@ -186,7 +187,7 @@ export default function TabMatch() {
   }
 
   if (loading) {
-    return <div style={{ color: C.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
+    return <div style={{ color: AC.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
   }
 
   const selectedMatch = allMatches.find((m) => m.id === selectedId)
@@ -202,7 +203,7 @@ export default function TabMatch() {
         <button
           onClick={importFromBTCL}
           disabled={importing}
-          style={{ background: importing ? 'rgba(255,255,255,.1)' : C.gold, color: importing ? 'rgba(255,255,255,.4)' : '#1e3a8a', border: 'none', borderRadius: 10, padding: '10px 18px', cursor: importing ? 'not-allowed' : 'pointer', fontFamily: FONT, fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', transition: 'all .2s' }}
+          style={{ background: importing ? 'rgba(255,255,255,.1)' : AC.gold, color: importing ? 'rgba(255,255,255,.4)' : '#1e3a8a', border: 'none', borderRadius: 10, padding: '10px 18px', cursor: importing ? 'not-allowed' : 'pointer', fontFamily: FONT, fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', transition: 'all .2s' }}
         >
           {importing ? '⏳ Importing…' : '📡 Import Next Match'}
         </button>
@@ -210,7 +211,7 @@ export default function TabMatch() {
 
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ fontFamily: FONT, fontWeight: 700, color: C.dark, fontSize: 15 }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, color: AC.dark, fontSize: 15 }}>
           {allMatches.length} match{allMatches.length !== 1 ? 'es' : ''}
         </div>
         <Button size="sm" variant="subtle" onClick={createNewMatch} disabled={creating}>
@@ -237,8 +238,8 @@ export default function TabMatch() {
                 gap: 12,
                 padding: '12px 16px',
                 borderRadius: 10,
-                border: `2px solid ${m.id === selectedId ? C.green : C.gray2}`,
-                background: m.id === selectedId ? C.greenBg : C.white,
+                border: `2px solid ${m.id === selectedId ? AC.green : AC.gray2}`,
+                background: m.id === selectedId ? AC.greenBg : AC.white,
                 cursor: 'pointer',
                 textAlign: 'left',
                 width: '100%',
@@ -246,15 +247,15 @@ export default function TabMatch() {
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: m.id === selectedId ? C.green : C.dark }}>
+                <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: m.id === selectedId ? AC.green : AC.dark }}>
                   vs {m.opponent || 'TBC'}
                 </div>
-                <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, marginTop: 2 }}>
+                <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray3, marginTop: 2 }}>
                   {m.date || 'Date TBD'} · {m.venue || 'Venue TBD'}
                 </div>
               </div>
               {m.is_active && (
-                <span style={{ background: C.greenBg, color: C.green, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
+                <span style={{ background: AC.greenBg, color: AC.green, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
                   Active
                 </span>
               )}
@@ -267,13 +268,13 @@ export default function TabMatch() {
       {selectedMatch ? (
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: C.dark }}>
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: AC.dark }}>
               Edit Match
             </div>
             {!selectedMatch.is_active && (
               <button
                 onClick={setActive}
-                style={{ background: C.greenBg, color: C.green, border: 'none', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 12 }}
+                style={{ background: AC.greenBg, color: AC.green, border: 'none', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 12 }}
               >
                 ⭐ Set as Active
               </button>
@@ -319,7 +320,7 @@ export default function TabMatch() {
             </Button>
 
             {/* Delete match */}
-            <div style={{ borderTop: `1px solid ${C.gray2}`, paddingTop: 16, marginTop: 4 }}>
+            <div style={{ borderTop: `1px solid ${AC.gray2}`, paddingTop: 16, marginTop: 4 }}>
               {!pendingDelete ? (
                 <>
                   <Button
@@ -330,23 +331,23 @@ export default function TabMatch() {
                   >
                     🗑 Delete Match &amp; All Availability Data
                   </Button>
-                  <div style={{ fontSize: 11, color: C.gray3, textAlign: 'center', marginTop: 6, fontFamily: FONT }}>
+                  <div style={{ fontSize: 11, color: AC.gray3, textAlign: 'center', marginTop: 6, fontFamily: FONT }}>
                     This cannot be undone — all availability responses will be removed.
                   </div>
                 </>
               ) : (
                 <div
                   style={{
-                    background: C.redBg,
+                    background: AC.redBg,
                     border: `1.5px solid #fecaca`,
                     borderRadius: 12,
                     padding: '16px 18px',
                   }}
                 >
-                  <div style={{ color: C.red, fontWeight: 700, fontSize: 14, marginBottom: 6, fontFamily: FONT }}>
+                  <div style={{ color: AC.red, fontWeight: 700, fontSize: 14, marginBottom: 6, fontFamily: FONT }}>
                     ⚠️ Are you sure you want to delete this match?
                   </div>
-                  <div style={{ color: C.gray5, fontSize: 13, marginBottom: 16, fontFamily: FONT, lineHeight: 1.5 }}>
+                  <div style={{ color: AC.gray5, fontSize: 13, marginBottom: 16, fontFamily: FONT, lineHeight: 1.5 }}>
                     Delete <strong>vs {selectedMatch?.opponent || 'TBC'}</strong>
                     {selectedMatch?.date ? ` on ${selectedMatch.date}` : ''} and all availability data?
                     This cannot be undone.
@@ -378,7 +379,7 @@ export default function TabMatch() {
         </Card>
       ) : (
         <Card>
-          <div style={{ textAlign: 'center', padding: '24px 0', color: C.gray3, fontFamily: FONT, fontSize: 14 }}>
+          <div style={{ textAlign: 'center', padding: '24px 0', color: AC.gray3, fontFamily: FONT, fontSize: 14 }}>
             No matches yet. Click <strong>"+ New Match"</strong> to create one.
           </div>
         </Card>

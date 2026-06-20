@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../../supabase'
 import { sendMessageToPlayer, sendBulkMessage } from '../../emailService'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Field, { Input, Textarea, Select } from '../ui/Field'
@@ -268,7 +269,7 @@ export default function TabMessages() {
 
       {/* ── Compose ────────────────────────────────────────────── */}
       <Card>
-        <div style={{ fontSize: 15, fontWeight: 700, color: C.dark, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: AC.dark, marginBottom: 16 }}>
           ✉️ Send Message
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -301,7 +302,7 @@ export default function TabMessages() {
             {ccEmails.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
                 {ccEmails.map(em => (
-                  <span key={em} style={{ fontSize: 11, background: 'rgba(37,99,235,.1)', border: '1px solid rgba(37,99,235,.2)', borderRadius: 20, padding: '2px 10px', color: C.green, fontFamily: FONT, fontWeight: 600 }}>
+                  <span key={em} style={{ fontSize: 11, background: 'rgba(37,99,235,.1)', border: '1px solid rgba(37,99,235,.2)', borderRadius: 20, padding: '2px 10px', color: AC.green, fontFamily: FONT, fontWeight: 600 }}>
                     {em}
                   </span>
                 ))}
@@ -347,7 +348,7 @@ export default function TabMessages() {
 
           {/* ── Attachments ─────────────────────────────────────── */}
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.gray4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: .4 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: AC.gray4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: .4 }}>
               Attachments
             </div>
 
@@ -376,22 +377,22 @@ export default function TabMessages() {
                     >
                       <span style={{ fontSize: 18, flexShrink: 0 }}>{fileIcon(a.type)}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: AC.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {a.filename}
                         </div>
-                        <div style={{ fontSize: 11, color: C.gray3 }}>{fmtFileSize(a.sizeBytes)}</div>
+                        <div style={{ fontSize: 11, color: AC.gray3 }}>{fmtFileSize(a.sizeBytes)}</div>
                       </div>
                       <button
                         onClick={() => removeAttachment(a.filename)}
-                        style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', color: C.gray3, cursor: 'pointer', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
+                        style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', color: AC.gray3, cursor: 'pointer', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
                         onMouseEnter={e => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.background = '#fef2f2' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = C.gray3; e.currentTarget.style.background = 'transparent' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = AC.gray3; e.currentTarget.style.background = 'transparent' }}
                         title="Remove attachment"
                       >×</button>
                     </motion.div>
                   ))}
                   {/* Total size indicator */}
-                  <div style={{ fontSize: 11, color: totalAttachmentMB > 15 ? '#dc2626' : C.gray3, textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, color: totalAttachmentMB > 15 ? '#dc2626' : AC.gray3, textAlign: 'right' }}>
                     Total: {totalAttachmentMB.toFixed(1)} MB / {MAX_TOTAL_MB} MB
                   </div>
                 </motion.div>
@@ -413,27 +414,27 @@ export default function TabMessages() {
               onClick={() => fileInputRef.current?.click()}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                background: attachments.length ? '#eff6ff' : C.gray1,
-                border: `1.5px dashed ${attachments.length ? '#93c5fd' : C.gray2}`,
+                background: attachments.length ? '#eff6ff' : AC.gray1,
+                border: `1.5px dashed ${attachments.length ? '#93c5fd' : AC.gray2}`,
                 borderRadius: 10,
                 padding: '10px 16px',
                 cursor: 'pointer',
                 fontFamily: FONT,
                 fontSize: 12,
                 fontWeight: 700,
-                color: attachments.length ? '#2563eb' : C.gray4,
+                color: attachments.length ? '#2563eb' : AC.gray4,
                 width: '100%',
                 transition: 'all .15s',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.borderColor = '#93c5fd'; e.currentTarget.style.color = '#2563eb' }}
-              onMouseLeave={e => { e.currentTarget.style.background = attachments.length ? '#eff6ff' : C.gray1; e.currentTarget.style.borderColor = attachments.length ? '#93c5fd' : C.gray2; e.currentTarget.style.color = attachments.length ? '#2563eb' : C.gray4 }}
+              onMouseLeave={e => { e.currentTarget.style.background = attachments.length ? '#eff6ff' : AC.gray1; e.currentTarget.style.borderColor = attachments.length ? '#93c5fd' : AC.gray2; e.currentTarget.style.color = attachments.length ? '#2563eb' : AC.gray4 }}
             >
               <span style={{ fontSize: 16 }}>📎</span>
               {attachments.length === 0
                 ? 'Attach files or images…'
                 : `Add more attachments (${attachments.length} attached)`}
             </button>
-            <div style={{ fontSize: 11, color: C.gray3, marginTop: 5, lineHeight: 1.4 }}>
+            <div style={{ fontSize: 11, color: AC.gray3, marginTop: 5, lineHeight: 1.4 }}>
               Images, PDF, Word, Excel · Max {MAX_FILE_SIZE_MB} MB per file · {MAX_TOTAL_MB} MB total
             </div>
           </div>
@@ -442,7 +443,7 @@ export default function TabMessages() {
             {sending ? 'Sending…' : `📤 Send Message${attachments.length ? ` + ${attachments.length} attachment${attachments.length > 1 ? 's' : ''}` : ''}`}
           </Button>
 
-          <div style={{ fontSize: 11, color: C.gray3, fontFamily: FONT, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 11, color: AC.gray3, fontFamily: FONT, lineHeight: 1.5 }}>
             Emails sent via Resend · replies go to <strong>{ADMIN_EMAIL}</strong> · with <code>onboarding@resend.dev</code> as sender, delivery is restricted to the Resend account owner only — add a verified domain in Resend for full delivery.
           </div>
         </div>
@@ -450,7 +451,7 @@ export default function TabMessages() {
 
       {/* ── Message History ──────────────────────────────────────── */}
       <Card>
-        <div style={{ fontSize: 14, fontWeight: 700, color: C.dark, marginBottom: 14 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: AC.dark, marginBottom: 14 }}>
           📋 Message History
         </div>
         {loadingHistory ? (
@@ -466,7 +467,7 @@ export default function TabMessages() {
             ))}
           </div>
         ) : history.length === 0 ? (
-          <div style={{ color: C.gray3, fontSize: 13, textAlign: 'center', padding: '12px 0' }}>
+          <div style={{ color: AC.gray3, fontSize: 13, textAlign: 'center', padding: '12px 0' }}>
             No messages sent yet
           </div>
         ) : (
@@ -480,19 +481,19 @@ export default function TabMessages() {
               <motion.div
                 key={m.id}
                 variants={{ hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0, transition: { duration: 0.3 } } }}
-                style={{ padding: '10px 0', borderBottom: `1px solid ${C.gray1}`, position: 'relative' }}
+                style={{ padding: '10px 0', borderBottom: `1px solid ${AC.gray1}`, position: 'relative' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <Avatar name={m.player_name} size={28} />
-                  <span style={{ fontWeight: 600, fontSize: 13, color: C.dark }}>{m.player_name}</span>
-                  <span style={{ fontSize: 11, color: C.gray3, marginLeft: 'auto' }}>
+                  <span style={{ fontWeight: 600, fontSize: 13, color: AC.dark }}>{m.player_name}</span>
+                  <span style={{ fontSize: 11, color: AC.gray3, marginLeft: 'auto' }}>
                     {new Date(m.sent_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </span>
                   {/* Expand / collapse */}
                   <button
                     onClick={() => setExpandedMsg(expandedMsg === m.id ? null : m.id)}
                     title={expandedMsg === m.id ? 'Collapse' : 'Expand'}
-                    style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', color: C.gray3, cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
+                    style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', color: AC.gray3, cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
                   >
                     {expandedMsg === m.id ? '▲' : '▼'}
                   </button>
@@ -500,9 +501,9 @@ export default function TabMessages() {
                   <button
                     onClick={() => deleteMessage(m.id)}
                     title="Delete message"
-                    style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', color: C.gray3, cursor: 'pointer', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
+                    style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', color: AC.gray3, cursor: 'pointer', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
                     onMouseEnter={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.background = '#fef2f2' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = C.gray3; e.currentTarget.style.background = 'transparent' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = AC.gray3; e.currentTarget.style.background = 'transparent' }}
                   >×</button>
                 </div>
                 <AnimatePresence>
@@ -511,7 +512,7 @@ export default function TabMessages() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      style={{ fontSize: 13, color: C.gray5, paddingLeft: 36, lineHeight: 1.6 }}
+                      style={{ fontSize: 13, color: AC.gray5, paddingLeft: 36, lineHeight: 1.6 }}
                     >
                       {m.text}
                     </motion.div>
@@ -521,7 +522,7 @@ export default function TabMessages() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      style={{ fontSize: 12, color: C.gray3, paddingLeft: 36, fontStyle: 'italic', cursor: 'pointer' }}
+                      style={{ fontSize: 12, color: AC.gray3, paddingLeft: 36, fontStyle: 'italic', cursor: 'pointer' }}
                       onClick={() => setExpandedMsg(m.id)}
                     >
                       {m.text.slice(0, 80)}… <span style={{ color: '#2563eb', fontStyle: 'normal', fontWeight: 600 }}>Read more</span>

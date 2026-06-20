@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { C, FONT } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Field, { Input, Select } from '../ui/Field'
@@ -34,7 +35,7 @@ function parseBest(s) {
 
 function CalcHint({ label, value }) {
   if (value == null) return null
-  return <span style={{ marginLeft: 8, color: C.gray3, fontFamily: FONT, fontSize: 11 }}>= {label}: <strong>{value}</strong></span>
+  return <span style={{ marginLeft: 8, color: AC.gray3, fontFamily: FONT, fontSize: 11 }}>= {label}: <strong>{value}</strong></span>
 }
 
 export default function TabStats() {
@@ -201,12 +202,12 @@ export default function TabStats() {
   const n = { type: 'number', min: '0' }
   const [subTab, setSubTab] = useState('season')
 
-  if (loading) return <div style={{ color: C.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
+  if (loading) return <div style={{ color: AC.gray3, fontFamily: FONT, fontSize: 14, padding: '20px 0' }}>Loading…</div>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Sub-tab bar */}
-      <div style={{ display: 'flex', gap: 0, background: C.gray1, borderRadius: 10, padding: 3 }}>
+      <div style={{ display: 'flex', gap: 0, background: AC.gray1, borderRadius: 10, padding: 3 }}>
         {[
           { id: 'season', label: '📊 Season Totals' },
           { id: 'match',  label: '🏏 Match Scorecards' },
@@ -218,8 +219,8 @@ export default function TabStats() {
               flex: 1, padding: '9px 0', border: 'none',
               borderRadius: 8, cursor: 'pointer', fontFamily: FONT,
               fontSize: 13, fontWeight: subTab === t.id ? 700 : 400,
-              background: subTab === t.id ? C.white : 'transparent',
-              color: subTab === t.id ? C.green : C.gray4,
+              background: subTab === t.id ? AC.white : 'transparent',
+              color: subTab === t.id ? AC.green : AC.gray4,
               boxShadow: subTab === t.id ? '0 1px 6px rgba(0,0,0,.08)' : 'none',
               transition: 'background .15s, color .15s',
             }}
@@ -232,7 +233,7 @@ export default function TabStats() {
       {subTab === 'match' && <TabStatsMatch />}
       {subTab === 'season' && <>
       <Card>
-        <div style={{ fontFamily: FONT, fontWeight: 700, color: C.dark, fontSize: 15, marginBottom: 14 }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, color: AC.dark, fontSize: 15, marginBottom: 14 }}>
           {editingId ? '✏️ Edit Player Stats' : '➕ Enter Player Stats'}
         </div>
 
@@ -262,7 +263,7 @@ export default function TabStats() {
           <Field label="Highest Score">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Input {...n} placeholder="45" value={form.bat_highest} onChange={set('bat_highest')} style={{ flex: 1 }} />
-              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FONT, fontSize: 12, color: C.gray5, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FONT, fontSize: 12, color: AC.gray5, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 <input type="checkbox" checked={form.bat_highest_not_out} onChange={set('bat_highest_not_out')} />
                 not out
               </label>
@@ -270,7 +271,7 @@ export default function TabStats() {
           </Field>
           <Field label="Strike Rate"><Input {...n} value={form.bat_strike_rate} onChange={set('bat_strike_rate')} /></Field>
           <Field label={<>Avg <CalcHint label="calc" value={calcBatAvg()} /></>}>
-            <Input disabled value={calcBatAvg() ?? ''} style={{ background: '#f9fafb', color: C.gray4 }} />
+            <Input disabled value={calcBatAvg() ?? ''} style={{ background: '#f9fafb', color: AC.gray4 }} />
           </Field>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 16 }}>
@@ -291,10 +292,10 @@ export default function TabStats() {
             <Input {...n} value={form.bowl_runs} onChange={set('bowl_runs')} />
           </Field>
           <Field label={<>Bowl Avg <CalcHint label="calc" value={calcBowlAvg()} /></>}>
-            <Input disabled value={calcBowlAvg() ?? ''} style={{ background: '#f9fafb', color: C.gray4 }} />
+            <Input disabled value={calcBowlAvg() ?? ''} style={{ background: '#f9fafb', color: AC.gray4 }} />
           </Field>
           <Field label={<>Bowl SR <CalcHint label="calc" value={calcBowlSR()} /></>}>
-            <Input disabled value={calcBowlSR() ?? ''} style={{ background: '#f9fafb', color: C.gray4 }} />
+            <Input disabled value={calcBowlSR() ?? ''} style={{ background: '#f9fafb', color: AC.gray4 }} />
           </Field>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, marginBottom: 16 }}>
@@ -325,12 +326,12 @@ export default function TabStats() {
       </Card>
 
       {/* Stats list */}
-      <div style={{ fontFamily: FONT, fontWeight: 700, color: C.dark, fontSize: 14, marginTop: 4 }}>
+      <div style={{ fontFamily: FONT, fontWeight: 700, color: AC.dark, fontSize: 14, marginTop: 4 }}>
         {season} Season — {statsList.length} player{statsList.length !== 1 ? 's' : ''} entered
       </div>
       {statsList.length === 0 ? (
         <Card>
-          <div style={{ textAlign: 'center', padding: '20px 0', color: C.gray3, fontFamily: FONT, fontSize: 14 }}>
+          <div style={{ textAlign: 'center', padding: '20px 0', color: AC.gray3, fontFamily: FONT, fontSize: 14 }}>
             No stats entered for {season} yet.
           </div>
         </Card>
@@ -345,8 +346,8 @@ export default function TabStats() {
             <Card key={row.id} style={{ padding: '14px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div>
-                  <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.dark }}>{name}</div>
-                  <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, marginTop: 2 }}>{role}</div>
+                  <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: AC.dark }}>{name}</div>
+                  <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray3, marginTop: 2 }}>{role}</div>
                 </div>
                 <Button size="sm" variant="subtle" onClick={() => startEdit(row)}>✏️ Edit</Button>
               </div>
@@ -372,7 +373,7 @@ export default function TabStats() {
 
 function SectionHeader({ children }) {
   return (
-    <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.greenDark, marginBottom: 10, paddingBottom: 6, borderBottom: `1px solid ${C.gray2}` }}>
+    <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: AC.greenDark, marginBottom: 10, paddingBottom: 6, borderBottom: `1px solid ${AC.gray2}` }}>
       {children}
     </div>
   )
@@ -380,8 +381,8 @@ function SectionHeader({ children }) {
 
 function StatChip({ label, value }) {
   return (
-    <div style={{ fontFamily: FONT, fontSize: 12, color: C.gray5 }}>
-      <span style={{ color: C.gray3 }}>{label}: </span>
+    <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray5 }}>
+      <span style={{ color: AC.gray3 }}>{label}: </span>
       <strong>{value}</strong>
     </div>
   )

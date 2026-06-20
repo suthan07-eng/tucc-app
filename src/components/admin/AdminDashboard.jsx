@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { C, FONT, MAX_WIDTH } from '../../constants'
+const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import TabAvailability from './TabAvailability'
 import TabPlayers from './TabPlayers'
 import TabMatch from './TabMatch'
@@ -39,9 +40,9 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
+    <div style={{ minHeight: '100vh', background: AC.bg, fontFamily: FONT }}>
       {/* Admin header */}
-      <div style={{ background: C.greenDark, borderBottom: `2px solid ${C.greenLight}`, position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: AC.greenDark, borderBottom: `2px solid ${AC.greenLight}`, position: 'sticky', top: 0, zIndex: 100 }}>
         <div
           style={{
             maxWidth: MAX_WIDTH,
@@ -58,7 +59,7 @@ export default function AdminDashboard() {
               <img src="/logo.png" alt="DTU CC" style={{ width: 34, height: 34, objectFit: 'contain' }} />
             </div>
             <div>
-              <div style={{ color: C.gold, fontFamily: FONT, fontWeight: 800, fontSize: 13 }}>Tamil United CC</div>
+              <div style={{ color: AC.gold, fontFamily: FONT, fontWeight: 800, fontSize: 13 }}>Tamil United CC</div>
               <div style={{ color: 'rgba(255,255,255,.45)', fontFamily: FONT, fontSize: 10, lineHeight: 1 }}>
                 Admin Panel
               </div>
@@ -99,8 +100,8 @@ export default function AdminDashboard() {
                 padding: '10px 14px',
                 background: 'none',
                 border: 'none',
-                borderBottom: `2px solid ${tab === t.id ? C.gold : 'transparent'}`,
-                color: tab === t.id ? C.gold : 'rgba(255,255,255,.55)',
+                borderBottom: `2px solid ${tab === t.id ? AC.gold : 'transparent'}`,
+                color: tab === t.id ? AC.gold : 'rgba(255,255,255,.55)',
                 cursor: 'pointer',
                 fontFamily: FONT,
                 fontSize: 13,
