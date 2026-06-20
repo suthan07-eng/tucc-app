@@ -300,27 +300,27 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
             style={{ overflow: 'hidden' }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ padding: '16px 18px 20px', background: C.white }}>
+            <div style={{ padding: '16px 18px 20px', borderTop: '1px solid rgba(255,255,255,0.10)' }}>
 
               {/* Score breakdown */}
-              <div style={{ background: `linear-gradient(135deg,${rc.light},#fff)`, border: `1px solid ${rc.accent}25`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-                <div style={{ fontFamily: FONT, fontSize: 10, color: rc.text, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 }}>Score Breakdown</div>
+              <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: '14px 16px', marginBottom: 16, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
+                <div style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Score Breakdown</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {bat && (
-                    <div style={{ flex: '1 1 90px', background: C.white, borderRadius: 10, padding: '8px 12px', border: `1px solid ${C.gray2}`, textAlign: 'center' }}>
-                      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: C.green }}>{batScore}</div>
-                      <div style={{ fontFamily: FONT, fontSize: 9, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 }}>⚡ Batting</div>
+                    <div style={{ flex: '1 1 90px', background: 'rgba(96,165,250,0.12)', borderRadius: 12, padding: '10px 12px', border: '1px solid rgba(96,165,250,0.28)', textAlign: 'center' }}>
+                      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 20, color: '#60a5fa' }}>{batScore}</div>
+                      <div style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 3 }}>⚡ Batting</div>
                     </div>
                   )}
                   {bowl && (bowl.overs || 0) >= 4 && (
-                    <div style={{ flex: '1 1 90px', background: C.white, borderRadius: 10, padding: '8px 12px', border: `1px solid ${C.gray2}`, textAlign: 'center' }}>
-                      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: C.gold }}>{bowlScore}</div>
-                      <div style={{ fontFamily: FONT, fontSize: 9, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 }}>🎯 Bowling</div>
+                    <div style={{ flex: '1 1 90px', background: 'rgba(246,183,60,0.12)', borderRadius: 12, padding: '10px 12px', border: '1px solid rgba(246,183,60,0.28)', textAlign: 'center' }}>
+                      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 20, color: '#f6b73c' }}>{bowlScore}</div>
+                      <div style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 3 }}>🎯 Bowling</div>
                     </div>
                   )}
-                  <div style={{ flex: '1 1 90px', background: rc.grad, borderRadius: 10, padding: '8px 12px', textAlign: 'center' }}>
-                    <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 18, color: '#fff' }}>{score}</div>
-                    <div style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 }}>🏏 Overall</div>
+                  <div style={{ flex: '1 1 90px', background: 'linear-gradient(135deg,#818cf8,#6d28d9)', borderRadius: 12, padding: '10px 12px', textAlign: 'center', boxShadow: '0 8px 22px -8px rgba(124,58,237,0.7), inset 0 1px 0 rgba(255,255,255,0.3)' }}>
+                    <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 20, color: '#fff' }}>{score}</div>
+                    <div style={{ fontFamily: FONT, fontSize: 9, color: 'rgba(255,255,255,0.78)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 3 }}>🏏 Overall</div>
                   </div>
                 </div>
               </div>
@@ -329,7 +329,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
                 <>
                   {/* AI profile text */}
                   {cachedScore.ai_profile && (
-                    <p style={{ fontFamily: FONT, fontSize: 13, color: C.gray5, lineHeight: 1.7, margin: '0 0 16px', padding: '0 2px' }}>
+                    <p style={{ fontFamily: FONT, fontSize: 13.5, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: '0 0 16px', padding: '0 2px' }}>
                       {cachedScore.ai_profile}
                     </p>
                   )}
@@ -338,23 +338,23 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
                   {((cachedScore.strengths || []).length > 0 || (cachedScore.development_areas || []).length > 0) && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
                       {(cachedScore.strengths || []).filter(Boolean).length > 0 && (
-                        <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 14px' }}>
-                          <div style={{ fontFamily: FONT, fontSize: 10, color: '#15803d', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>✓ Strengths</div>
+                        <div style={{ background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.32)', borderRadius: 14, padding: '12px 14px' }}>
+                          <div style={{ fontFamily: FONT, fontSize: 10, color: '#4ade80', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>✓ Strengths</div>
                           {(cachedScore.strengths || []).filter(Boolean).map((s, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'flex-start' }}>
-                              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#16a34a', flexShrink: 0, marginTop: 5 }}/>
-                              <span style={{ fontFamily: FONT, fontSize: 11.5, color: '#166534', lineHeight: 1.45 }}>{s}</span>
+                            <div key={i} style={{ display: 'flex', gap: 7, marginBottom: 6, alignItems: 'flex-start' }}>
+                              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ade80', flexShrink: 0, marginTop: 6, boxShadow: '0 0 6px #4ade80' }}/>
+                              <span style={{ fontFamily: FONT, fontSize: 11.5, color: 'rgba(220,252,231,0.92)', lineHeight: 1.5 }}>{s}</span>
                             </div>
                           ))}
                         </div>
                       )}
                       {(cachedScore.development_areas || []).filter(Boolean).length > 0 && (
-                        <div style={{ background: 'rgba(233,160,32,0.12)', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 14px' }}>
-                          <div style={{ fontFamily: FONT, fontSize: 10, color: '#92400e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>→ Growth Areas</div>
+                        <div style={{ background: 'rgba(233,160,32,0.10)', border: '1px solid rgba(233,160,32,0.32)', borderRadius: 14, padding: '12px 14px' }}>
+                          <div style={{ fontFamily: FONT, fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>→ Growth Areas</div>
                           {(cachedScore.development_areas || []).filter(Boolean).map((d, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'flex-start' }}>
-                              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#d97706', flexShrink: 0, marginTop: 5 }}/>
-                              <span style={{ fontFamily: FONT, fontSize: 11.5, color: '#78350f', lineHeight: 1.45 }}>{d}</span>
+                            <div key={i} style={{ display: 'flex', gap: 7, marginBottom: 6, alignItems: 'flex-start' }}>
+                              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fbbf24', flexShrink: 0, marginTop: 6, boxShadow: '0 0 6px #fbbf24' }}/>
+                              <span style={{ fontFamily: FONT, fontSize: 11.5, color: 'rgba(254,243,199,0.92)', lineHeight: 1.5 }}>{d}</span>
                             </div>
                           ))}
                         </div>
@@ -364,29 +364,29 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
 
                   {/* Team Role */}
                   {cachedScore.role_notes && (
-                    <div style={{ background: `linear-gradient(135deg,${rc.light},#fff)`, border: `1px solid ${rc.accent}30`, borderRadius: 12, padding: '12px 14px', marginBottom: 10 }}>
-                      <div style={{ fontFamily: FONT, fontSize: 10, color: rc.text, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>
+                    <div style={{ background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(192,132,252,0.32)', borderRadius: 14, padding: '12px 14px', marginBottom: 10 }}>
+                      <div style={{ fontFamily: FONT, fontSize: 10, color: '#c084fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 5 }}>
                         {rc.icon} Team Role
                       </div>
-                      <p style={{ fontFamily: FONT, fontSize: 12.5, color: C.gray5, margin: 0, lineHeight: 1.6 }}>{cachedScore.role_notes}</p>
+                      <p style={{ fontFamily: FONT, fontSize: 12.5, color: 'rgba(255,255,255,0.78)', margin: 0, lineHeight: 1.6 }}>{cachedScore.role_notes}</p>
                     </div>
                   )}
 
                   {cachedScore.generated_at && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }}/>
-                      <span style={{ fontFamily: FONT, fontSize: 10, color: C.gray3 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399' }}/>
+                      <span style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>
                         AI profile · {new Date(cachedScore.generated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                   )}
                 </>
               ) : (
-                <div style={{ padding: '14px', background: '#FFFBEB', border: `1px solid #FDE68A`, borderRadius: 12, display: 'flex', gap: 10, alignItems: 'center' }}>
+                <div style={{ padding: '14px', background: 'rgba(233,160,32,0.10)', border: '1px solid rgba(233,160,32,0.32)', borderRadius: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
                   <span style={{ fontSize: 20 }}>✨</span>
-                  <p style={{ fontFamily: FONT, fontSize: 12, color: '#92400E', margin: 0, lineHeight: 1.5 }}>
+                  <p style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(254,243,199,0.92)', margin: 0, lineHeight: 1.5 }}>
                     Profile not generated yet.{' '}
-                    {isAdmin ? <strong>Go to Admin → Players → Generate All Profiles.</strong> : 'Check back soon!'}
+                    {isAdmin ? <strong style={{ color: '#fbbf24' }}>Go to Admin → Players → Generate All Profiles.</strong> : 'Check back soon!'}
                   </p>
                 </div>
               )}
