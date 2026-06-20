@@ -87,86 +87,100 @@ const _int = v => Math.round(Number(v) || 0)
 const _num = v => Number(v) || 0
 const _norm = s => String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]/g, '')
 
-function readSheetRows(buffer) {
-  const wb = XLSX.read(buffer, { type: 'array' })
-  const ws = wb.Sheets[wb.SheetNames[0]]
-  return XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, defval: '' })
+// Read a cell by coordinate directly (does NOT rely on the sheet's declared
+// !ref range, which some exports set too narrow — e.g. "A1:A10").
+function getCell(ws, r, c) {
+  const cell = ws[XLSX.utils.encode_cell({ r, c })]
+  return cell ? cell.v : undefined
 }
 
-// Find the header row (the one with a Player/Name column) and map header → index
-function findHeader(rows) {
-  for (let i = 0; i < Math.min(rows.length, 6); i++) {
-    const cells = (rows[i] || []).map(_norm)
-    if (cells.some(c => c === 'player' || c === 'name' || c === 'playername')) {
-      const map = {}
-      cells.forEach((c, idx) => { if (c && !(c in map)) map[c] = idx })
-      return { row: i, map }
+// Find the header row (the one with a Player/Name column) by scanning cells,
+// then map every header title → its column index.
+function findHeader(ws) {
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 40; c++) {
+      const v = getCell(ws, r, c)
+      if (v && /^(player|name|player name)$/i.test(String(v).trim())) {
+        const map = {}
+        for (let cc = 0; cc < 60; cc++) {
+          const k = _norm(getCell(ws, r, cc))
+          if (k && !(k in map)) map[k] = cc
+        }
+        return { row: r, map }
+      }
     }
   }
   return null
 }
 
-// Pick a cell value by trying a list of header aliases
-function cell(map, row, aliases) {
+// Pick a cell value for a data row by trying a list of header aliases
+function cell(ws, map, r, aliases) {
   for (const a of aliases) {
     const k = _norm(a)
     if (k in map) {
-      const v = row[map[k]]
+      const v = getCell(ws, r, map[k])
       if (v !== undefined && v !== '') return v
     }
   }
   return undefined
 }
 
+function loadSheet(buffer) {
+  const wb = XLSX.read(buffer, { type: 'array' })
+  return wb.Sheets[wb.SheetNames[0]]
+}
+
 function parseBattingExcel(buffer) {
-  const rows = readSheetRows(buffer)
-  const h = findHeader(rows)
+  const ws = loadSheet(buffer)
+  const h = findHeader(ws)
   if (!h) return []
   const out = []
-  for (let r = h.row + 1; r < rows.length; r++) {
-    const row = rows[r] || []
-    const name = cell(h.map, row, ['player', 'name', 'playername'])
-    if (!name || typeof name !== 'string' || !name.trim()) continue
-    const hsRaw = cell(h.map, row, ['highscore', 'hs', 'high', 'best'])
-    const hsNo  = cell(h.map, row, ['highscorenotout', 'hsnotout'])
+  let blanks = 0
+  for (let r = h.row + 1; r < h.row + 600; r++) {
+    const name = cell(ws, h.map, r, ['player', 'name', 'playername'])
+    if (!name || typeof name !== 'string' || !name.trim()) { if (++blanks > 8) break; continue }
+    blanks = 0
+    const hsRaw = cell(ws, h.map, r, ['highscore', 'hs', 'high'])
+    const hsNo  = cell(ws, h.map, r, ['highscorenotout', 'hsnotout'])
     out.push({
       player_name:        String(name).trim(),
-      matches:            _int(cell(h.map, row, ['games', 'matches', 'mat', 'm', 'mts'])),
-      innings:            _int(cell(h.map, row, ['inns', 'innings', 'inn'])),
-      not_outs:           _int(cell(h.map, row, ['notouts', 'no', 'no s'])),
-      runs:               _int(cell(h.map, row, ['runs', 'r'])),
+      matches:            _int(cell(ws, h.map, r, ['games', 'matches', 'mat', 'm', 'mts'])),
+      innings:            _int(cell(ws, h.map, r, ['inns', 'innings', 'inn'])),
+      not_outs:           _int(cell(ws, h.map, r, ['notouts', 'no', 'nos'])),
+      runs:               _int(cell(ws, h.map, r, ['runs', 'r'])),
       high_score:         _int(String(hsRaw == null ? 0 : hsRaw).replace('*', '')),
       high_score_not_out: hsNo !== undefined ? /^(y|yes|true|1)/i.test(String(hsNo)) : String(hsRaw || '').includes('*'),
-      avg:                _num(cell(h.map, row, ['avg', 'average', 'ave'])),
-      strike_rate:        _num(cell(h.map, row, ['strikerate', 'sr'])),
-      fifties:            _int(cell(h.map, row, ['50s', 'fifties', '50', 'fifty'])),
-      hundreds:           _int(cell(h.map, row, ['100s', 'hundreds', '100', 'hundred'])),
+      avg:                _num(cell(ws, h.map, r, ['avg', 'average', 'ave'])),
+      strike_rate:        _num(cell(ws, h.map, r, ['strikerate', 'sr'])),
+      fifties:            _int(cell(ws, h.map, r, ['50s', 'fifties', '50', 'fifty'])),
+      hundreds:           _int(cell(ws, h.map, r, ['100s', 'hundreds', '100', 'hundred'])),
     })
   }
   return out
 }
 
 function parseBowlingExcel(buffer) {
-  const rows = readSheetRows(buffer)
-  const h = findHeader(rows)
+  const ws = loadSheet(buffer)
+  const h = findHeader(ws)
   if (!h) return []
   const out = []
-  for (let r = h.row + 1; r < rows.length; r++) {
-    const row = rows[r] || []
-    const name = cell(h.map, row, ['player', 'name', 'playername'])
-    if (!name || typeof name !== 'string' || !name.trim()) continue
+  let blanks = 0
+  for (let r = h.row + 1; r < h.row + 600; r++) {
+    const name = cell(ws, h.map, r, ['player', 'name', 'playername'])
+    if (!name || typeof name !== 'string' || !name.trim()) { if (++blanks > 8) break; continue }
+    blanks = 0
     out.push({
       player_name:   String(name).trim(),
-      matches:       _int(cell(h.map, row, ['games', 'matches', 'mat', 'm'])),
-      overs:         _num(cell(h.map, row, ['overs', 'ov', 'ovrs', 'over'])),
-      maidens:       _int(cell(h.map, row, ['maidens', 'mdns', 'maid', 'md'])),
-      runs:          _int(cell(h.map, row, ['runs', 'runsconceded', 'r'])),
-      wickets:       _int(cell(h.map, row, ['wickets', 'wkts', 'wkt', 'w'])),
-      best_bowling:  String(cell(h.map, row, ['bestbowling', 'best', 'bb']) || ''),
-      five_wkt_haul: _int(cell(h.map, row, ['5wickethaul', '5wickethauls', 'fivewickethaul', '5w', '5wkt', 'fifer', 'fivefors'])),
-      economy_rate:  _num(cell(h.map, row, ['economyrate', 'economy', 'econ', 'eco', 'er'])),
-      strike_rate:   _num(cell(h.map, row, ['strikerate', 'sr'])),
-      average:       _num(cell(h.map, row, ['average', 'avg', 'ave'])),
+      matches:       _int(cell(ws, h.map, r, ['games', 'matches', 'mat', 'm'])),
+      overs:         _num(cell(ws, h.map, r, ['overs', 'ov', 'ovrs', 'over'])),
+      maidens:       _int(cell(ws, h.map, r, ['maidens', 'mdns', 'maid', 'md'])),
+      runs:          _int(cell(ws, h.map, r, ['runs', 'runsconceded', 'r'])),
+      wickets:       _int(cell(ws, h.map, r, ['wickets', 'wkts', 'wkt', 'w'])),
+      best_bowling:  String(cell(ws, h.map, r, ['bestbowling', 'best', 'bb']) || ''),
+      five_wkt_haul: _int(cell(ws, h.map, r, ['5wickethaul', '5wickethauls', 'fivewickethaul', '5w', '5wkt', 'fifer', 'fivefors'])),
+      economy_rate:  _num(cell(ws, h.map, r, ['economyrate', 'economy', 'econ', 'eco', 'er'])),
+      strike_rate:   _num(cell(ws, h.map, r, ['strikerate', 'sr'])),
+      average:       _num(cell(ws, h.map, r, ['average', 'avg', 'ave'])),
     })
   }
   return out
