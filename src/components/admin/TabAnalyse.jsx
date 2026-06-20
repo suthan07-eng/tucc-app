@@ -476,33 +476,42 @@ export default function TabAnalyse() {
         // Insert analysis (top 6 per category)
         await supabase.from('opponent_analysis').delete().eq('opponent_id', oppId)
         const analysisRows = [
-          ...batScored.slice(0, 6).map((r, i) => ({
+          ...batScored.slice(0, 6).map((r, i) => {
+            const tag = tagFromScore(r.composite, i + 1)
+            return {
             opponent_id: oppId, player_id: playerMap[r.player_name],
             category: 'batting', rank: i + 1, composite_score: r.composite,
-            tag: tagFromScore(r.composite, i + 1),
+            tag,
             summary: `${r.player_name} is ranked #${i+1} batter for this opponent. ${r.runs} runs at SR ${r.strike_rate}.`,
             strengths: JSON.stringify([`${r.runs} runs in ${r.innings} innings`, `SR ${r.strike_rate}`, r.hundreds > 0 ? `${r.hundreds} century/ies` : r.fifties > 0 ? `${r.fifties} fifty/ies` : 'Consistent contributor'].filter(Boolean)),
             weaknesses: JSON.stringify([r.avg > 60 ? 'Average may be inflated by not-outs' : 'Average suggests room to exploit', r.strike_rate < 90 ? 'Below-average strike rate — dot balls work' : 'Active scorer — needs containment']),
+            how_to_play: tag === 'AVOID' ? 'Their most dangerous batter — bowl tight, full and straight, deny width and pace. Set defensive fields, build dot-ball pressure, and never offer a free hit.' : tag === 'TARGET' ? 'Exploitable under pressure — attack early with pace variation and short balls. Keep the field up, force the big shot, and they will give their wicket away.' : 'Solid batter — keep it tight with no loose deliveries, rotate your bowlers, and squeeze the run rate to force the error.',
             flag: r.not_outs > r.innings * 0.5 ? '⚠️ Average inflated by not-outs' : null,
-          })),
-          ...bowlScored.slice(0, 6).map((r, i) => ({
+          }}),
+          ...bowlScored.slice(0, 6).map((r, i) => {
+            const tag = tagFromScore(r.composite, i + 1)
+            return {
             opponent_id: oppId, player_id: playerMap[r.player_name],
             category: 'bowling', rank: i + 1, composite_score: r.composite,
-            tag: tagFromScore(r.composite, i + 1),
+            tag,
             summary: `${r.player_name} is ranked #${i+1} bowler. ${r.wickets} wickets at economy ${r.economy_rate}.`,
             strengths: JSON.stringify([`${r.wickets} wickets`, `Economy ${r.economy_rate}`, r.five_wkt_haul > 0 ? `${r.five_wkt_haul} five-wicket haul(s)` : null].filter(Boolean)),
             weaknesses: JSON.stringify([r.economy_rate > 5 ? 'Economy rate is attackable' : 'Economical — take time to settle in', r.average > 20 ? 'Average suggests batters score off him' : 'Dangerous average — respect required']),
+            how_to_play: tag === 'AVOID' ? 'Elite bowler — respect their spells, rotate strike, take no risks, and save your aggression for the other end.' : tag === 'TARGET' ? 'Economy is exploitable — attack from ball one, use their pace, and target boundaries every over they bowl.' : 'Steady bowler — rotate the strike, pick the gaps, stay patient and punish the loose ball.',
             flag: r.five_wkt_haul > 0 ? '🏆 5-wicket haul' : r.overs < 15 ? '⚠️ Small sample' : null,
-          })),
-          ...arScored.slice(0, 6).map((r, i) => ({
+          }}),
+          ...arScored.slice(0, 6).map((r, i) => {
+            const tag = tagFromScore(r.composite, i + 1)
+            return {
             opponent_id: oppId, player_id: playerMap[r.player_name],
             category: 'allrounder', rank: i + 1, composite_score: r.composite,
             batting_score: r.bat_score, bowling_score: r.bowl_score,
-            tag: tagFromScore(r.composite, i + 1),
+            tag,
             summary: `${r.player_name} is ranked #${i+1} all-rounder. Bat: ${r.bat_score} · Bowl: ${r.bowl_score}.`,
             strengths: JSON.stringify(['Contributes in both departments']),
             weaknesses: JSON.stringify([r.bat_score < r.bowl_score ? 'Batting is the weaker department' : 'Bowling is the weaker department']),
-          })),
+            how_to_play: tag === 'AVOID' ? 'Dangerous all-rounder — neutralise their main skill first and avoid risks against them in both innings.' : tag === 'TARGET' ? 'Exploitable all-rounder — attack their weaker discipline and apply pressure early to force mistakes.' : 'Capable all-rounder — stay disciplined in both departments and deny them momentum.',
+          }}),
         ].filter(r => r.player_id)
         if (analysisRows.length > 0) {
           const { error: aErr } = await supabase.from('opponent_analysis').insert(analysisRows)

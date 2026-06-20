@@ -171,6 +171,14 @@ function BatCard({ a, bat }) {
           <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:'rgba(255,255,255,0.6)', fontSize:10 }}>▼</motion.span>
         </div>
       </button>
+      {a.how_to_play && (
+        <div style={{ margin:'0 16px 14px', padding:'10px 12px', borderRadius:12,
+          background:'rgba(96,165,250,0.10)', border:'1px solid rgba(96,165,250,0.22)',
+          borderLeft:`3px solid ${a.tag==='AVOID'?'#f87171':a.tag==='TARGET'?'#4ade80':'#60a5fa'}` }}>
+          <div style={{ fontFamily:FONT, fontSize:9.5, fontWeight:800, letterSpacing:0.7, textTransform:'uppercase', color:'#93c5fd', marginBottom:3 }}>🏏 How to play them</div>
+          <p style={{ fontFamily:FONT, fontSize:12.5, lineHeight:1.55, color:T_BODY, margin:0 }}>{a.how_to_play}</p>
+        </div>
+      )}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="exp" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} transition={{ duration:0.25, ease:EASE }} style={{ overflow:'hidden' }}>
@@ -186,12 +194,6 @@ function BatCard({ a, bat }) {
                     <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#b91c1c', marginBottom:5, textTransform:'uppercase', letterSpacing:0.5 }}>⚠️ Weaknesses</div>
                     {a.weaknesses.map((w,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'#dc2626', flexShrink:0 }}>›</span>{w}</div>)}
                   </div>
-                </div>
-              )}
-              {a.how_to_play && (
-                <div style={{ background:'rgba(96,165,250,0.16)', border:'1px solid rgba(96,165,250,0.35)', borderRadius:12, padding:'10px 14px' }}>
-                  <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#60a5fa', marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
-                  <p style={{ fontFamily:FONT, fontSize:13, color:T_BODY, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
                 </div>
               )}
             </div>
@@ -238,6 +240,14 @@ function BowlCard({ a, bowl }) {
           <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:'rgba(255,255,255,0.6)', fontSize:10 }}>▼</motion.span>
         </div>
       </button>
+      {a.how_to_play && (
+        <div style={{ margin:'0 16px 14px', padding:'10px 12px', borderRadius:12,
+          background:'rgba(96,165,250,0.10)', border:'1px solid rgba(96,165,250,0.22)',
+          borderLeft:`3px solid ${a.tag==='AVOID'?'#f87171':a.tag==='TARGET'?'#4ade80':'#60a5fa'}` }}>
+          <div style={{ fontFamily:FONT, fontSize:9.5, fontWeight:800, letterSpacing:0.7, textTransform:'uppercase', color:'#93c5fd', marginBottom:3 }}>🏏 How to play them</div>
+          <p style={{ fontFamily:FONT, fontSize:12.5, lineHeight:1.55, color:T_BODY, margin:0 }}>{a.how_to_play}</p>
+        </div>
+      )}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="exp" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} transition={{ duration:0.25, ease:EASE }} style={{ overflow:'hidden' }}>
@@ -253,12 +263,6 @@ function BowlCard({ a, bowl }) {
                     <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#b91c1c', marginBottom:5, textTransform:'uppercase' }}>⚠️ Weaknesses</div>
                     {a.weaknesses.map((w,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, marginBottom:4 }}>› {w}</div>)}
                   </div>
-                </div>
-              )}
-              {a.how_to_play && (
-                <div style={{ background:'rgba(96,165,250,0.16)', border:'1px solid rgba(96,165,250,0.35)', borderRadius:12, padding:'10px 14px' }}>
-                  <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#60a5fa', marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
-                  <p style={{ fontFamily:FONT, fontSize:13, color:T_BODY, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
                 </div>
               )}
             </div>
@@ -301,6 +305,14 @@ function ArCard({ a, bat, bowl }) {
           <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:'rgba(255,255,255,0.6)', fontSize:10 }}>▼</motion.span>
         </div>
       </button>
+      {a.how_to_play && (
+        <div style={{ margin:'0 16px 14px', padding:'10px 12px', borderRadius:12,
+          background:'rgba(96,165,250,0.10)', border:'1px solid rgba(96,165,250,0.22)',
+          borderLeft:`3px solid ${a.tag==='AVOID'?'#f87171':a.tag==='TARGET'?'#4ade80':'#60a5fa'}` }}>
+          <div style={{ fontFamily:FONT, fontSize:9.5, fontWeight:800, letterSpacing:0.7, textTransform:'uppercase', color:'#93c5fd', marginBottom:3 }}>🏏 How to play them</div>
+          <p style={{ fontFamily:FONT, fontSize:12.5, lineHeight:1.55, color:T_BODY, margin:0 }}>{a.how_to_play}</p>
+        </div>
+      )}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="exp" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} transition={{ duration:0.25, ease:EASE }} style={{ overflow:'hidden' }}>
