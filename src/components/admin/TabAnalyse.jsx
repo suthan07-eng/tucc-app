@@ -82,55 +82,94 @@ function tagFromScore(score, rank) {
   return 'TARGET'
 }
 
-// ── Excel parsers ─────────────────────────────────────────────────────────
-function parseBattingExcel(buffer) {
+// ── Excel parsers (header-based — column order does not matter) ───────────
+const _int = v => Math.round(Number(v) || 0)
+const _num = v => Number(v) || 0
+const _norm = s => String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]/g, '')
+
+function readSheetRows(buffer) {
   const wb = XLSX.read(buffer, { type: 'array' })
   const ws = wb.Sheets[wb.SheetNames[0]]
-  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:L50')
-  const rows = []
-  for (let r = range.s.r + 1; r <= range.e.r; r++) {
-    const get = col => ws[XLSX.utils.encode_cell({ r, c: col })]?.v
-    const name = get(1); if (!name || typeof name !== 'string') continue
-    rows.push({
-      player_name:       String(name).trim(),
-      matches:           Math.round(Number(get(2)) || 0),
-      innings:           Math.round(Number(get(3)) || 0),
-      not_outs:          Math.round(Number(get(4)) || 0),
-      runs:              Math.round(Number(get(5)) || 0),
-      high_score:        Math.round(Number(String(get(6)||'0').replace('*','')) || 0),
-      high_score_not_out: String(get(6)||'').includes('*'),
-      avg:               Number(get(7))  || 0,
-      strike_rate:       Number(get(9))  || 0,
-      fifties:           Math.round(Number(get(10)) || 0),
-      hundreds:          Math.round(Number(get(11)) || 0),
+  return XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, defval: '' })
+}
+
+// Find the header row (the one with a Player/Name column) and map header → index
+function findHeader(rows) {
+  for (let i = 0; i < Math.min(rows.length, 6); i++) {
+    const cells = (rows[i] || []).map(_norm)
+    if (cells.some(c => c === 'player' || c === 'name' || c === 'playername')) {
+      const map = {}
+      cells.forEach((c, idx) => { if (c && !(c in map)) map[c] = idx })
+      return { row: i, map }
+    }
+  }
+  return null
+}
+
+// Pick a cell value by trying a list of header aliases
+function cell(map, row, aliases) {
+  for (const a of aliases) {
+    const k = _norm(a)
+    if (k in map) {
+      const v = row[map[k]]
+      if (v !== undefined && v !== '') return v
+    }
+  }
+  return undefined
+}
+
+function parseBattingExcel(buffer) {
+  const rows = readSheetRows(buffer)
+  const h = findHeader(rows)
+  if (!h) return []
+  const out = []
+  for (let r = h.row + 1; r < rows.length; r++) {
+    const row = rows[r] || []
+    const name = cell(h.map, row, ['player', 'name', 'playername'])
+    if (!name || typeof name !== 'string' || !name.trim()) continue
+    const hsRaw = cell(h.map, row, ['highscore', 'hs', 'high', 'best'])
+    const hsNo  = cell(h.map, row, ['highscorenotout', 'hsnotout'])
+    out.push({
+      player_name:        String(name).trim(),
+      matches:            _int(cell(h.map, row, ['games', 'matches', 'mat', 'm', 'mts'])),
+      innings:            _int(cell(h.map, row, ['inns', 'innings', 'inn'])),
+      not_outs:           _int(cell(h.map, row, ['notouts', 'no', 'no s'])),
+      runs:               _int(cell(h.map, row, ['runs', 'r'])),
+      high_score:         _int(String(hsRaw == null ? 0 : hsRaw).replace('*', '')),
+      high_score_not_out: hsNo !== undefined ? /^(y|yes|true|1)/i.test(String(hsNo)) : String(hsRaw || '').includes('*'),
+      avg:                _num(cell(h.map, row, ['avg', 'average', 'ave'])),
+      strike_rate:        _num(cell(h.map, row, ['strikerate', 'sr'])),
+      fifties:            _int(cell(h.map, row, ['50s', 'fifties', '50', 'fifty'])),
+      hundreds:           _int(cell(h.map, row, ['100s', 'hundreds', '100', 'hundred'])),
     })
   }
-  return rows
+  return out
 }
 
 function parseBowlingExcel(buffer) {
-  const wb = XLSX.read(buffer, { type: 'array' })
-  const ws = wb.Sheets[wb.SheetNames[0]]
-  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:M50')
-  const rows = []
-  for (let r = range.s.r + 1; r <= range.e.r; r++) {
-    const get = col => ws[XLSX.utils.encode_cell({ r, c: col })]?.v
-    const name = get(1); if (!name || typeof name !== 'string') continue
-    rows.push({
+  const rows = readSheetRows(buffer)
+  const h = findHeader(rows)
+  if (!h) return []
+  const out = []
+  for (let r = h.row + 1; r < rows.length; r++) {
+    const row = rows[r] || []
+    const name = cell(h.map, row, ['player', 'name', 'playername'])
+    if (!name || typeof name !== 'string' || !name.trim()) continue
+    out.push({
       player_name:   String(name).trim(),
-      matches:       Math.round(Number(get(2)) || 0),
-      overs:         Number(get(3))  || 0,
-      maidens:       Math.round(Number(get(4)) || 0),
-      runs:          Math.round(Number(get(5)) || 0),
-      wickets:       Math.round(Number(get(6)) || 0),
-      best_bowling:  String(get(7)  || ''),
-      five_wkt_haul: Math.round(Number(get(8)) || 0),
-      economy_rate:  Number(get(9))  || 0,
-      strike_rate:   Number(get(10)) || 0,
-      average:       Number(get(11)) || 0,
+      matches:       _int(cell(h.map, row, ['games', 'matches', 'mat', 'm'])),
+      overs:         _num(cell(h.map, row, ['overs', 'ov', 'ovrs', 'over'])),
+      maidens:       _int(cell(h.map, row, ['maidens', 'mdns', 'maid', 'md'])),
+      runs:          _int(cell(h.map, row, ['runs', 'runsconceded', 'r'])),
+      wickets:       _int(cell(h.map, row, ['wickets', 'wkts', 'wkt', 'w'])),
+      best_bowling:  String(cell(h.map, row, ['bestbowling', 'best', 'bb']) || ''),
+      five_wkt_haul: _int(cell(h.map, row, ['5wickethaul', '5wickethauls', 'fivewickethaul', '5w', '5wkt', 'fifer', 'fivefors'])),
+      economy_rate:  _num(cell(h.map, row, ['economyrate', 'economy', 'econ', 'eco', 'er'])),
+      strike_rate:   _num(cell(h.map, row, ['strikerate', 'sr'])),
+      average:       _num(cell(h.map, row, ['average', 'avg', 'ave'])),
     })
   }
-  return rows
+  return out
 }
 
 // ── Small UI helpers ─────────────────────────────────────────────────────
@@ -501,10 +540,11 @@ export default function TabAnalyse() {
       )}
 
       <div style={{ marginTop: 20, padding: '12px 16px', background: '#f8fafc', border: `1px solid ${AC.gray2}`, borderRadius: 12, borderLeft: `3px solid ${AC.green}` }}>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 11, color: AC.green, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>📐 Excel format expected</div>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 11, color: AC.green, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>📐 Excel columns (any order — matched by header name)</div>
         <div style={{ fontFamily: FONT, fontSize: 12, color: AC.gray5, lineHeight: 1.7 }}>
-          <strong>Batting:</strong> Col B = Name, C = M, D = Inn, E = NO, F = Runs, G = HS (append * if not-out), H = Avg, J = SR, K = 50s, L = 100s<br />
-          <strong>Bowling:</strong> Col B = Name, C = M, D = Overs, E = Mdns, F = Runs, G = Wkts, H = BB, I = 5W, J = Econ, K = SR, L = Avg
+          Just upload the Play-Cricket export as-is — columns are read by their header titles, so the order doesn't matter.<br />
+          <strong>Batting headers:</strong> Player, Games/Inns/Not Outs, Runs, High Score, Avg, Strike Rate, 50s, 100s<br />
+          <strong>Bowling headers:</strong> Player, Overs, Maidens, Runs, Wickets, Best Bowling, 5 Wicket Haul, Economy Rate, Strike Rate, Average
         </div>
       </div>
     </div>
