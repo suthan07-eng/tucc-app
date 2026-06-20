@@ -1,13 +1,14 @@
-import { C } from '../../constants'
+import { usePalette } from './theme'
 
 export default function Card({ children, style, ...props }) {
+  const p = usePalette()
   return (
     <div
       style={{
-        background: C.white,
+        background: p.surface,
         borderRadius: 18,
-        boxShadow: `0 2px 12px ${C.shadow}, 0 1px 3px ${C.shadowMd}`,
-        border: `1px solid ${C.gray2}`,
+        boxShadow: p.shadow,
+        border: `1px solid ${p.border}`,
         padding: 24,
         ...style,
       }}

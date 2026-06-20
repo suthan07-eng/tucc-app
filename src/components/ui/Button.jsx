@@ -12,7 +12,7 @@ const variants = {
   danger:  { background: C.red,          color: '#fff',  border: 'none' },
   ghost:   { background: 'transparent',  color: C.green,  border: `1.5px solid ${C.green}` },
   subtle:  { background: C.greenBg,      color: C.green,  border: `1px solid ${C.gray2}` },
-  gold:    { background: C.gold,         color: C.dark,   border: 'none' },
+  gold:    { background: C.gold,         color: '#1a0a00', border: 'none' },
 }
 
 // Inject global button styles once

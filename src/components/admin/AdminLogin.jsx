@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { C, FONT, ADMIN_EMAIL, ADMIN_PASSWORD } from '../../constants'
+import { ThemeContext } from '../ui/theme'
 const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenLight:'#1d4ed8', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', bg:'#eef2ff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7', blue:'#2563eb', blueBg:'#eff6ff', shadow:'rgba(30,58,138,0.07)', shadowMd:'rgba(30,58,138,0.11)', shadowLg:'rgba(30,58,138,0.18)' } // admin keeps original light theme
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -46,6 +47,7 @@ export default function AdminLogin() {
   }
 
   return (
+    <ThemeContext.Provider value="light">
     <div
       style={{
         minHeight: '100vh',
@@ -118,5 +120,6 @@ export default function AdminLogin() {
         </p>
       </motion.div>
     </div>
+    </ThemeContext.Provider>
   )
 }
