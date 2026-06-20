@@ -456,13 +456,15 @@ export default function TabAnalyse() {
           if (bErr) throw bErr
         }
 
-        // Insert bowling stats
+        // Insert bowling stats — the bowling export has no matches column,
+        // so fall back to the player's games count from the batting upload.
         if (bowlRows.length > 0) {
+          const batMatches = Object.fromEntries(batRows.map(b => [b.player_name, Math.round(b.matches || 0)]))
           await supabase.from('opponent_bowling_stats').delete().eq('opponent_id', oppId)
           const { error: boErr } = await supabase.from('opponent_bowling_stats').insert(
             bowlRows.filter(r => playerMap[r.player_name]).map(r => ({
               opponent_id: oppId, player_id: playerMap[r.player_name],
-              matches: Math.round(r.matches||0), overs: r.overs, maidens: Math.round(r.maidens||0),
+              matches: Math.round(r.matches||0) || batMatches[r.player_name] || 0, overs: r.overs, maidens: Math.round(r.maidens||0),
               runs: Math.round(r.runs||0), wickets: Math.round(r.wickets||0), best_bowling: r.best_bowling,
               five_wkt_haul: Math.round(r.five_wkt_haul||0), economy_rate: r.economy_rate,
               strike_rate: r.strike_rate, average: r.average,
