@@ -15,6 +15,34 @@ import { useAuth } from '../context/AuthContext'
 
 const EASE_OUT = [0.23, 1, 0.32, 1]
 
+const GLASS_CARD = {
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  border: '1px solid rgba(255,255,255,0.18)',
+  boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+  borderRadius: 22,
+  backdropFilter: 'blur(20px) saturate(160%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+}
+const GRADIENT_TEXT = {
+  color: '#fff',
+  backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+}
+const EYEBROW = {
+  display: 'inline-block',
+  letterSpacing: 2,
+  fontSize: 10.5,
+  textTransform: 'uppercase',
+  fontWeight: 700,
+  color: 'rgba(255,255,255,0.6)',
+  border: '1px solid rgba(255,255,255,0.18)',
+  background: 'rgba(255,255,255,0.05)',
+  borderRadius: 999,
+  padding: '4px 10px',
+}
+
 const fadeUp = {
   hidden:  { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE_OUT } },
@@ -291,10 +319,10 @@ export default function Availability() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'transparent', fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
       <Nav />
       {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`, padding: '28px 20px' }}>
+      <div style={{ background: 'transparent', padding: '28px 20px' }}>
         <motion.div
           variants={staggerList}
           initial="hidden"
@@ -304,15 +332,18 @@ export default function Availability() {
           <motion.button
             variants={fadeUp}
             onClick={() => nav('/app')}
-            style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 10 }}
+            style={{ color: 'rgba(255,255,255,.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13, padding: 0, marginBottom: 12 }}
           >
             ← Home
           </motion.button>
-          <motion.h1 variants={fadeUp} style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0 }}>
+          <motion.div variants={fadeUp} style={{ ...EYEBROW, marginBottom: 12 }}>
+            Player Portal
+          </motion.div>
+          <motion.h1 variants={fadeUp} style={{ ...GRADIENT_TEXT, fontSize: 30, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>
             Submit Availability
           </motion.h1>
           {selectedMatch && (
-            <motion.p variants={fadeUp} style={{ color: 'rgba(255,255,255,.65)', fontSize: 13, marginTop: 5 }}>
+            <motion.p variants={fadeUp} style={{ color: 'rgba(255,255,255,.72)', fontSize: 13, marginTop: 8 }}>
               vs {selectedMatch.opponent || 'TBC'} · {fmtDate(selectedMatch.date)} · {selectedMatch.venue || 'Venue TBC'}
             </motion.p>
           )}
@@ -323,8 +354,8 @@ export default function Availability() {
 
         {/* ── Match selector (shown if multiple matches) ── */}
         {allMatches.length > 1 && (
-          <Card style={{ marginBottom: 14, padding: '16px 20px' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.gray5, marginBottom: 8 }}>
+          <Card style={{ ...GLASS_CARD, marginBottom: 14, padding: '16px 20px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>
               Select Match
             </div>
             <Select value={selectedMatchId || ''} onChange={handleMatchChange}>
@@ -339,11 +370,11 @@ export default function Availability() {
         <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
-          <Card>
-            <div style={{ fontSize: 16, fontWeight: 700, color: C.dark, marginBottom: 4 }}>
+          <Card style={GLASS_CARD}>
+            <div style={{ ...GRADIENT_TEXT, fontSize: 20, fontWeight: 800, marginBottom: 4 }}>
               Find Your Profile
             </div>
-            <p style={{ fontSize: 13, color: C.gray4, marginBottom: 20 }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', marginBottom: 20 }}>
               Enter your name and phone to continue
             </p>
 
@@ -395,9 +426,9 @@ export default function Availability() {
             </Button>
 
             {notFound && (
-              <p style={{ fontSize: 13, color: C.gray4, marginTop: 14, textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 14, textAlign: 'center' }}>
                 New player?{' '}
-                <Link to="/register" style={{ color: C.green, fontWeight: 600, textDecoration: 'none' }}>
+                <Link to="/register" style={{ color: '#c084fc', fontWeight: 700, textDecoration: 'none' }}>
                   Register here →
                 </Link>
               </p>
@@ -411,28 +442,28 @@ export default function Availability() {
           <motion.div key="step2" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
           <>
             {/* Player card */}
-            <Card style={{ marginBottom: 14 }}>
+            <Card style={{ ...GLASS_CARD, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <Avatar name={player.name} size={48} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 17, color: C.dark }}>{player.name}</div>
-                  <div style={{ fontSize: 13, color: C.gray4, marginTop: 2 }}>{player.role} · {player.phone}</div>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>{player.name}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{player.role} · {player.phone}</div>
                 </div>
               </div>
               {existing && (
-                <div style={{ marginTop: 12, padding: '10px 14px', background: C.greenBg, borderRadius: 8, fontSize: 13, color: C.greenDark, fontWeight: 500 }}>
+                <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(192,132,252,0.16)', border: '1px solid rgba(192,132,252,0.32)', borderRadius: 12, fontSize: 13, color: '#e9d5ff', fontWeight: 500 }}>
                   ✏️ You already responded — updating your answer below.
                 </div>
               )}
             </Card>
 
             {/* Availability selection */}
-            <Card>
-              <div style={{ fontSize: 15, fontWeight: 700, color: C.dark, marginBottom: 6 }}>
+            <Card style={GLASS_CARD}>
+              <div style={{ ...GRADIENT_TEXT, fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
                 Are you available?
               </div>
               {selectedMatch && (
-                <div style={{ fontSize: 13, color: C.gray4, marginBottom: 18 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 18 }}>
                   vs {selectedMatch.opponent} · {fmtDate(selectedMatch.date)} · {selectedMatch.time}
                 </div>
               )}
@@ -456,8 +487,8 @@ export default function Availability() {
                       style={{
                         padding: '22px 16px',
                         borderRadius: 16,
-                        border: `2px solid ${isActive ? activeBorder : C.gray2}`,
-                        background: isActive ? activeBg : C.white,
+                        border: `2px solid ${isActive ? activeBorder : 'rgba(255,255,255,0.10)'}`,
+                        background: isActive ? activeBg : 'rgba(255,255,255,0.05)',
                         cursor: 'pointer',
                         display: 'flex',
                         flexDirection: 'column',
@@ -472,7 +503,7 @@ export default function Availability() {
                       <span style={{ fontSize: 34, lineHeight: 1 }}>{emoji}</span>
                       <span style={{
                         fontFamily: FONT, fontWeight: 700, fontSize: 15,
-                        color: isActive ? activeColor : C.gray5,
+                        color: isActive ? activeColor : 'rgba(255,255,255,0.78)',
                         transition: 'color 180ms ease',
                       }}>{label}</span>
                       {isActive && (
@@ -525,7 +556,7 @@ export default function Availability() {
 
               <button
                 onClick={resetSearch}
-                style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 14, color: C.gray3, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13 }}
+                style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 14, color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 13 }}
               >
                 ← Wrong person? Search again
               </button>
@@ -535,14 +566,12 @@ export default function Availability() {
             {playerMessages.length > 0 && (
               <div
                 style={{
+                  ...GLASS_CARD,
                   marginTop: 16,
-                  background: C.white,
-                  borderRadius: 12,
-                  boxShadow: '0 2px 14px rgba(0,0,0,.07)',
                   padding: 20,
                 }}
               >
-                <div style={{ fontSize: 15, fontWeight: 700, color: C.dark, marginBottom: 14 }}>
+                <div style={{ ...GRADIENT_TEXT, fontSize: 16, fontWeight: 800, marginBottom: 14 }}>
                   📬 Messages from Captain &amp; Manager
                 </div>
                 <motion.div
@@ -556,16 +585,16 @@ export default function Availability() {
                       key={msg.id}
                       variants={staggerItem}
                       style={{
-                        background: C.greenBg,
-                        border: '1px solid #86efac',
-                        borderRadius: 10,
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        borderRadius: 16,
                         padding: '12px 14px',
                       }}
                     >
-                      <div style={{ fontSize: 14, color: C.gray5, lineHeight: 1.55 }}>
+                      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.78)', lineHeight: 1.55 }}>
                         {msg.text}
                       </div>
-                      <div style={{ fontSize: 11, color: C.gray3, marginTop: 6 }}>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
                         {fmtMsgDate(msg.sent_at)}
                       </div>
                     </motion.div>

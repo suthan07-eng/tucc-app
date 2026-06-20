@@ -12,6 +12,35 @@ import Footer from './Footer'
 const EASE_OUT = [0.23, 1, 0.32, 1]
 const OUR_NAMES = ['Tamil United', 'TUCC', 'DTU']
 
+// ── Bold Gradient theme tokens ─────────────────────────────
+const GLASS_CARD = {
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  border: '1px solid rgba(255,255,255,0.18)',
+  boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+  borderRadius: 22,
+  backdropFilter: 'blur(20px) saturate(160%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+}
+const NESTED = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: 16,
+}
+const GRAD_TITLE = {
+  color: '#fff',
+  backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+}
+const GRAD_BTN = {
+  background: 'linear-gradient(180deg,#818cf8,#6d28d9)',
+  color: '#fff',
+  border: '1px solid rgba(255,255,255,0.28)',
+  boxShadow: '0 12px 30px -8px rgba(124,58,237,0.65), inset 0 1px 0 rgba(255,255,255,0.4)',
+  borderRadius: 12,
+  fontWeight: 700,
+}
+
 const isOurs   = (name = '') => OUR_NAMES.some(t => name.toLowerCase().includes(t.toLowerCase()))
 const involved = (r) => isOurs(r.team1) || isOurs(r.team2)
 const weWon    = (r) => isOurs(r.winner)
@@ -144,13 +173,13 @@ function ResultCard({ result, index }) {
           labelColor:  '#fff',
         }
     : {
-        headerGrad:  'linear-gradient(135deg, #334155 0%, #64748b 100%)',
-        cardBg:      C.white,
-        cardBorder:  C.gray2,
-        shadow:      `0 4px 20px ${C.shadow}`,
+        headerGrad:  'linear-gradient(135deg, #6d28d9 0%, #2563eb 100%)',
+        cardBg:      'transparent',
+        cardBorder:  'rgba(255,255,255,0.10)',
+        shadow:      'none',
         glow:        'transparent',
-        accent:      C.gray5,
-        scoreBg:     C.gray1,
+        accent:      '#c084fc',
+        scoreBg:     'rgba(255,255,255,0.05)',
         label:       null,
         labelColor:  '#fff',
       }
@@ -163,12 +192,10 @@ function ResultCard({ result, index }) {
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: EASE_OUT, delay: index * 0.06 }}
+      whileHover={{ y: -3 }}
       style={{
-        background: theme.cardBg,
-        borderRadius: 22,
-        border: `1.5px solid ${theme.cardBorder}`,
+        ...GLASS_CARD,
         overflow: 'hidden',
-        boxShadow: theme.shadow,
       }}
     >
       {/* ── Header band ── */}
@@ -257,8 +284,8 @@ function TeamRow({ logo, name, score, pts, isOurs, isWinner, theme }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '10px 12px', borderRadius: 14,
-      background: isOurs ? theme.scoreBg : 'transparent',
-      border: isOurs ? `1px solid ${theme.cardBorder}` : '1px solid transparent',
+      background: isOurs ? 'rgba(192,132,252,0.14)' : 'rgba(255,255,255,0.04)',
+      border: isOurs ? '1px solid rgba(192,132,252,0.35)' : '1px solid rgba(255,255,255,0.08)',
       transition: 'background 200ms',
     }}>
       <TeamLogo logo={logo} name={name} size={50} />
@@ -268,7 +295,7 @@ function TeamRow({ logo, name, score, pts, isOurs, isWinner, theme }) {
           <div style={{
             fontFamily: FONT, fontSize: 14,
             fontWeight: isOurs ? 800 : 600,
-            color: isOurs ? theme.accent : C.dark,
+            color: isOurs ? '#e9d5ff' : 'rgba(255,255,255,0.78)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {isOurs ? '🏏 ' : ''}{shorten(name)}
@@ -287,7 +314,7 @@ function TeamRow({ logo, name, score, pts, isOurs, isWinner, theme }) {
         {score && (
           <div style={{
             fontFamily: FONT, fontSize: 18, fontWeight: 900,
-            color: isOurs ? theme.accent : C.dark,
+            color: isOurs ? '#fff' : 'rgba(255,255,255,0.92)',
             marginTop: 3, fontVariantNumeric: 'tabular-nums', letterSpacing: -0.3,
           }}>
             {score.replace('Allout', 'All out')}
@@ -347,16 +374,17 @@ function DateHeader({ date, count, index }) {
       style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}
     >
       <div style={{
-        background: `linear-gradient(135deg, ${C.greenDark}, #1d4ed8)`,
+        background: 'linear-gradient(135deg, rgba(96,165,250,0.22), rgba(192,132,252,0.22))',
+        border: '1px solid rgba(255,255,255,0.16)',
         borderRadius: 12, padding: '6px 14px', flexShrink: 0,
-        boxShadow: '0 3px 12px rgba(37,99,235,.3)',
+        boxShadow: '0 8px 22px -10px rgba(124,58,237,.5)',
       }}>
-        <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 800, color: C.gold, letterSpacing: 0.3 }}>{date}</div>
+        <div style={{ ...GRAD_TITLE, fontSize: 12, fontWeight: 800, letterSpacing: 0.3 }}>{date}</div>
       </div>
-      <div style={{ flex: 1, height: 1.5, background: `linear-gradient(90deg, ${C.gray2}, transparent)` }} />
+      <div style={{ flex: 1, height: 1.5, background: 'linear-gradient(90deg, rgba(255,255,255,0.16), transparent)' }} />
       <div style={{
-        fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.gray3,
-        background: C.gray1, borderRadius: 20, padding: '3px 10px',
+        fontFamily: FONT, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)',
+        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 20, padding: '3px 10px',
       }}>
         {count} match{count !== 1 ? 'es' : ''}
       </div>
@@ -408,12 +436,12 @@ export default function ResultsPage() {
   const losses = results.filter(r => involved(r) && !weWon(r)).length
 
   return (
-    <div style={{ minHeight: '100dvh', background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: 'transparent', fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
       {/* ── Hero ── */}
       <div style={{
-        background: `radial-gradient(ellipse at 80% -10%, #1d4ed860 0%, transparent 55%), linear-gradient(160deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
+        background: 'radial-gradient(ellipse at 80% -10%, rgba(124,58,237,0.28) 0%, transparent 55%)',
         padding: '28px 20px 36px', position: 'relative', overflow: 'hidden',
       }}>
         {/* Decorative cricket ball */}
@@ -436,7 +464,7 @@ export default function ResultsPage() {
                 <img src="/logo.png" alt="TUCC" style={{ width: 47, height: 47, objectFit: 'contain' }} />
               </div>
               <div>
-                <h1 style={{ color: '#fff', fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>
+                <h1 style={{ ...GRAD_TITLE, fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>
                   Last 10 Results
                 </h1>
                 <div style={{ color: 'rgba(255,255,255,.45)', fontSize: 12, marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -474,7 +502,7 @@ export default function ResultsPage() {
 
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.gray4 }}>
+          <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>
             {!loading && `${results.length} results loaded`}
           </div>
           <motion.button
@@ -482,12 +510,11 @@ export default function ResultsPage() {
             disabled={refreshing}
             whileTap={{ scale: 0.94 }}
             style={{
+              ...GRAD_BTN,
               display: 'flex', alignItems: 'center', gap: 6,
-              background: C.white, border: `1.5px solid ${C.gray2}`, borderRadius: 10,
               padding: '8px 14px', cursor: refreshing ? 'default' : 'pointer',
-              fontFamily: FONT, fontSize: 12, fontWeight: 700, color: C.gray4,
+              fontFamily: FONT, fontSize: 12,
               opacity: refreshing ? 0.5 : 1,
-              boxShadow: `0 2px 8px ${C.shadow}`,
             }}
           >
             <RotateCw size={13} strokeWidth={2.2} style={{ animation: refreshing ? 'tucc-spin 0.65s linear infinite' : 'none' }} />
@@ -518,10 +545,10 @@ export default function ResultsPage() {
             ))}
           </div>
         ) : results.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '64px 20px', background: C.white, borderRadius: 22, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}` }}>
+          <div style={{ ...GLASS_CARD, textAlign: 'center', padding: '64px 20px' }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>🏏</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: C.dark }}>No results yet</div>
-            <div style={{ fontSize: 13, color: C.gray3, marginTop: 6 }}>Check back after the next match day.</div>
+            <div style={{ ...GRAD_TITLE, fontSize: 18, fontWeight: 800 }}>No results yet</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>Check back after the next match day.</div>
           </div>
         ) : (
           <AnimatePresence>
@@ -543,26 +570,25 @@ export default function ResultsPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
                 style={{
-                  background: `linear-gradient(135deg, ${C.greenDark}, #1e3a8a)`,
+                  ...GLASS_CARD,
                   borderRadius: 20, padding: '20px 24px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: 12, boxShadow: '0 6px 24px rgba(37,99,235,.3)',
+                  gap: 12,
                 }}
               >
                 <div>
-                  <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: '#fff' }}>Full match scorecards</div>
-                  <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>View on play-cricket.com</div>
+                  <div style={{ ...GRAD_TITLE, fontFamily: FONT, fontSize: 14, fontWeight: 800 }}>Full match scorecards</div>
+                  <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>View on play-cricket.com</div>
                 </div>
                 <a
                   href="https://dtucc.play-cricket.com/website/division/137680?type=last_10_results"
                   target="_blank" rel="noopener noreferrer"
                   style={{
+                    ...GRAD_BTN,
                     display: 'flex', alignItems: 'center', gap: 6,
-                    background: C.gold, color: C.dark,
-                    borderRadius: 12, padding: '10px 18px',
-                    fontFamily: FONT, fontSize: 13, fontWeight: 800,
+                    padding: '10px 18px',
+                    fontFamily: FONT, fontSize: 13,
                     textDecoration: 'none', flexShrink: 0,
-                    boxShadow: `0 4px 16px ${C.gold}50`,
                   }}
                 >
                   Open <ExternalLink size={13} strokeWidth={2.5} />

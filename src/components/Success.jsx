@@ -53,21 +53,24 @@ export default function Success() {
 
           {/* Heading */}
           <motion.h1 variants={fadeUp} style={{
-            fontSize: 28, fontWeight: 900, color: C.dark, margin: '0 0 6px',
+            fontSize: 28, fontWeight: 900, margin: '0 0 6px',
             letterSpacing: -0.4, lineHeight: 1.15,
+            color: '#fff',
+            backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             Response submitted
           </motion.h1>
 
           {/* Tamil text */}
           <motion.p variants={fadeUp} style={{
-            fontSize: 20, color: C.green, fontWeight: 800,
+            fontSize: 20, color: '#c084fc', fontWeight: 800,
             margin: '0 0 3px', letterSpacing: 0.2,
           }}>
             வெற்றி பெறுவோம்!
           </motion.p>
           <motion.p variants={fadeUp} style={{
-            color: C.gray3, fontSize: 13, margin: '0 0 28px',
+            color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: '0 0 28px',
             fontStyle: 'italic',
           }}>
             "We shall win!"
@@ -75,10 +78,12 @@ export default function Success() {
 
           {/* Message card */}
           <motion.div variants={fadeUp} style={{
-            background: C.white,
-            borderRadius: 18,
-            border: `1px solid ${C.gray2}`,
-            boxShadow: `0 2px 12px ${C.shadow}`,
+            background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+            borderRadius: 22,
+            border: '1px solid rgba(255,255,255,0.18)',
+            boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+            backdropFilter: 'blur(20px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
             padding: '20px 24px',
             marginBottom: 24,
             textAlign: 'left',
@@ -87,13 +92,14 @@ export default function Success() {
               display: 'flex', alignItems: 'flex-start', gap: 12,
             }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: C.greenBg,
+                width: 36, height: 36, borderRadius: 12,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.10)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
-                <CheckCircle2 size={18} color={C.green} strokeWidth={2.5} />
+                <CheckCircle2 size={18} color={C.ok} strokeWidth={2.5} />
               </div>
-              <p style={{ color: C.gray5, fontSize: 14, lineHeight: 1.65, margin: 0, fontWeight: 400 }}>
+              <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 14, lineHeight: 1.65, margin: 0, fontWeight: 400 }}>
                 Your availability has been recorded and a confirmation email has been sent. The captain will be in touch!
               </p>
             </div>

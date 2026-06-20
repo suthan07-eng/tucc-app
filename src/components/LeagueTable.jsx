@@ -75,12 +75,25 @@ export default function LeagueTable() {
   return (
     <div style={{ marginTop: 24 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 4 }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: C.gray5 }}>
+          <div style={{
+            display: 'inline-block',
+            fontSize: 9.5, fontWeight: 700, letterSpacing: 2,
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.7)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: 999, padding: '3px 10px', marginBottom: 7,
+          }}>British Tamil Cricket League</div>
+          <div style={{
+            fontSize: 18, fontWeight: 800,
+            color: '#fff',
+            backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
             🏆 BTCL Premier League 2026
           </div>
-          <div style={{ fontSize: 11, color: C.gray3, marginTop: 2 }}>British Tamil Cricket League</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {source === 'live' && (
@@ -90,7 +103,7 @@ export default function LeagueTable() {
             </span>
           )}
           {updatedAt && (
-            <span style={{ fontSize: 11, color: C.gray3 }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
               {source === 'fallback' ? 'As of ' : 'Updated '}
               {new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
             </span>
@@ -100,10 +113,12 @@ export default function LeagueTable() {
 
       {/* Table card */}
       <div style={{
-        background: C.white,
-        borderRadius: 18,
-        boxShadow: `0 2px 12px ${C.shadow}, 0 1px 3px ${C.shadowMd}`,
-        border: `1px solid ${C.gray2}`,
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+        borderRadius: 22,
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         overflow: 'hidden',
       }}>
         {/* Column headers */}
@@ -111,13 +126,13 @@ export default function LeagueTable() {
           display: 'grid',
           gridTemplateColumns: '28px 1fr 32px 32px 32px 48px 56px',
           gap: 0,
-          padding: '10px 14px',
-          background: C.gray1,
-          borderBottom: `1px solid ${C.gray2}`,
+          padding: '11px 14px',
+          background: 'rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.10)',
         }}>
           {['#', 'Team', 'P', 'W', 'L', 'NRR', 'Pts'].map((h, i) => (
             <div key={h} style={{
-              fontSize: 10, fontWeight: 700, color: C.gray3,
+              fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)',
               textTransform: 'uppercase', letterSpacing: 0.6,
               textAlign: i === 1 ? 'left' : 'center',
             }}>{h}</div>
@@ -132,13 +147,13 @@ export default function LeagueTable() {
                 display: 'grid',
                 gridTemplateColumns: '28px 1fr 32px 32px 32px 48px 56px',
                 padding: '12px 14px',
-                borderBottom: i < 7 ? `1px solid ${C.gray1}` : 'none',
+                borderBottom: i < 7 ? '1px solid rgba(255,255,255,0.06)' : 'none',
                 alignItems: 'center', gap: 0,
               }}>
-                <div style={{ height: 10, width: 12, background: C.gray2, borderRadius: 4 }} />
-                <div style={{ height: 10, width: `${60 + (i % 3) * 20}%`, background: C.gray2, borderRadius: 4 }} />
+                <div style={{ height: 10, width: 12, background: 'rgba(255,255,255,0.10)', borderRadius: 4 }} />
+                <div style={{ height: 10, width: `${60 + (i % 3) * 20}%`, background: 'rgba(255,255,255,0.10)', borderRadius: 4 }} />
                 {[1,2,3,4,5].map(j => (
-                  <div key={j} style={{ height: 10, width: 20, background: C.gray2, borderRadius: 4, margin: '0 auto' }} />
+                  <div key={j} style={{ height: 10, width: 20, background: 'rgba(255,255,255,0.10)', borderRadius: 4, margin: '0 auto' }} />
                 ))}
               </div>
             ))}
@@ -158,20 +173,20 @@ export default function LeagueTable() {
                     display: 'grid',
                     gridTemplateColumns: '28px 1fr 32px 32px 32px 48px 56px',
                     padding: '11px 14px',
-                    borderBottom: i < teams.length - 1 ? `1px solid ${C.gray1}` : 'none',
+                    borderBottom: i < teams.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
                     alignItems: 'center',
                     gap: 0,
                     background: highlight
-                      ? `linear-gradient(90deg, ${C.greenBg} 0%, rgba(230,244,237,0.4) 100%)`
-                      : 'transparent',
-                    borderLeft: highlight ? `3px solid ${C.green}` : '3px solid transparent',
+                      ? 'linear-gradient(90deg, rgba(192,132,252,0.20) 0%, rgba(192,132,252,0.06) 100%)'
+                      : (i % 2 === 1 ? 'rgba(255,255,255,0.03)' : 'transparent'),
+                    borderLeft: highlight ? '3px solid #c084fc' : '3px solid transparent',
                     transition: 'background 200ms ease',
                   }}
                 >
                   {/* Position */}
                   <div style={{
                     fontSize: 12, fontWeight: t.pos <= 3 ? 800 : 500,
-                    color: t.pos === 1 ? C.gold : t.pos <= 3 ? C.green : C.gray3,
+                    color: t.pos === 1 ? C.gold : t.pos <= 3 ? '#c084fc' : 'rgba(255,255,255,0.5)',
                     textAlign: 'center',
                     fontVariantNumeric: 'tabular-nums',
                   }}>
@@ -183,7 +198,7 @@ export default function LeagueTable() {
                     <div style={{
                       fontSize: 13,
                       fontWeight: highlight ? 700 : 500,
-                      color: highlight ? C.green : C.dark,
+                      color: highlight ? '#c084fc' : '#fff',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -195,17 +210,17 @@ export default function LeagueTable() {
                   </div>
 
                   {/* P */}
-                  <div style={{ fontSize: 12, color: C.gray4, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{t.p}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{t.p}</div>
                   {/* W */}
                   <div style={{ fontSize: 12, color: C.ok, fontWeight: 600, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{t.w}</div>
                   {/* L */}
-                  <div style={{ fontSize: 12, color: t.l > 0 ? C.red : C.gray3, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{t.l}</div>
+                  <div style={{ fontSize: 12, color: t.l > 0 ? C.red : 'rgba(255,255,255,0.5)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{t.l}</div>
                   {/* NRR */}
                   <div style={{ textAlign: 'center' }}><NRRBadge nrr={t.nrr} /></div>
                   {/* Pts */}
                   <div style={{
                     fontSize: 14, fontWeight: 800,
-                    color: highlight ? C.green : C.dark,
+                    color: highlight ? '#c084fc' : '#fff',
                     textAlign: 'center',
                     fontVariantNumeric: 'tabular-nums',
                   }}>{t.pts}</div>
@@ -218,18 +233,19 @@ export default function LeagueTable() {
         {/* Footer */}
         <div style={{
           padding: '10px 14px',
-          borderTop: `1px solid ${C.gray2}`,
-          background: C.gray1,
+          borderTop: '1px solid rgba(255,255,255,0.10)',
+          background: 'rgba(255,255,255,0.05)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 8, flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: 11, color: C.gray3 }}>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
             P=Played · W=Won · L=Lost · NRR=Net Run Rate · Pts=Points
           </span>
           <a
             href="https://dtucc.play-cricket.com/website/division/137680"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ fontSize: 11, color: C.green, fontWeight: 600, fontFamily: FONT, textDecoration: 'none' }}
+            style={{ fontSize: 11, color: '#60a5fa', fontWeight: 700, fontFamily: FONT, textDecoration: 'none' }}
           >
             Full table →
           </a>

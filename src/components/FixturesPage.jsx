@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Clock, ArrowLeft, ExternalLink, RotateCw, Home, Plane, Calendar, Zap, ChevronRight } from 'lucide-react'
-import { C, FONT, MAX_WIDTH } from '../constants'
+import { FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -298,8 +298,10 @@ function FixtureCard({ fixture, index }) {
         borderRadius: 21, overflow: 'hidden',
         background: isTucc
           ? 'linear-gradient(145deg, #060d2e 0%, #0f1e5a 50%, #1a1060 100%)'
-          : 'linear-gradient(145deg, #0a0e1a 0%, #111827 60%, #0f172a 100%)',
-        boxShadow: 'inset 0 1px 1px rgba(255,255,255,.06)',
+          : 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.20)',
+        backdropFilter: isTucc ? 'none' : 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: isTucc ? 'none' : 'blur(20px) saturate(160%)',
         position: 'relative',
       }}>
         {/* Subtle ambient */}
@@ -483,7 +485,7 @@ export default function FixturesPage() {
 
       {/* ── Hero Header ── */}
       <div style={{
-        background: 'linear-gradient(160deg, #020818 0%, #0f1e5a 35%, #1a1060 65%, #0a0730 100%)',
+        background: 'transparent',
         padding:'24px 20px 40px', position:'relative', overflow:'hidden',
       }}>
         {/* Background orbs */}
@@ -517,7 +519,8 @@ export default function FixturesPage() {
               </div>
 
               <div>
-                <h1 style={{ color:'#fff', fontSize:28, fontWeight:900, margin:0, letterSpacing:'-0.5px' }}>Fixtures</h1>
+                <span style={{ display:'inline-block', fontFamily:FONT, fontSize:10.5, fontWeight:800, letterSpacing:2, textTransform:'uppercase', color:'rgba(255,255,255,.6)', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.16)', borderRadius:20, padding:'3px 11px', marginBottom:8 }}>Match Schedule</span>
+                <h1 style={{ color:'#fff', fontSize:28, fontWeight:900, margin:0, letterSpacing:'-0.5px', backgroundImage:'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Fixtures</h1>
                 <div style={{ color:'rgba(255,255,255,.38)', fontSize:12, marginTop:4, display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                   <span>BTCL Premier League 2026</span>
                   {!loading && (
@@ -551,17 +554,18 @@ export default function FixturesPage() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ flex:1, width:'100%', background: C.bg }}>
+      <div style={{ flex:1, width:'100%', background:'transparent' }}>
       <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'22px 16px 64px', width:'100%' }}>
 
         {/* Toolbar */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(6,13,46,.55)' }}>
+          <div style={{ fontFamily:FONT, fontSize:13, fontWeight:600, color:'rgba(255,255,255,.5)' }}>
             {!loading && `${fixtures.length} upcoming fixtures`}
           </div>
           <motion.button
             onClick={() => load(true)} disabled={refreshing} whileTap={{ scale:.94 }}
-            style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(6,13,46,.07)', border:'1px solid rgba(6,13,46,.12)', borderRadius:10, padding:'8px 14px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(6,13,46,.55)', opacity:refreshing?.5:1, boxShadow:'0 2px 8px rgba(0,0,0,.06)' }}
+            whileHover={{ y:-1 }}
+            style={{ display:'flex', alignItems:'center', gap:6, background:'linear-gradient(180deg,#818cf8,#6d28d9)', border:'1px solid rgba(255,255,255,.28)', borderRadius:12, padding:'9px 16px', cursor:refreshing?'default':'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'#fff', opacity:refreshing?.6:1, boxShadow:'0 12px 30px -8px rgba(124,58,237,.65), inset 0 1px 0 rgba(255,255,255,.4)', transition:'transform .2s ease' }}
           >
             <RotateCw size={13} strokeWidth={2.2} style={{ animation:refreshing?'tucc-spin .65s linear infinite':'none' }}/>
             Refresh
@@ -583,10 +587,10 @@ export default function FixturesPage() {
             {[0,1,2,3].map(i => <SkeletonCard key={i}/>)}
           </div>
         ) : fixtures.length === 0 ? (
-          <div style={{ textAlign:'center', padding:'64px 20px', background:'rgba(6,13,46,.04)', borderRadius:24, border:'1px solid rgba(6,13,46,.08)' }}>
+          <div style={{ textAlign:'center', padding:'64px 20px', background:'rgba(255,255,255,.05)', borderRadius:22, border:'1px solid rgba(255,255,255,.10)', backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)' }}>
             <div style={{ fontSize:52, marginBottom:14 }}>📅</div>
-            <div style={{ fontSize:18, fontWeight:800, color:'rgba(6,13,46,.8)' }}>No fixtures scheduled</div>
-            <div style={{ fontSize:13, color:'rgba(6,13,46,.4)', marginTop:6 }}>Check back when the next round is confirmed.</div>
+            <div style={{ fontSize:18, fontWeight:800, color:'#fff' }}>No fixtures scheduled</div>
+            <div style={{ fontSize:13, color:'rgba(255,255,255,.5)', marginTop:6 }}>Check back when the next round is confirmed.</div>
           </div>
         ) : (
           <AnimatePresence>
@@ -598,11 +602,11 @@ export default function FixturesPage() {
               {/* Section divider */}
               {nextTucc && remaining.length > 0 && (
                 <div style={{ display:'flex', alignItems:'center', gap:12, margin:'8px 0' }}>
-                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,transparent,rgba(233,160,32,.35))' }}/>
-                  <div style={{ display:'flex', alignItems:'center', gap:6, fontFamily:FONT, fontSize:12, fontWeight:800, color:'#e9a020', background:'rgba(233,160,32,.1)', borderRadius:20, padding:'7px 16px', border:'1px solid rgba(233,160,32,.3)', letterSpacing:.5 }}>
-                    <Zap size={11} strokeWidth={2.5} color="#e9a020"/> All Fixtures
+                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,transparent,rgba(192,132,252,.4))' }}/>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, fontFamily:FONT, fontSize:12, fontWeight:800, color:'#e0d6ff', background:'rgba(255,255,255,.05)', borderRadius:20, padding:'7px 16px', border:'1px solid rgba(255,255,255,.16)', letterSpacing:.5 }}>
+                    <Zap size={11} strokeWidth={2.5} color="#c084fc"/> All Fixtures
                   </div>
-                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,rgba(233,160,32,.35),transparent)' }}/>
+                  <div style={{ flex:1, height:1, background:'linear-gradient(90deg,rgba(192,132,252,.4),transparent)' }}/>
                 </div>
               )}
 
@@ -620,7 +624,7 @@ export default function FixturesPage() {
                     <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.3)', marginTop:3 }}>View on play-cricket.com</div>
                   </div>
                   <a href="https://dtucc.play-cricket.com/Matches?tab=Fixture" target="_blank" rel="noopener noreferrer"
-                    style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(233,160,32,.12)', border:'1px solid rgba(233,160,32,.28)', color:'#e9a020', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, textDecoration:'none', flexShrink:0 }}>
+                    style={{ display:'flex', alignItems:'center', gap:6, background:'linear-gradient(180deg,#818cf8,#6d28d9)', border:'1px solid rgba(255,255,255,.28)', color:'#fff', borderRadius:12, padding:'11px 20px', fontFamily:FONT, fontSize:13, fontWeight:800, textDecoration:'none', flexShrink:0, boxShadow:'0 12px 30px -8px rgba(124,58,237,.65), inset 0 1px 0 rgba(255,255,255,.4)' }}>
                     Open <ChevronRight size={14} strokeWidth={2.5}/>
                   </a>
                 </div>

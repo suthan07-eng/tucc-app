@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import { useAuth } from '../context/AuthContext'
+import { SpatialBackground } from './ui/spatial'
 
 const EASE = [0.23, 1, 0.32, 1]
 
@@ -49,18 +50,23 @@ export default function Nav() {
 
   return (
     <>
+      {/* ── Spatial depth layer (portal only) ── */}
+      {!isAdmin && <SpatialBackground />}
+
       {/* ── Top bar ── */}
       <nav
         aria-label="Main navigation"
         style={{
           position: 'sticky', top: 0, zIndex: 200,
-          background: 'rgba(10,18,40,0.62)',
-          backdropFilter: 'blur(18px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+          background: 'linear-gradient(180deg, rgba(12,22,48,0.74), rgba(10,18,40,0.55))',
+          backdropFilter: 'blur(22px) saturate(170%)',
+          WebkitBackdropFilter: 'blur(22px) saturate(170%)',
           borderBottom: '1px solid rgba(255,255,255,.10)',
-          boxShadow: '0 2px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,0.06)',
+          boxShadow: '0 8px 30px -8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
+        {/* gold hairline accent */}
+        <div aria-hidden style={{ height: 1.5, background: 'linear-gradient(90deg, transparent, rgba(233,160,32,0.55), rgba(96,165,250,0.4), transparent)' }} />
         <div style={{
           maxWidth: MAX_WIDTH, margin: '0 auto',
           padding: '0 16px', height: 64,

@@ -39,7 +39,7 @@ function InfoChip({ label, value, icon }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 5,
         fontFamily: FONT, fontSize: 9, fontWeight: 800,
-        color: 'rgba(233,160,32,.75)', textTransform: 'uppercase', letterSpacing: 1.2,
+        color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2,
       }}>
         <span style={{ fontSize: 10 }}>{icon}</span>
         {label}
@@ -69,7 +69,10 @@ function StatBlock({ label, value, delay, isLast }) {
     >
       <div style={{
         fontFamily: FONT, fontSize: 30, fontWeight: 900,
-        color: '#e9a020', lineHeight: 1, letterSpacing: '-1px',
+        color: '#c084fc',
+        backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        lineHeight: 1, letterSpacing: '-1px',
         fontVariantNumeric: 'tabular-nums',
       }}>
         {value !== null && value !== undefined ? <Counter to={value} /> : '—'}
@@ -139,10 +142,12 @@ function ChangePasswordModal({ onClose }) {
           onClick={e => e.stopPropagation()}
           style={{
             width: '100%', maxWidth: 380,
-            background: 'linear-gradient(145deg,#060d2e,#1e3a8a)',
-            border: '1px solid rgba(255,255,255,.1)',
+            background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+            border: '1px solid rgba(255,255,255,.18)',
             borderRadius: 24, padding: '28px 24px',
-            boxShadow: '0 24px 80px rgba(0,0,0,.7)',
+            boxShadow: '0 26px 64px -20px rgba(37,40,120,.62), 0 0 40px -16px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.26)',
+            backdropFilter: 'blur(20px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
@@ -190,12 +195,13 @@ function ChangePasswordModal({ onClose }) {
               )}
               <button type="submit" disabled={loading || !newPw || !confPw}
                 style={{
-                  width: '100%', padding: '13px', borderRadius: 14, border: 'none',
+                  width: '100%', padding: '13px', borderRadius: 14,
                   cursor: loading ? 'not-allowed' : 'pointer',
-                  background: loading || !newPw || !confPw ? 'rgba(255,255,255,.08)' : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
+                  background: loading || !newPw || !confPw ? 'rgba(255,255,255,.08)' : 'linear-gradient(180deg,#818cf8,#6d28d9)',
                   color: loading || !newPw || !confPw ? 'rgba(255,255,255,.3)' : '#fff',
+                  border: loading || !newPw || !confPw ? 'none' : '1px solid rgba(255,255,255,.28)',
                   fontFamily: FONT, fontWeight: 700, fontSize: 14, marginTop: 4,
-                  boxShadow: loading || !newPw || !confPw ? 'none' : '0 4px 20px rgba(37,99,235,.5)',
+                  boxShadow: loading || !newPw || !confPw ? 'none' : '0 12px 30px -8px rgba(124,58,237,.65), inset 0 1px 0 rgba(255,255,255,.4)',
                 }}>
                 {loading ? 'Updating…' : '🔒 Update Password'}
               </button>
@@ -320,18 +326,20 @@ export default function PlayerDashboard() {
         transition={{ duration: 0.6, ease: EASE }}
         style={{
           borderRadius: 24,
-          background: 'rgba(255,255,255,.06)',
-          border: '1px solid rgba(255,255,255,.1)',
+          background: 'rgba(255,255,255,.05)',
+          border: '1px solid rgba(255,255,255,.18)',
           padding: 3,
           marginBottom: 16,
-          boxShadow: '0 24px 64px rgba(15,23,42,.5), 0 0 0 1px rgba(255,255,255,.04)',
+          boxShadow: '0 26px 64px -20px rgba(37,40,120,.62), 0 0 40px -16px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.26)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         }}
       >
         {/* ── Inner core ── */}
         <div style={{
           borderRadius: 22, overflow: 'hidden', position: 'relative',
-          background: 'linear-gradient(145deg, #060d2e 0%, #0f1e5a 40%, #1a1060 70%, #0a0730 100%)',
-          boxShadow: 'inset 0 1px 1px rgba(255,255,255,.08)',
+          background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,.26)',
         }}>
 
           {/* Ambient orbs */}
@@ -348,7 +356,7 @@ export default function PlayerDashboard() {
           }}/>
 
           {/* Gold top accent bar */}
-          <div style={{ height:2, background:'linear-gradient(90deg,transparent,#e9a020 30%,#f59e0b 50%,#e9a020 70%,transparent)', position:'relative', zIndex:1 }}/>
+          <div style={{ height:2, background:'linear-gradient(90deg,transparent,#60a5fa 30%,#c084fc 50%,#f472b6 70%,transparent)', position:'relative', zIndex:1 }}/>
 
           <div style={{ padding: '16px 18px 0', position:'relative', zIndex:1 }}>
 
@@ -519,7 +527,7 @@ export default function PlayerDashboard() {
 
                 {/* Name */}
                 <div style={{ textAlign:'center' }}>
-                  <div style={{ fontFamily:FONT, fontSize:22, fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.5px', textTransform:'uppercase' }}>
+                  <div style={{ fontFamily:FONT, fontSize:22, fontWeight:900, color:'#fff', backgroundImage:'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', lineHeight:1, letterSpacing:'-0.5px', textTransform:'uppercase' }}>
                     {forename}
                   </div>
                   {surname && (
@@ -599,9 +607,9 @@ export default function PlayerDashboard() {
                 {/* Stats row */}
                 {hasStats && (
                   <div style={{
-                    background:'rgba(255,255,255,.04)',
-                    border:'1px solid rgba(255,255,255,.07)',
-                    borderRadius:14, display:'flex', overflow:'hidden',
+                    background:'rgba(255,255,255,.05)',
+                    border:'1px solid rgba(255,255,255,.10)',
+                    borderRadius:16, display:'flex', overflow:'hidden',
                   }}>
                     {statItems.map(({ label, value }, i) => (
                       <StatBlock

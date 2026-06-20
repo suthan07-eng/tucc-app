@@ -918,23 +918,24 @@ function GroupedMediaView({ mediaType, sorted, albumMap, albumNames, noAlbum, on
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12, gap:10 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
                 <span style={{ fontSize:15 }}>📁</span>
-                <span style={{ fontSize:15, fontWeight:800, color:'#060d2e', fontFamily:FONT,
+                <span style={{ fontSize:15, fontWeight:800, color:'#fff', fontFamily:FONT,
+                  backgroundImage:'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
                   overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                   {section.name}
                 </span>
-                <span style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, flexShrink:0 }}>
+                <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontFamily:FONT, flexShrink:0 }}>
                   {section.posts.length}
                 </span>
               </div>
               {section.posts.length > PREVIEW && (
                 <button
                   onClick={() => onOpenAlbum(section.key)}
-                  style={{ flexShrink:0, background:'#f3f4f6', border:'none', borderRadius:99, padding:'6px 14px',
-                    cursor:'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'#374151',
+                  style={{ flexShrink:0, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:99, padding:'6px 14px',
+                    cursor:'pointer', fontFamily:FONT, fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.72)',
                     display:'flex', alignItems:'center', gap:5, transition:'all .15s',
                     whiteSpace:'nowrap' }}
-                  onMouseEnter={e=>{ e.currentTarget.style.background='#e9a020'; e.currentTarget.style.color='#fff' }}
-                  onMouseLeave={e=>{ e.currentTarget.style.background='#f3f4f6'; e.currentTarget.style.color='#374151' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='linear-gradient(180deg,#818cf8,#6d28d9)'; e.currentTarget.style.color='#fff' }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.color='rgba(255,255,255,0.72)' }}
                 >
                   View all {section.posts.length} →
                 </button>
@@ -1002,7 +1003,9 @@ function AlbumCard({ albumName, posts, onClick }) {
       onHoverEnd={() => setHovered(false)}
       onClick={onClick}
       style={{ borderRadius:18, overflow:'hidden', cursor:'pointer',
-        background:'#1e293b', boxShadow:'0 4px 24px rgba(0,0,0,.18)', position:'relative' }}
+        border:'1px solid rgba(255,255,255,0.18)',
+        background:'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+        boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', position:'relative' }}
     >
       {/* Collage: 1 big left + 2 stacked right */}
       <div style={{ display:'flex', gap:2, height:200, transition:'transform .4s', transform:hovered?'scale(1.03)':'scale(1)' }}>
@@ -1037,7 +1040,7 @@ function AlbumCard({ albumName, posts, onClick }) {
       </div>
 
       {/* Bottom info bar */}
-      <div style={{ padding:'12px 14px', background:'#1e293b' }}>
+      <div style={{ padding:'12px 14px', background:'transparent' }}>
         <div style={{ fontSize:14, color:'#fff', fontFamily:FONT, fontWeight:800,
           overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>
           {albumName}
@@ -1257,33 +1260,42 @@ export default function GalleryPage() {
   const canPost = !!user
 
   return (
-    <div style={{ minHeight:'100vh', background:C.bg, fontFamily:FONT, display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:'transparent', fontFamily:FONT, display:'flex', flexDirection:'column' }}>
       <Nav/>
 
       {/* ── Hero Header ─────────────────────────────────────── */}
-      <div style={{ background:'linear-gradient(135deg, #060d2e 0%, #0f1e5a 50%, #1a1060 100%)', padding:'32px 20px 28px', position:'relative', overflow:'hidden' }}>
+      <div style={{
+        background:'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+        border:'1px solid rgba(255,255,255,0.18)',
+        boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+        backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)',
+        borderRadius:22, margin:'16px', padding:'32px 20px 28px', position:'relative', overflow:'hidden' }}>
         {/* Decorative orbs */}
-        <div style={{ position:'absolute', top:-40, right:-40, width:160, height:160, borderRadius:'50%', background:'rgba(233,160,32,.12)', pointerEvents:'none' }}/>
-        <div style={{ position:'absolute', bottom:-30, left:30, width:100, height:100, borderRadius:'50%', background:'rgba(103,232,249,.08)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', top:-40, right:-40, width:160, height:160, borderRadius:'50%', background:'rgba(192,132,252,.18)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-30, left:30, width:100, height:100, borderRadius:'50%', background:'rgba(96,165,250,.16)', pointerEvents:'none' }}/>
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', position:'relative' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
             <div>
+              <div style={{ display:'inline-block', fontSize:10.5, fontWeight:800, letterSpacing:2, textTransform:'uppercase', color:'rgba(255,255,255,0.72)', border:'1px solid rgba(255,255,255,0.2)', background:'rgba(255,255,255,0.06)', borderRadius:99, padding:'4px 11px', marginBottom:10 }}>
+                Team Moments
+              </div>
               <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
                 <span style={{ fontSize:28 }}>📸</span>
-                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:-.3 }}>Team Gallery</h1>
+                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:-.3, backgroundImage:'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Team Gallery</h1>
               </div>
-              <p style={{ margin:0, fontSize:13, color:'rgba(255,255,255,.6)', lineHeight:1.5 }}>
+              <p style={{ margin:0, fontSize:13, color:'rgba(255,255,255,.72)', lineHeight:1.5 }}>
                 Share moments, celebrate wins, build team spirit 🏏
               </p>
             </div>
             <div style={{ display:'flex', gap:10, alignItems:'center' }}>
               {/* Sort toggle */}
-              <div style={{ display:'flex', background:'rgba(255,255,255,.1)', borderRadius:99, padding:3 }}>
+              <div style={{ display:'flex', background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:99, padding:3 }}>
                 {['newest','popular'].map(s => (
                   <button key={s} onClick={() => setSortBy(s)}
                     style={{ padding:'6px 14px', borderRadius:99, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:11, fontWeight:700, transition:'all .2s',
-                      background: sortBy===s ? '#e9a020' : 'transparent',
+                      background: sortBy===s ? 'linear-gradient(180deg,#818cf8,#6d28d9)' : 'transparent',
                       color: sortBy===s ? '#fff' : 'rgba(255,255,255,.6)',
+                      boxShadow: sortBy===s ? 'inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
                     }}>
                     {s === 'newest' ? '🕐 Latest' : '🔥 Popular'}
                   </button>
@@ -1293,7 +1305,7 @@ export default function GalleryPage() {
                 <motion.button
                   whileTap={{ scale:.96 }} whileHover={{ scale:1.04 }}
                   onClick={() => setShowUpload(true)}
-                  style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:7, boxShadow:'0 4px 16px rgba(233,160,32,.5)' }}
+                  style={{ background:'linear-gradient(180deg,#818cf8,#6d28d9)', color:'#fff', border:'1px solid rgba(255,255,255,0.28)', borderRadius:12, padding:'10px 18px', fontFamily:FONT, fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:7, boxShadow:'0 12px 30px -8px rgba(124,58,237,0.65), inset 0 1px 0 rgba(255,255,255,0.4)' }}
                 >
                   <span style={{ fontSize:16 }}>+</span> Upload Photos
                 </motion.button>
@@ -1311,7 +1323,7 @@ export default function GalleryPage() {
             ].map(s => (
               <div key={s.label} style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <span style={{ fontSize:16 }}>{s.emoji}</span>
-                <span style={{ fontSize:14, fontWeight:800, color:'#e9a020' }}>{s.value}</span>
+                <span style={{ fontSize:14, fontWeight:800, color:'#c084fc' }}>{s.value}</span>
                 <span style={{ fontSize:11, color:'rgba(255,255,255,.5)', fontFamily:FONT }}>{s.label}</span>
               </div>
             ))}
@@ -1320,7 +1332,7 @@ export default function GalleryPage() {
       </div>
 
       {/* ── Main Tabs (Albums / Photos / Videos) ────────────── */}
-      <div style={{ background: C.white, borderBottom:'1px solid #e5e7eb', position:'sticky', top:56, zIndex:50 }}>
+      <div style={{ background:'rgba(255,255,255,0.05)', borderBottom:'1px solid rgba(255,255,255,0.10)', backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)', position:'sticky', top:56, zIndex:50 }}>
         <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'0 16px', display:'flex', gap:0 }}>
           {[
             { id:'albums', label:'📁 Albums',   count: albumNames.length + (noAlbum.length > 0 ? 1 : 0), },
@@ -1330,12 +1342,12 @@ export default function GalleryPage() {
             <button key={tab.id} onClick={() => { setView(tab.id); setSelectedAlbum(null) }}
               style={{ padding:'14px 22px', border:'none', background:'transparent', cursor:'pointer',
                 fontFamily:FONT, fontSize:13, fontWeight: view===tab.id ? 800 : 500,
-                color: view===tab.id ? '#060d2e' : '#9ca3af',
-                borderBottom: `2px solid ${view===tab.id ? '#e9a020' : 'transparent'}`,
+                color: view===tab.id ? '#fff' : 'rgba(255,255,255,0.5)',
+                borderBottom: `2px solid ${view===tab.id ? '#c084fc' : 'transparent'}`,
                 transition:'all .18s', display:'flex', alignItems:'center', gap:7, whiteSpace:'nowrap' }}>
               {tab.label}
-              <span style={{ background: view===tab.id ? '#e9a020' : '#f3f4f6',
-                color: view===tab.id ? '#fff' : '#9ca3af',
+              <span style={{ background: view===tab.id ? 'linear-gradient(180deg,#818cf8,#6d28d9)' : 'rgba(255,255,255,0.08)',
+                color: view===tab.id ? '#fff' : 'rgba(255,255,255,0.5)',
                 borderRadius:99, padding:'1px 8px', fontSize:11, fontWeight:700, fontFamily:FONT,
                 transition:'all .18s' }}>
                 {tab.count}
@@ -1353,7 +1365,7 @@ export default function GalleryPage() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:12 }}>
             {Array.from({length:9}).map((_,i) => (
               <motion.div key={i} initial={{ opacity:0 }} animate={{ opacity:[0.3,0.6,0.3] }} transition={{ duration:1.4, repeat:Infinity, delay:i*.08 }}
-                style={{ paddingTop:'75%', borderRadius:18, background:'#e5e7eb', position:'relative' }}/>
+                style={{ paddingTop:'75%', borderRadius:18, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.10)', position:'relative' }}/>
             ))}
           </div>
 
@@ -1364,19 +1376,19 @@ export default function GalleryPage() {
               {/* Back + album header */}
               <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20, flexWrap:'wrap' }}>
                 <button onClick={() => setSelectedAlbum(null)}
-                  style={{ display:'flex', alignItems:'center', gap:6, background:'#f3f4f6', border:'none', borderRadius:99,
-                    padding:'8px 16px', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, color:'#374151' }}>
+                  style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:99,
+                    padding:'8px 16px', cursor:'pointer', fontFamily:FONT, fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.72)' }}>
                   ← Back
                 </button>
                 <div>
-                  <div style={{ fontSize:20, fontWeight:900, color:'#060d2e', fontFamily:FONT }}>📁 {albumDisplayName}</div>
-                  <div style={{ fontSize:12, color:'#9ca3af', fontFamily:FONT, marginTop:2 }}>
+                  <div style={{ fontSize:20, fontWeight:900, color:'#fff', fontFamily:FONT, backgroundImage:'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>📁 {albumDisplayName}</div>
+                  <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontFamily:FONT, marginTop:2 }}>
                     {albumPhotos.length} photo{albumPhotos.length!==1?'s':''} · {albumVideos.length} video{albumVideos.length!==1?'s':''}
                   </div>
                 </div>
               </div>
               {/* Inner tabs */}
-              <div style={{ display:'flex', gap:0, borderBottom:'1px solid #e5e7eb', marginBottom:20 }}>
+              <div style={{ display:'flex', gap:0, borderBottom:'1px solid rgba(255,255,255,0.10)', marginBottom:20 }}>
                 {[
                   { id:'photos', label:'🖼️ Photos', count:albumPhotos.length },
                   { id:'videos', label:'🎬 Videos', count:albumVideos.length },
@@ -1384,18 +1396,18 @@ export default function GalleryPage() {
                   <button key={t.id} onClick={() => setAlbumInnerTab(t.id)}
                     style={{ padding:'10px 20px', border:'none', background:'transparent', cursor:'pointer',
                       fontFamily:FONT, fontSize:13, fontWeight:albumInnerTab===t.id?800:500,
-                      color:albumInnerTab===t.id?'#060d2e':'#9ca3af',
-                      borderBottom:`2px solid ${albumInnerTab===t.id?'#e9a020':'transparent'}`,
+                      color:albumInnerTab===t.id?'#fff':'rgba(255,255,255,0.5)',
+                      borderBottom:`2px solid ${albumInnerTab===t.id?'#c084fc':'transparent'}`,
                       display:'flex', alignItems:'center', gap:6 }}>
                     {t.label}
-                    <span style={{ background:albumInnerTab===t.id?'#e9a020':'#f3f4f6', color:albumInnerTab===t.id?'#fff':'#9ca3af',
+                    <span style={{ background:albumInnerTab===t.id?'linear-gradient(180deg,#818cf8,#6d28d9)':'rgba(255,255,255,0.08)', color:albumInnerTab===t.id?'#fff':'rgba(255,255,255,0.5)',
                       borderRadius:99, padding:'1px 7px', fontSize:11, fontWeight:700, fontFamily:FONT }}>{t.count}</span>
                   </button>
                 ))}
               </div>
               {/* Grid */}
               {(albumInnerTab==='photos'?albumPhotos:albumVideos).length === 0 ? (
-                <div style={{ textAlign:'center', padding:'40px 20px', color:'#9ca3af', fontFamily:FONT }}>
+                <div style={{ textAlign:'center', padding:'40px 20px', color:'rgba(255,255,255,0.5)', fontFamily:FONT }}>
                   No {albumInnerTab} in this album yet.
                 </div>
               ) : (
@@ -1418,11 +1430,11 @@ export default function GalleryPage() {
               {albumNames.length === 0 && noAlbum.length === 0 ? (
                 <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ textAlign:'center', padding:'60px 20px' }}>
                   <div style={{ fontSize:60, marginBottom:16 }}>📁</div>
-                  <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>No albums yet</div>
-                  <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>Upload photos and group them into albums like "Match Day" or "End of Season Dinner"</div>
+                  <div style={{ fontSize:18, fontWeight:800, color:'#fff', fontFamily:FONT, marginBottom:8 }}>No albums yet</div>
+                  <div style={{ fontSize:14, color:'rgba(255,255,255,0.5)', fontFamily:FONT, marginBottom:24 }}>Upload photos and group them into albums like "Match Day" or "End of Season Dinner"</div>
                   {canPost && (
                     <motion.button whileTap={{ scale:.96 }} onClick={() => setShowUpload(true)}
-                      style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 20px rgba(233,160,32,.4)' }}>
+                      style={{ background:'linear-gradient(180deg,#818cf8,#6d28d9)', color:'#fff', border:'1px solid rgba(255,255,255,0.28)', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 12px 30px -8px rgba(124,58,237,0.65), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
                       📸 Upload First Photos
                     </motion.button>
                   )}
@@ -1432,7 +1444,7 @@ export default function GalleryPage() {
                   {/* Named albums */}
                   {albumNames.length > 0 && (
                     <>
-                      <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14 }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.5)', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14 }}>
                         {albumNames.length} Album{albumNames.length!==1?'s':''}
                       </div>
                       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16, marginBottom:36 }}>
@@ -1449,7 +1461,7 @@ export default function GalleryPage() {
                   {noAlbum.length > 0 && (
                     <>
                       {albumNames.length > 0 && (
-                        <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14, marginTop: albumNames.length > 0 ? 0 : 0 }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.5)', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14, marginTop: albumNames.length > 0 ? 0 : 0 }}>
                           Other
                         </div>
                       )}
@@ -1477,15 +1489,15 @@ export default function GalleryPage() {
               {(view==='photos'?allPhotos:allVideos).length === 0 ? (
                 <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} style={{ textAlign:'center', padding:'60px 20px' }}>
                   <div style={{ fontSize:60, marginBottom:16 }}>{view==='videos'?'🎬':'📷'}</div>
-                  <div style={{ fontSize:18, fontWeight:800, color:'#060d2e', fontFamily:FONT, marginBottom:8 }}>
+                  <div style={{ fontSize:18, fontWeight:800, color:'#fff', fontFamily:FONT, marginBottom:8 }}>
                     No {view==='videos'?'videos':'photos'} yet!
                   </div>
-                  <div style={{ fontSize:14, color:'#9ca3af', fontFamily:FONT, marginBottom:24 }}>
+                  <div style={{ fontSize:14, color:'rgba(255,255,255,0.5)', fontFamily:FONT, marginBottom:24 }}>
                     {view==='videos'?'Share a match or training video 🎥':'Be the first to share a team moment 🏏'}
                   </div>
                   {canPost && (
                     <motion.button whileTap={{ scale:.96 }} onClick={() => setShowUpload(true)}
-                      style={{ background:'linear-gradient(135deg,#e9a020,#f59e0b)', color:'#fff', border:'none', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 20px rgba(233,160,32,.4)' }}>
+                      style={{ background:'linear-gradient(180deg,#818cf8,#6d28d9)', color:'#fff', border:'1px solid rgba(255,255,255,0.28)', borderRadius:14, padding:'13px 28px', fontFamily:FONT, fontSize:15, fontWeight:800, cursor:'pointer', boxShadow:'0 12px 30px -8px rgba(124,58,237,0.65), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
                       {view==='videos'?'🎬 Upload First Video':'📸 Share First Photo'}
                     </motion.button>
                   )}

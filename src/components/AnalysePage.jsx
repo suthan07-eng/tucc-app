@@ -11,6 +11,43 @@ import { C, FONT, MAX_WIDTH } from '../constants'
 
 const EASE = [0.23, 1, 0.32, 1]
 
+// ── Bold Gradient theme tokens ───────────────────────────────────────────────
+const GLASS = {
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  border: '1px solid rgba(255,255,255,0.18)',
+  boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+  borderRadius: 22,
+  backdropFilter: 'blur(20px) saturate(160%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+}
+const NESTED = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: 16,
+}
+const TITLE_GRAD = {
+  color: '#fff',
+  backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+}
+const T_HEAD = '#fff'
+const T_BODY = 'rgba(255,255,255,0.72)'
+const T_MUTE = 'rgba(255,255,255,0.5)'
+const eyebrowStyle = {
+  display: 'inline-block', textTransform: 'uppercase', letterSpacing: 2,
+  fontSize: 10.5, fontWeight: 800, color: 'rgba(255,255,255,0.7)',
+  border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.05)',
+  borderRadius: 20, padding: '3px 10px', fontFamily: FONT,
+}
+const BTN_GRAD = {
+  background: 'linear-gradient(180deg,#818cf8,#6d28d9)', color: '#fff',
+  border: '1px solid rgba(255,255,255,0.28)',
+  boxShadow: '0 12px 30px -8px rgba(124,58,237,0.65), inset 0 1px 0 rgba(255,255,255,0.4)',
+  borderRadius: 12, padding: '12px 22px', fontWeight: 700,
+}
+
 // ── Badge ──────────────────────────────────────────────────────────────────
 function Badge({ label }) {
   const cfg = {
@@ -40,12 +77,12 @@ function ScoreRing({ score, size = 52 }) {
   const col = score >= 80 ? '#dc2626' : score >= 60 ? '#d97706' : score >= 40 ? '#2563eb' : '#16a34a'
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth={5}/>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={col} strokeWidth={5}
         strokeDasharray={`${fill} ${circ-fill}`} strokeLinecap="round"
         transform={`rotate(-90 ${size/2} ${size/2})`}/>
       <text x={size/2} y={size/2+1} textAnchor="middle" dominantBaseline="middle"
-        fill={col} style={{ fontFamily: FONT, fontWeight: 800, fontSize: size * 0.28 }}>
+        fill="#fff" style={{ fontFamily: FONT, fontWeight: 800, fontSize: size * 0.28 }}>
         {Math.round(score)}
       </text>
     </svg>
@@ -86,13 +123,13 @@ function Stat({ label, value, highlight }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      padding: '7px 10px', borderRadius: 9,
-      background: highlight ? C.blueBg : 'rgba(255,255,255,0.03)',
-      border: `1px solid ${highlight ? '#bfdbfe' : '#e2e8f0'}`,
+      padding: '7px 10px', borderRadius: 11,
+      background: highlight ? 'rgba(124,58,237,0.22)' : 'rgba(255,255,255,0.05)',
+      border: `1px solid ${highlight ? 'rgba(192,132,252,0.5)' : 'rgba(255,255,255,0.10)'}`,
       minWidth: 50,
     }}>
-      <span style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: highlight ? C.green : C.dark }}>{value ?? '—'}</span>
-      <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, color: C.gray4, marginTop: 1, whiteSpace: 'nowrap' }}>{label}</span>
+      <span style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: highlight ? '#c084fc' : '#fff' }}>{value ?? '—'}</span>
+      <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, color: T_MUTE, marginTop: 1, whiteSpace: 'nowrap' }}>{label}</span>
     </div>
   )
 }
@@ -105,7 +142,8 @@ function BatCard({ a, bat }) {
   return (
     <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
       transition={{ duration:0.3, ease:EASE }}
-      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
+      whileHover={{ y:-3 }}
+      style={{ ...GLASS, borderRadius:18, overflow:'hidden' }}>
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
@@ -113,7 +151,7 @@ function BatCard({ a, bat }) {
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
-            <span style={{ fontFamily:FONT, fontWeight:800, fontSize:15, color:C.dark }}>{name}</span>
+            <span style={{ fontFamily:FONT, fontWeight:800, fontSize:15, color:'#fff' }}>{name}</span>
             <Badge label={a.tag}/>
           </div>
           {a.flag && <div style={{ fontFamily:FONT, fontSize:11, color:'#92400e', marginBottom:6 }}>{a.flag}</div>}
@@ -130,30 +168,30 @@ function BatCard({ a, bat }) {
         </div>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <ScoreRing score={a.composite_score}/>
-          <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:C.gray3, fontSize:10 }}>▼</motion.span>
+          <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:'rgba(255,255,255,0.6)', fontSize:10 }}>▼</motion.span>
         </div>
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="exp" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} transition={{ duration:0.25, ease:EASE }} style={{ overflow:'hidden' }}>
-            <div style={{ padding:'0 16px 16px', borderTop:'1px solid #f1f5f9', paddingTop:12 }}>
-              {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:C.gray5, margin:'0 0 12px' }}>{a.summary}</p>}
+            <div style={{ padding:'0 16px 16px', borderTop:'1px solid rgba(255,255,255,0.10)', paddingTop:12 }}>
+              {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:T_BODY, margin:'0 0 12px' }}>{a.summary}</p>}
               {a.strengths?.length > 0 && a.weaknesses?.length > 0 && (
                 <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:12 }}>
                   <div style={{ flex:1, minWidth:140 }}>
                     <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#15803d', marginBottom:5, textTransform:'uppercase', letterSpacing:0.5 }}>✅ Strengths</div>
-                    {a.strengths.map((s,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:C.gray5, marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'#16a34a', flexShrink:0 }}>›</span>{s}</div>)}
+                    {a.strengths.map((s,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'#16a34a', flexShrink:0 }}>›</span>{s}</div>)}
                   </div>
                   <div style={{ flex:1, minWidth:140 }}>
                     <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#b91c1c', marginBottom:5, textTransform:'uppercase', letterSpacing:0.5 }}>⚠️ Weaknesses</div>
-                    {a.weaknesses.map((w,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:C.gray5, marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'#dc2626', flexShrink:0 }}>›</span>{w}</div>)}
+                    {a.weaknesses.map((w,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'#dc2626', flexShrink:0 }}>›</span>{w}</div>)}
                   </div>
                 </div>
               )}
               {a.how_to_play && (
-                <div style={{ background:'rgba(59,130,246,0.12)', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 14px' }}>
-                  <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:C.green, marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
-                  <p style={{ fontFamily:FONT, fontSize:13, color:C.gray5, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
+                <div style={{ background:'rgba(96,165,250,0.16)', border:'1px solid rgba(96,165,250,0.35)', borderRadius:12, padding:'10px 14px' }}>
+                  <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#60a5fa', marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
+                  <p style={{ fontFamily:FONT, fontSize:13, color:T_BODY, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
                 </div>
               )}
             </div>
@@ -172,7 +210,8 @@ function BowlCard({ a, bowl }) {
   return (
     <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
       transition={{ duration:0.3, ease:EASE }}
-      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
+      whileHover={{ y:-3 }}
+      style={{ ...GLASS, borderRadius:18, overflow:'hidden' }}>
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
@@ -180,7 +219,7 @@ function BowlCard({ a, bowl }) {
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
-            <span style={{ fontFamily:FONT, fontWeight:800, fontSize:15, color:C.dark }}>{name}</span>
+            <span style={{ fontFamily:FONT, fontWeight:800, fontSize:15, color:'#fff' }}>{name}</span>
             <Badge label={a.tag}/>
           </div>
           {a.flag && <div style={{ fontFamily:FONT, fontSize:11, color:'#92400e', marginBottom:6 }}>{a.flag}</div>}
@@ -196,30 +235,30 @@ function BowlCard({ a, bowl }) {
         </div>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <ScoreRing score={a.composite_score}/>
-          <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:C.gray3, fontSize:10 }}>▼</motion.span>
+          <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:'rgba(255,255,255,0.6)', fontSize:10 }}>▼</motion.span>
         </div>
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="exp" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} transition={{ duration:0.25, ease:EASE }} style={{ overflow:'hidden' }}>
-            <div style={{ padding:'0 16px 16px', borderTop:'1px solid #f1f5f9', paddingTop:12 }}>
-              {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:C.gray5, margin:'0 0 12px' }}>{a.summary}</p>}
+            <div style={{ padding:'0 16px 16px', borderTop:'1px solid rgba(255,255,255,0.10)', paddingTop:12 }}>
+              {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:T_BODY, margin:'0 0 12px' }}>{a.summary}</p>}
               {a.strengths?.length > 0 && a.weaknesses?.length > 0 && (
                 <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:12 }}>
                   <div style={{ flex:1, minWidth:140 }}>
                     <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#15803d', marginBottom:5, textTransform:'uppercase' }}>✅ Strengths</div>
-                    {a.strengths.map((s,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:C.gray5, marginBottom:4 }}>› {s}</div>)}
+                    {a.strengths.map((s,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, marginBottom:4 }}>› {s}</div>)}
                   </div>
                   <div style={{ flex:1, minWidth:140 }}>
                     <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#b91c1c', marginBottom:5, textTransform:'uppercase' }}>⚠️ Weaknesses</div>
-                    {a.weaknesses.map((w,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:C.gray5, marginBottom:4 }}>› {w}</div>)}
+                    {a.weaknesses.map((w,i) => <div key={i} style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, marginBottom:4 }}>› {w}</div>)}
                   </div>
                 </div>
               )}
               {a.how_to_play && (
-                <div style={{ background:'rgba(59,130,246,0.12)', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 14px' }}>
-                  <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:C.green, marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
-                  <p style={{ fontFamily:FONT, fontSize:13, color:C.gray5, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
+                <div style={{ background:'rgba(96,165,250,0.16)', border:'1px solid rgba(96,165,250,0.35)', borderRadius:12, padding:'10px 14px' }}>
+                  <div style={{ fontFamily:FONT, fontSize:11, fontWeight:800, color:'#60a5fa', marginBottom:4, textTransform:'uppercase', letterSpacing:0.5 }}>🏏 How to play them</div>
+                  <p style={{ fontFamily:FONT, fontSize:13, color:T_BODY, lineHeight:1.6, margin:0 }}>{a.how_to_play}</p>
                 </div>
               )}
             </div>
@@ -238,7 +277,8 @@ function ArCard({ a, bat, bowl }) {
   return (
     <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
       transition={{ duration:0.3, ease:EASE }}
-      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:18, overflow:'hidden', boxShadow:'0 2px 12px rgba(30,58,138,.06)' }}>
+      whileHover={{ y:-3 }}
+      style={{ ...GLASS, borderRadius:18, overflow:'hidden' }}>
       <button onClick={() => setOpen(o=>!o)} style={{ width:'100%', textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:'16px 16px 12px', display:'flex', alignItems:'flex-start', gap:12 }}>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <span style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color: a.rank===1 ? C.gold : C.gray4 }}>#{a.rank}</span>
@@ -246,7 +286,7 @@ function ArCard({ a, bat, bowl }) {
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
-            <span style={{ fontFamily:FONT, fontWeight:800, fontSize:15, color:C.dark }}>{name}</span>
+            <span style={{ fontFamily:FONT, fontWeight:800, fontSize:15, color:'#fff' }}>{name}</span>
             <Badge label={a.tag}/>
           </div>
           <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
@@ -258,30 +298,30 @@ function ArCard({ a, bat, bowl }) {
         </div>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flexShrink:0 }}>
           <ScoreRing score={a.composite_score}/>
-          <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:C.gray3, fontSize:10 }}>▼</motion.span>
+          <motion.span animate={{ rotate: open?180:0 }} transition={{ duration:0.2 }} style={{ color:'rgba(255,255,255,0.6)', fontSize:10 }}>▼</motion.span>
         </div>
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="exp" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} transition={{ duration:0.25, ease:EASE }} style={{ overflow:'hidden' }}>
-            <div style={{ padding:'0 16px 16px', borderTop:'1px solid #f1f5f9', paddingTop:12 }}>
-              {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:C.gray5, margin:'0 0 12px' }}>{a.summary}</p>}
+            <div style={{ padding:'0 16px 16px', borderTop:'1px solid rgba(255,255,255,0.10)', paddingTop:12 }}>
+              {a.summary && <p style={{ fontFamily:FONT, fontSize:13.5, lineHeight:1.7, color:T_BODY, margin:'0 0 12px' }}>{a.summary}</p>}
               <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                 {bat && (
-                  <div style={{ flex:1, minWidth:130, background:'rgba(34,197,94,0.12)', border:'1px solid #bbf7d0', borderRadius:10, padding:'10px 12px' }}>
-                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#15803d', marginBottom:3 }}>BATTING</div>
-                    <div style={{ fontFamily:FONT, fontSize:13, color:C.dark }}>{bat.runs} runs · SR {bat.strike_rate} · HS {bat.high_score}{bat.high_score_not_out?'*':''}</div>
+                  <div style={{ flex:1, minWidth:130, background:'rgba(52,211,153,0.14)', border:'1px solid rgba(52,211,153,0.32)', borderRadius:12, padding:'10px 12px' }}>
+                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#34d399', marginBottom:3 }}>BATTING</div>
+                    <div style={{ fontFamily:FONT, fontSize:13, color:T_BODY }}>{bat.runs} runs · SR {bat.strike_rate} · HS {bat.high_score}{bat.high_score_not_out?'*':''}</div>
                   </div>
                 )}
                 {bowl && (
-                  <div style={{ flex:1, minWidth:130, background:'rgba(233,160,32,0.12)', border:'1px solid #fde68a', borderRadius:10, padding:'10px 12px' }}>
-                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#92400e', marginBottom:3 }}>BOWLING</div>
-                    <div style={{ fontFamily:FONT, fontSize:13, color:C.dark }}>{bowl.wickets} wkts · Econ {bowl.economy_rate} · Best {bowl.best_bowling}</div>
+                  <div style={{ flex:1, minWidth:130, background:'rgba(233,160,32,0.16)', border:'1px solid rgba(233,160,32,0.35)', borderRadius:12, padding:'10px 12px' }}>
+                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#e9a020', marginBottom:3 }}>BOWLING</div>
+                    <div style={{ fontFamily:FONT, fontSize:13, color:T_BODY }}>{bowl.wickets} wkts · Econ {bowl.economy_rate} · Best {bowl.best_bowling}</div>
                   </div>
                 )}
-                <div style={{ flex:1, minWidth:130, background:'rgba(59,130,246,0.12)', border:'1px solid #bfdbfe', borderRadius:10, padding:'10px 12px' }}>
-                  <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:C.green, marginBottom:3 }}>COMPOSITE</div>
-                  <div style={{ fontFamily:FONT, fontSize:13, color:C.dark }}>
+                <div style={{ flex:1, minWidth:130, background:'rgba(96,165,250,0.16)', border:'1px solid rgba(96,165,250,0.32)', borderRadius:12, padding:'10px 12px' }}>
+                  <div style={{ fontFamily:FONT, fontSize:10, fontWeight:800, color:'#60a5fa', marginBottom:3 }}>COMPOSITE</div>
+                  <div style={{ fontFamily:FONT, fontSize:13, color:T_BODY }}>
                     Bat {Math.round(a.batting_score??0)} · Bowl {Math.round(a.bowling_score??0)} · Overall {Math.round(a.composite_score)}
                   </div>
                 </div>
@@ -305,13 +345,13 @@ function SortableTable({ rows, cols }) {
   }), [rows, sortKey, dir])
   const toggle = k => { if (sortKey===k) setDir(d=>d==='desc'?'asc':'desc'); else { setSortKey(k); setDir('desc') } }
   return (
-    <div style={{ overflowX:'auto', borderRadius:14, border:'1.5px solid #e2e8f0', background: C.white }}>
+    <div style={{ overflowX:'auto', ...GLASS, borderRadius:18 }}>
       <table style={{ width:'100%', borderCollapse:'collapse', fontFamily:FONT }}>
         <thead>
-          <tr style={{ background:C.greenDark }}>
+          <tr style={{ background:'rgba(255,255,255,0.06)' }}>
             {cols.map(c => (
               <th key={c.key} onClick={() => toggle(c.key)}
-                style={{ padding:'10px 12px', textAlign:c.align||'center', fontFamily:FONT, fontSize:11, fontWeight:700, color:sortKey===c.key?C.gold:'rgba(255,255,255,.8)', cursor:'pointer', whiteSpace:'nowrap', userSelect:'none', textTransform:'uppercase', letterSpacing:0.5 }}>
+                style={{ padding:'11px 12px', textAlign:c.align||'center', fontFamily:FONT, fontSize:11, fontWeight:700, color:sortKey===c.key?'#c084fc':'rgba(255,255,255,.55)', cursor:'pointer', whiteSpace:'nowrap', userSelect:'none', textTransform:'uppercase', letterSpacing:0.6 }}>
                 {c.label}{sortKey===c.key?(dir==='desc'?' ↓':' ↑'):''}
               </th>
             ))}
@@ -321,7 +361,7 @@ function SortableTable({ rows, cols }) {
           {sorted.map((row, i) => (
             <tr key={i} style={{ background:i%2===0?'transparent':'rgba(255,255,255,0.03)' }}>
               {cols.map(c => (
-                <td key={c.key} style={{ padding:'9px 12px', fontSize:13, color:c.highlight?C.green:C.dark, fontWeight:c.highlight?700:500, textAlign:c.align||'center', whiteSpace:'nowrap', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+                <td key={c.key} style={{ padding:'10px 12px', fontSize:13, color:c.highlight?'#c084fc':T_BODY, fontWeight:c.highlight?700:500, textAlign:c.align||'center', whiteSpace:'nowrap', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
                   {row[c.key] ?? '—'}
                 </td>
               ))}
@@ -350,7 +390,7 @@ function TabBar({ tabs, active, onChange }) {
     <div style={{ display:'flex', gap:5, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14, padding:5, overflowX:'auto' }}>
       {tabs.map(t => (
         <motion.button key={t.key} onClick={() => onChange(t.key)} whileTap={{ scale:0.96 }}
-          style={{ flex:'1 0 auto', padding:'9px 14px', borderRadius:10, border:'none', cursor:'pointer', background:active===t.key?C.gold:'none', fontFamily:FONT, fontSize:13, fontWeight:active===t.key?800:500, color:active===t.key?'#1a0a00':C.gray4, boxShadow:active===t.key?'0 2px 10px rgba(233,160,32,.3)':'none', transition:'all 150ms ease', whiteSpace:'nowrap' }}>
+          style={{ flex:'1 0 auto', padding:'9px 14px', borderRadius:11, border:active===t.key?'1px solid rgba(255,255,255,0.28)':'1px solid transparent', cursor:'pointer', background:active===t.key?'linear-gradient(180deg,#818cf8,#6d28d9)':'none', fontFamily:FONT, fontSize:13, fontWeight:active===t.key?800:500, color:active===t.key?'#fff':T_MUTE, boxShadow:active===t.key?'0 12px 30px -8px rgba(124,58,237,0.6), inset 0 1px 0 rgba(255,255,255,0.4)':'none', transition:'all 150ms ease', whiteSpace:'nowrap' }}>
           {t.label}
         </motion.button>
       ))}
@@ -410,21 +450,21 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
   const SectionHeader = ({ icon, title, sub, color = C.green }) => (
     <div style={{ marginBottom:14 }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:2 }}>
-        <div style={{ width:34, height:34, borderRadius:10, background: color === C.green ? C.blueBg : 'rgba(233,160,32,0.16)', border:`1.5px solid ${color === C.green ? '#bfdbfe' : '#fcd34d'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{icon}</div>
-        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark }}>{title}</div>
+        <div style={{ width:34, height:34, borderRadius:11, background: color === C.green ? 'rgba(96,165,250,0.16)' : 'rgba(233,160,32,0.16)', border:`1px solid ${color === C.green ? 'rgba(96,165,250,0.35)' : 'rgba(233,160,32,0.4)'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{icon}</div>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD }}>{title}</div>
       </div>
-      <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginLeft:44 }}>{sub}</div>
+      <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginLeft:44 }}>{sub}</div>
     </div>
   )
 
   const PhaseCard = ({ phase, overs, desc, color = '#2563eb', delay = 0 }) => (
     <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay, duration:0.28, ease:EASE }}
-      style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:14, padding:'13px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+      style={{ ...NESTED, padding:'13px 16px', marginBottom:10 }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
-        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:C.dark }}>{phase}</div>
-        <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:color, background:`${color}15`, padding:'3px 8px', borderRadius:20 }}>{overs}</div>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:'#fff' }}>{phase}</div>
+        <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:color, background:`${color}28`, border:`1px solid ${color}55`, padding:'3px 8px', borderRadius:20 }}>{overs}</div>
       </div>
-      <div style={{ fontFamily:FONT, fontSize:13, color:'#374151', lineHeight:1.65 }}>{desc}</div>
+      <div style={{ fontFamily:FONT, fontSize:13, color:T_BODY, lineHeight:1.65 }}>{desc}</div>
     </motion.div>
   )
 
@@ -445,22 +485,22 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
     )
     return (
       <motion.div initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.28, ease:EASE }}
-        style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:14, padding:'12px 14px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+        style={{ ...NESTED, padding:'12px 14px', marginBottom:10 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
           {a.opponent_players?.photo_url
             ? <div style={{ width:38, height:38, borderRadius:'50%', overflow:'hidden', flexShrink:0, border:`2px solid ${tagColor}40` }}><img src={a.opponent_players.photo_url} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover' }}/></div>
             : <div style={{ width:38, height:38, borderRadius:'50%', flexShrink:0, background:`linear-gradient(135deg,${tagColor}30,${tagColor}10)`, border:`2px solid ${tagColor}30`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:FONT, fontWeight:800, fontSize:13, color:tagColor }}>{nm.slice(0,2).toUpperCase()}</div>
           }
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:C.dark }}>{nm}</div>
+            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, color:'#fff' }}>{nm}</div>
             <div style={{ display:'flex', gap:6, marginTop:3, flexWrap:'wrap' }}>
               <Badge label={a.tag}/>
-              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'rgba(255,255,255,0.05)', borderRadius:6, padding:'2px 7px' }}>{stat1}</span>
-              <span style={{ fontFamily:FONT, fontSize:10, color:C.gray4, background:'rgba(255,255,255,0.05)', borderRadius:6, padding:'2px 7px' }}>{stat2}</span>
+              <span style={{ fontFamily:FONT, fontSize:10, color:T_MUTE, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:6, padding:'2px 7px' }}>{stat1}</span>
+              <span style={{ fontFamily:FONT, fontSize:10, color:T_MUTE, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:6, padding:'2px 7px' }}>{stat2}</span>
             </div>
           </div>
         </div>
-        <div style={{ fontFamily:FONT, fontSize:12.5, color:'#374151', lineHeight:1.6, paddingLeft:10, borderLeft:`3px solid ${tagColor}` }}>{tactics}</div>
+        <div style={{ fontFamily:FONT, fontSize:12.5, color:T_BODY, lineHeight:1.6, paddingLeft:10, borderLeft:`3px solid ${tagColor}` }}>{tactics}</div>
       </motion.div>
     )
   }
@@ -494,8 +534,8 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
 
         {bowlAnalysis.length > 0 && (
           <div style={{ marginTop:16 }}>
-            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎳 Bowler-by-Bowler Guide</div>
-            <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>How to approach each bowler when you're at the crease</div>
+            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:'#fff', marginBottom:4 }}>🎳 Bowler-by-Bowler Guide</div>
+            <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>How to approach each bowler when you're at the crease</div>
             {bowlAnalysis.map(a => (
               <ThreatCard key={a.id} a={a} statObj={bowlStatMap[fullFn(a)]} mode="bowl"/>
             ))}
@@ -512,8 +552,8 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
 
         {batAnalysis.length > 0 && (
           <div style={{ marginTop:16 }}>
-            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🏏 Batter-by-Batter Guide</div>
-            <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>How to bowl at each of their batters</div>
+            <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:'#fff', marginBottom:4 }}>🏏 Batter-by-Batter Guide</div>
+            <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>How to bowl at each of their batters</div>
             {batAnalysis.map(a => (
               <ThreatCard key={a.id} a={a} statObj={batStatMap[fullFn(a)]} mode="bat"/>
             ))}
@@ -524,8 +564,8 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
       {/* === ALL-ROUNDER WATCH === */}
       {topAR.length > 0 && (
         <div style={{ marginBottom:24 }}>
-          <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>⚡ All-rounder Watch</div>
-          <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:14 }}>Players who can impact BOTH phases — require dual planning</div>
+          <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD, marginBottom:4 }}>⚡ All-rounder Watch</div>
+          <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:14 }}>Players who can impact BOTH phases — require dual planning</div>
           {topAR.map(a => {
             const nm = fn(a)
             const bs = batStatMap[fullFn(a)]
@@ -533,34 +573,34 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
             const tagColor = a.tag === 'AVOID' ? '#dc2626' : a.tag === 'TARGET' ? '#16a34a' : '#d97706'
             return (
               <motion.div key={a.id} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.28, ease:EASE }}
-                style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:14, padding:'14px 16px', marginBottom:10, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
+                whileHover={{ y:-3 }} style={{ ...GLASS, borderRadius:18, padding:'14px 16px', marginBottom:10 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
                   {a.opponent_players?.photo_url
                     ? <div style={{ width:40, height:40, borderRadius:'50%', overflow:'hidden', flexShrink:0 }}><img src={a.opponent_players.photo_url} alt={nm} style={{ width:'100%', height:'100%', objectFit:'cover' }}/></div>
                     : <div style={{ width:40, height:40, borderRadius:'50%', flexShrink:0, background:`linear-gradient(135deg,${tagColor}30,${tagColor}10)`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:FONT, fontWeight:800, fontSize:14, color:tagColor }}>{nm.slice(0,2).toUpperCase()}</div>
                   }
                   <div style={{ flex:1 }}>
-                    <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark }}>{fullFn(a)}</div>
+                    <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:'#fff' }}>{fullFn(a)}</div>
                     <Badge label={a.tag}/>
                   </div>
                   <div style={{ textAlign:'right' }}>
-                    <div style={{ fontFamily:FONT, fontWeight:900, fontSize:18, color:C.green }}>{Math.round(a.composite_score)}</div>
-                    <div style={{ fontFamily:FONT, fontSize:9, color:C.gray4 }}>AR Score</div>
+                    <div style={{ fontFamily:FONT, fontWeight:900, fontSize:18, color:'#c084fc' }}>{Math.round(a.composite_score)}</div>
+                    <div style={{ fontFamily:FONT, fontSize:9, color:T_MUTE }}>AR Score</div>
                   </div>
                 </div>
                 <div style={{ display:'flex', gap:8 }}>
-                  <div style={{ flex:1, background:'rgba(34,197,94,0.12)', border:'1px solid #bbf7d0', borderRadius:10, padding:'8px 10px' }}>
-                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#16a34a', marginBottom:4 }}>🏏 BAT</div>
-                    <div style={{ fontFamily:FONT, fontSize:12, color:C.dark }}>{bs?.runs ?? '—'} runs @ SR {parseFloat(bs?.strike_rate)?.toFixed(0) ?? '—'}</div>
-                    <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>Bat score: {Math.round(a.batting_score||0)}/100</div>
+                  <div style={{ flex:1, background:'rgba(52,211,153,0.14)', border:'1px solid rgba(52,211,153,0.32)', borderRadius:12, padding:'8px 10px' }}>
+                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#34d399', marginBottom:4 }}>🏏 BAT</div>
+                    <div style={{ fontFamily:FONT, fontSize:12, color:T_BODY }}>{bs?.runs ?? '—'} runs @ SR {parseFloat(bs?.strike_rate)?.toFixed(0) ?? '—'}</div>
+                    <div style={{ fontFamily:FONT, fontSize:10, color:T_MUTE, marginTop:2 }}>Bat score: {Math.round(a.batting_score||0)}/100</div>
                   </div>
-                  <div style={{ flex:1, background:'rgba(168,85,247,0.12)', border:'1px solid #e9d5ff', borderRadius:10, padding:'8px 10px' }}>
-                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#7c3aed', marginBottom:4 }}>🎳 BOWL</div>
-                    <div style={{ fontFamily:FONT, fontSize:12, color:C.dark }}>{bw?.wickets ?? '—'} wkts @ {parseFloat(bw?.economy_rate)?.toFixed(2) ?? '—'} econ</div>
-                    <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4, marginTop:2 }}>Bowl score: {Math.round(a.bowling_score||0)}/100</div>
+                  <div style={{ flex:1, background:'rgba(192,132,252,0.16)', border:'1px solid rgba(192,132,252,0.32)', borderRadius:12, padding:'8px 10px' }}>
+                    <div style={{ fontFamily:FONT, fontSize:10, fontWeight:700, color:'#c084fc', marginBottom:4 }}>🎳 BOWL</div>
+                    <div style={{ fontFamily:FONT, fontSize:12, color:T_BODY }}>{bw?.wickets ?? '—'} wkts @ {parseFloat(bw?.economy_rate)?.toFixed(2) ?? '—'} econ</div>
+                    <div style={{ fontFamily:FONT, fontSize:10, color:T_MUTE, marginTop:2 }}>Bowl score: {Math.round(a.bowling_score||0)}/100</div>
                   </div>
                 </div>
-                {a.scouting_notes && <div style={{ fontFamily:FONT, fontSize:12, color:'#374151', lineHeight:1.6, marginTop:10, padding:'8px 10px', background:'rgba(255,255,255,0.03)', borderRadius:8, borderLeft:`3px solid ${tagColor}` }}>{a.scouting_notes}</div>}
+                {a.scouting_notes && <div style={{ fontFamily:FONT, fontSize:12, color:T_BODY, lineHeight:1.6, marginTop:10, padding:'8px 10px', background:'rgba(255,255,255,0.05)', borderRadius:10, borderLeft:`3px solid ${tagColor}` }}>{a.scouting_notes}</div>}
               </motion.div>
             )
           })}
@@ -569,27 +609,27 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
 
       {/* === KEY MATCHUP MATRIX === */}
       {avoidBatters.length > 0 && avoidBowlers.length > 0 && (
-        <div style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:16, padding:16, marginBottom:20, boxShadow:'0 1px 6px rgba(30,58,138,.05)' }}>
-          <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🔑 Key Matchups</div>
-          <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:14 }}>Critical individual contests that could decide the match</div>
+        <div style={{ ...GLASS, padding:16, marginBottom:20 }}>
+          <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>🔑 Key Matchups</div>
+          <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:14 }}>Critical individual contests that could decide the match</div>
           {avoidBowlers.slice(0,2).map((bwl, i) => (
-            <div key={i} style={{ background:'linear-gradient(90deg,#eff6ff,#f5f3ff)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10 }}>
-              <div style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:C.dark, flex:1 }}>vs {fn(bwl)}</div>
-              <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4 }}>Our top-order batters must survive their opening spell</div>
+            <div key={i} style={{ background:'linear-gradient(90deg,rgba(96,165,250,0.16),rgba(192,132,252,0.16))', border:'1px solid rgba(255,255,255,0.10)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:'#fff', flex:1 }}>vs {fn(bwl)}</div>
+              <div style={{ fontFamily:FONT, fontSize:10, color:T_MUTE }}>Our top-order batters must survive their opening spell</div>
             </div>
           ))}
           {avoidBatters.slice(0,2).map((bat, i) => (
-            <div key={i} style={{ background:'linear-gradient(90deg,#fff7ed,#fffbeb)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10 }}>
-              <div style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:C.dark, flex:1 }}>Bowl to {fn(bat)}</div>
-              <div style={{ fontFamily:FONT, fontSize:10, color:C.gray4 }}>Our best bowler must dismiss them early — crucial wicket</div>
+            <div key={i} style={{ background:'linear-gradient(90deg,rgba(233,160,32,0.14),rgba(244,114,182,0.14))', border:'1px solid rgba(255,255,255,0.10)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ fontFamily:FONT, fontSize:12, fontWeight:700, color:'#fff', flex:1 }}>Bowl to {fn(bat)}</div>
+              <div style={{ fontFamily:FONT, fontSize:10, color:T_MUTE }}>Our best bowler must dismiss them early — crucial wicket</div>
             </div>
           ))}
         </div>
       )}
 
       {/* === BADGE LEGEND === */}
-      <div style={{ background: C.white, border:'1.5px solid #e2e8f0', borderRadius:16, padding:16 }}>
-        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🏷️ Badge Legend</div>
+      <div style={{ ...GLASS, padding:16 }}>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:12 }}>🏷️ Badge Legend</div>
         {[
           { badge:'AVOID',   desc:'Elite player — do NOT give easy runs/wickets. Maximum respect.' },
           { badge:'CONTAIN', desc:'Good player — keep dot-ball pressure, no freebies but manageable.' },
@@ -598,7 +638,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
         ].map(({ badge, desc }) => (
           <div key={badge} style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:8 }}>
             <Badge label={badge}/>
-            <span style={{ fontFamily:FONT, fontSize:13, color:C.gray5, lineHeight:1.5 }}>{desc}</span>
+            <span style={{ fontFamily:FONT, fontSize:13, color:T_BODY, lineHeight:1.5 }}>{desc}</span>
           </div>
         ))}
       </div>
@@ -749,7 +789,7 @@ export default function AnalysePage() {
   if (loadingOpps) return (
     <>
       <Nav/>
-      <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'60px 16px', textAlign:'center', fontFamily:FONT, color:C.gray4 }}>
+      <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'60px 16px', textAlign:'center', fontFamily:FONT, color:T_MUTE }}>
         Loading opponents…
       </div>
     </>
@@ -760,8 +800,8 @@ export default function AnalysePage() {
       <Nav/>
       <div style={{ maxWidth:MAX_WIDTH, margin:'0 auto', padding:'60px 16px', textAlign:'center' }}>
         <div style={{ fontSize:48, marginBottom:16 }}>🔍</div>
-        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:8 }}>No opponents yet</div>
-        <div style={{ fontFamily:FONT, fontSize:14, color:C.gray4 }}>
+        <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD, marginBottom:8 }}>No opponents yet</div>
+        <div style={{ fontFamily:FONT, fontSize:14, color:T_MUTE }}>
           Ask the admin to add an opponent in the Admin Panel → 🔍 Analyse tab.
         </div>
       </div>
@@ -776,12 +816,12 @@ export default function AnalysePage() {
         {/* ── Hero ── */}
         <motion.div initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:0.4, ease:EASE }}
-          style={{ margin:'24px 0 20px', background:`linear-gradient(135deg, ${C.greenDark} 0%, #1d4ed8 100%)`, borderRadius:20, padding:'22px 20px', position:'relative', overflow:'hidden', boxShadow:'0 8px 32px rgba(30,58,138,.25)' }}>
+          style={{ margin:'24px 0 20px', ...GLASS, padding:'22px 20px', position:'relative', overflow:'hidden' }}>
           <div style={{ position:'absolute', top:-30, right:-30, width:120, height:120, borderRadius:'50%', background:'rgba(255,255,255,.05)' }}/>
           <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(233,160,32,.15)', border:'1px solid rgba(233,160,32,.35)', borderRadius:20, padding:'4px 12px', marginBottom:10 }}>
             <span style={{ fontSize:10, fontWeight:800, color:'#e9a020', letterSpacing:1, textTransform:'uppercase' }}>🔍 Opposition Scouting</span>
           </div>
-          <h1 style={{ fontFamily:FONT, fontSize:20, fontWeight:900, color:'#fff', margin:'0 0 6px', letterSpacing:-0.3, lineHeight:1.2 }}>
+          <h1 style={{ fontFamily:FONT, fontSize:20, fontWeight:900, ...TITLE_GRAD, margin:'0 0 6px', letterSpacing:-0.3, lineHeight:1.2 }}>
             {selectedOpp ? `${selectedOpp.name} · ${selectedOpp.season}` : 'Opposition Analysis'}
           </h1>
 
@@ -835,7 +875,7 @@ export default function AnalysePage() {
 
         {/* ── Loading skeleton ── */}
         {loadingData && (
-          <div style={{ textAlign:'center', padding:'40px 0', fontFamily:FONT, color:C.gray4 }}>
+          <div style={{ textAlign:'center', padding:'40px 0', fontFamily:FONT, color:T_MUTE }}>
             ⏳ Loading scouting data…
           </div>
         )}
@@ -854,29 +894,29 @@ export default function AnalysePage() {
               {activeTab==='batting' && (
                 <motion.div key="batting" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {battingChart.length > 0 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>📊 Total Runs</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:12 }}>📊 Total Runs</div>
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={battingChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip content={<ChartTip/>}/>
-                          <Bar dataKey="runs" fill={C.green} radius={[5,5,0,0]} name="Runs"/>
+                          <Bar dataKey="runs" fill="#60a5fa" radius={[5,5,0,0]} name="Runs"/>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   )}
 
                   {battingSRChart.length > 0 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>⚡ Strike Rate</div>
-                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>100 = scoring at 1 run per ball — above is aggressive, below is defensive</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>⚡ Strike Rate</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>100 = scoring at 1 run per ball — above is aggressive, below is defensive</div>
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={battingSRChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis domain={[0, 'auto']} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis domain={[0, 'auto']} tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip content={<ChartTip/>}/>
                           <ReferenceLine y={100} stroke="#94a3b8" strokeDasharray="4 4" label={{ value:'SR 100', position:'insideTopRight', fontFamily:FONT, fontSize:10, fill:'#94a3b8' }}/>
                           <Bar dataKey="sr" fill="#f59e0b" radius={[5,5,0,0]} name="Strike Rate"/>
@@ -886,14 +926,14 @@ export default function AnalysePage() {
                   )}
 
                   {batScatterData.length >= 2 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎯 Runs vs Strike Rate — Threat Quadrant</div>
-                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-right = most dangerous (high volume + fast). Top-left = slow but lots of runs. Bottom-right = swings hard but scores little.</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>🎯 Runs vs Strike Rate — Threat Quadrant</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>Top-right = most dangerous (high volume + fast). Top-left = slow but lots of runs. Bottom-right = swings hard but scores little.</div>
                       <ResponsiveContainer width="100%" height={200}>
                         <ScatterChart margin={{ top:10, right:20, left:-10, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="runs" name="Runs" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Runs', position:'insideBottom', offset:-2, fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis dataKey="sr" name="Strike Rate" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'SR', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="runs" name="Runs" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }} label={{ value:'Runs', position:'insideBottom', offset:-2, fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis dataKey="sr" name="Strike Rate" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }} label={{ value:'SR', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip cursor={{ strokeDasharray:'3 3' }} content={({ payload }) => payload?.length ? (
                             <div style={{ background:'#1e293b', borderRadius:10, padding:'8px 12px', fontFamily:FONT, fontSize:12, color:'#fff' }}>
                               <div style={{ fontWeight:800, marginBottom:4 }}>{payload[0]?.payload?.name}</div>
@@ -901,13 +941,13 @@ export default function AnalysePage() {
                               <div>SR: <strong>{payload[0]?.payload?.sr?.toFixed(1)}</strong></div>
                             </div>
                           ) : null}/>
-                          <Scatter data={batScatterData} fill={C.green} opacity={0.85}
+                          <Scatter data={batScatterData} fill="#60a5fa" opacity={0.85}
                             shape={(props) => {
                               const { cx, cy, payload } = props
                               return (
                                 <g>
-                                  <circle cx={cx} cy={cy} r={6} fill={C.green} opacity={0.85}/>
-                                  <text x={cx} y={cy-10} textAnchor="middle" fill={C.gray4} fontSize={9} fontFamily={FONT}>{payload.name}</text>
+                                  <circle cx={cx} cy={cy} r={6} fill="#60a5fa" opacity={0.85}/>
+                                  <text x={cx} y={cy-10} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={9} fontFamily={FONT}>{payload.name}</text>
                                 </g>
                               )
                             }}
@@ -917,16 +957,17 @@ export default function AnalysePage() {
                     </div>
                   )}
 
-                  <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>Top {batAnalysis.length} Batters — Watch List</div>
-                  <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:14 }}>Weighted composite: 40% runs, 25% SR, 15% HS, 10% milestones, 10% matches</div>
+                  <div style={{ ...eyebrowStyle, marginBottom:8 }}>Threat Index</div>
+                  <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD, marginBottom:4 }}>Top {batAnalysis.length} Batters — Watch List</div>
+                  <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:14 }}>Weighted composite: 40% runs, 25% SR, 15% HS, 10% milestones, 10% matches</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
                     {batAnalysis.map(a => <BatCard key={a.id} a={a} bat={batMap[a.player_id]}/>)}
                   </div>
 
                   {batTableRows.length > 0 && (
                     <>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:16, color:C.dark, marginBottom:4 }}>Full Batting Statistics</div>
-                      <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:10 }}>Click any column header to sort</div>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:16, ...TITLE_GRAD, marginBottom:4 }}>Full Batting Statistics</div>
+                      <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:10 }}>Click any column header to sort</div>
                       <SortableTable rows={batTableRows} cols={BAT_COLS}/>
                     </>
                   )}
@@ -938,13 +979,13 @@ export default function AnalysePage() {
               {activeTab==='bowling' && (
                 <motion.div key="bowling" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {bowlingChart.length > 0 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:12 }}>🎳 Wickets (min. 10 overs)</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:12 }}>🎳 Wickets (min. 10 overs)</div>
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={bowlingChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip content={<ChartTip/>}/>
                           <Bar dataKey="wickets" fill="#7c3aed" radius={[5,5,0,0]} name="Wickets"/>
                         </BarChart>
@@ -953,14 +994,14 @@ export default function AnalysePage() {
                   )}
 
                   {bowlEconChart.length > 0 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>💰 Economy Rate (best first)</div>
-                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Lower = harder to score off. Under 5.0 = elite economy. Above 7.0 = exploitable.</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>💰 Economy Rate (best first)</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>Lower = harder to score off. Under 5.0 = elite economy. Above 7.0 = exploitable.</div>
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={bowlEconChart} margin={{ top:0, right:0, left:-22, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis domain={[0,'auto']} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis domain={[0,'auto']} tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip content={<ChartTip/>}/>
                           <ReferenceLine y={7} stroke="#f59e0b" strokeDasharray="4 4" label={{ value:'7.0 threshold', position:'insideTopRight', fontFamily:FONT, fontSize:10, fill:'#f59e0b' }}/>
                           <Bar dataKey="econ" fill="#ef4444" radius={[5,5,0,0]} name="Economy"/>
@@ -970,14 +1011,14 @@ export default function AnalysePage() {
                   )}
 
                   {bowlScatterData.length >= 2 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🎯 Wickets vs Economy — Danger Quadrant</div>
-                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-left = dangerous (lots of wickets + cheap). Top-right = wickets but expensive. Bottom-left = safe to face.</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>🎯 Wickets vs Economy — Danger Quadrant</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>Top-left = dangerous (lots of wickets + cheap). Top-right = wickets but expensive. Bottom-left = safe to face.</div>
                       <ResponsiveContainer width="100%" height={200}>
                         <ScatterChart margin={{ top:10, right:20, left:-10, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="econ" name="Economy" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Economy', position:'insideBottom', offset:-2, fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis dataKey="wickets" name="Wickets" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Wkts', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="econ" name="Economy" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }} label={{ value:'Economy', position:'insideBottom', offset:-2, fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis dataKey="wickets" name="Wickets" type="number" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }} label={{ value:'Wkts', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip cursor={{ strokeDasharray:'3 3' }} content={({ payload }) => payload?.length ? (
                             <div style={{ background:'#1e293b', borderRadius:10, padding:'8px 12px', fontFamily:FONT, fontSize:12, color:'#fff' }}>
                               <div style={{ fontWeight:800, marginBottom:4 }}>{payload[0]?.payload?.name}</div>
@@ -991,7 +1032,7 @@ export default function AnalysePage() {
                               return (
                                 <g>
                                   <circle cx={cx} cy={cy} r={6} fill="#7c3aed" opacity={0.85}/>
-                                  <text x={cx} y={cy-10} textAnchor="middle" fill={C.gray4} fontSize={9} fontFamily={FONT}>{payload.name}</text>
+                                  <text x={cx} y={cy-10} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={9} fontFamily={FONT}>{payload.name}</text>
                                 </g>
                               )
                             }}
@@ -1001,16 +1042,17 @@ export default function AnalysePage() {
                     </div>
                   )}
 
-                  <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>Top {bowlAnalysis.length} Bowlers — Threat Assessment</div>
-                  <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:14 }}>Weighted composite: 40% wickets, 30% economy (inv.), 20% average (inv.), 10% SR (inv.)</div>
+                  <div style={{ ...eyebrowStyle, marginBottom:8 }}>Threat Index</div>
+                  <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD, marginBottom:4 }}>Top {bowlAnalysis.length} Bowlers — Threat Assessment</div>
+                  <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:14 }}>Weighted composite: 40% wickets, 30% economy (inv.), 20% average (inv.), 10% SR (inv.)</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
                     {bowlAnalysis.map(a => <BowlCard key={a.id} a={a} bowl={bowlMap[a.player_id]}/>)}
                   </div>
 
                   {bowlTableRows.length > 0 && (
                     <>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:16, color:C.dark, marginBottom:4 }}>Full Bowling Statistics</div>
-                      <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:10 }}>Click any column header to sort</div>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:16, ...TITLE_GRAD, marginBottom:4 }}>Full Bowling Statistics</div>
+                      <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:10 }}>Click any column header to sort</div>
                       <SortableTable rows={bowlTableRows} cols={BOWL_COLS}/>
                     </>
                   )}
@@ -1022,19 +1064,19 @@ export default function AnalysePage() {
               {activeTab==='allrounders' && (
                 <motion.div key="ar" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.22, ease:EASE }}>
                   {arAnalysis.length > 1 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>⚡ Bat vs Bowl Contribution</div>
-                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Normalised 0–100 scale</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>⚡ Bat vs Bowl Contribution</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>Normalised 0–100 scale</div>
                       <ResponsiveContainer width="100%" height={180}>
                         <BarChart
                           data={arAnalysis.map(a=>({ name:a.opponent_players?.player_name?.split(' ')[0]||'?', bat:Math.round(a.batting_score||0), bowl:Math.round(a.bowling_score||0) }))}
                           margin={{ top:0, right:0, left:-22, bottom:0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis domain={[0,110]} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="name" tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis domain={[0,110]} tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip content={<ChartTip/>}/>
                           <Legend iconType="circle" wrapperStyle={{ fontFamily:FONT, fontSize:12 }}/>
-                          <Bar dataKey="bat"  fill={C.green}  radius={[4,4,0,0]} name="Bat Score"/>
+                          <Bar dataKey="bat"  fill="#60a5fa"  radius={[4,4,0,0]} name="Bat Score"/>
                           <Bar dataKey="bowl" fill="#7c3aed" radius={[4,4,0,0]} name="Bowl Score"/>
                         </BarChart>
                       </ResponsiveContainer>
@@ -1042,14 +1084,14 @@ export default function AnalysePage() {
                   )}
 
                   {arScatterData.length >= 2 && (
-                    <div style={{ background: C.white, borderRadius:16, padding:'16px 14px', marginBottom:14, border:'1.5px solid #e2e8f0', boxShadow:'0 2px 10px rgba(30,58,138,.05)' }}>
-                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, color:C.dark, marginBottom:4 }}>🔮 All-rounder Skill Map</div>
-                      <div style={{ fontFamily:FONT, fontSize:11, color:C.gray4, marginBottom:12 }}>Top-right = true all-rounder threat (dangerous bat AND bowl). Axes = normalised 0–100 skill score.</div>
+                    <div style={{ ...GLASS, padding:'16px 14px', marginBottom:14 }}>
+                      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:14, ...TITLE_GRAD, marginBottom:4 }}>🔮 All-rounder Skill Map</div>
+                      <div style={{ fontFamily:FONT, fontSize:11, color:T_MUTE, marginBottom:12 }}>Top-right = true all-rounder threat (dangerous bat AND bowl). Axes = normalised 0–100 skill score.</div>
                       <ResponsiveContainer width="100%" height={200}>
                         <ScatterChart margin={{ top:10, right:20, left:-10, bottom:10 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-                          <XAxis dataKey="bat" name="Bat Score" type="number" domain={[0,105]} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Bat Score', position:'insideBottom', offset:-5, fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
-                          <YAxis dataKey="bowl" name="Bowl Score" type="number" domain={[0,105]} tick={{ fontFamily:FONT, fontSize:11, fill:C.gray4 }} label={{ value:'Bowl', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:C.gray4 }}/>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)"/>
+                          <XAxis dataKey="bat" name="Bat Score" type="number" domain={[0,105]} tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }} label={{ value:'Bat Score', position:'insideBottom', offset:-5, fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
+                          <YAxis dataKey="bowl" name="Bowl Score" type="number" domain={[0,105]} tick={{ fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }} label={{ value:'Bowl', angle:-90, position:'insideLeft', fontFamily:FONT, fontSize:11, fill:'rgba(255,255,255,0.55)' }}/>
                           <Tooltip cursor={{ strokeDasharray:'3 3' }} content={({ payload }) => payload?.length ? (
                             <div style={{ background:'#1e293b', borderRadius:10, padding:'8px 12px', fontFamily:FONT, fontSize:12, color:'#fff' }}>
                               <div style={{ fontWeight:800, marginBottom:4 }}>{payload[0]?.payload?.name}</div>
@@ -1063,7 +1105,7 @@ export default function AnalysePage() {
                               return (
                                 <g>
                                   <circle cx={cx} cy={cy} r={7} fill="#f59e0b" opacity={0.9}/>
-                                  <text x={cx} y={cy-11} textAnchor="middle" fill={C.gray4} fontSize={9} fontFamily={FONT}>{payload.name}</text>
+                                  <text x={cx} y={cy-11} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={9} fontFamily={FONT}>{payload.name}</text>
                                 </g>
                               )
                             }}
@@ -1073,8 +1115,8 @@ export default function AnalysePage() {
                     </div>
                   )}
 
-                  <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, color:C.dark, marginBottom:4 }}>Top {arAnalysis.length} All-rounders</div>
-                  <div style={{ fontFamily:FONT, fontSize:12, color:C.gray4, marginBottom:14 }}>Composite = 50% bat score + 50% bowl score. Min 3 games + 10 overs.</div>
+                  <div style={{ fontFamily:FONT, fontWeight:800, fontSize:18, ...TITLE_GRAD, marginBottom:4 }}>Top {arAnalysis.length} All-rounders</div>
+                  <div style={{ fontFamily:FONT, fontSize:12, color:T_MUTE, marginBottom:14 }}>Composite = 50% bat score + 50% bowl score. Min 3 games + 10 overs.</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
                     {arAnalysis.map(a => <ArCard key={a.id} a={a} bat={batMap[a.player_id]} bowl={bowlMap[a.player_id]}/>)}
                   </div>
@@ -1104,9 +1146,9 @@ function Methodology({ type }) {
     allrounder: 'All-rounder composite: 50% batting score (normalised) + 50% bowling score (normalised). Min. 3 matches and 10 overs.',
   }
   return (
-    <div style={{ marginTop:18, padding:'12px 16px', background:'rgba(255,255,255,0.03)', border:`1px solid ${C.gray2}`, borderRadius:12, borderLeft:`3px solid ${C.green}` }}>
-      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:11, color:C.green, marginBottom:3, textTransform:'uppercase', letterSpacing:0.5 }}>📐 Methodology</div>
-      <p style={{ fontFamily:FONT, fontSize:12, color:C.gray5, lineHeight:1.6, margin:0 }}>{notes[type]}</p>
+    <div style={{ marginTop:18, padding:'12px 16px', ...NESTED, borderLeft:'3px solid #c084fc' }}>
+      <div style={{ fontFamily:FONT, fontWeight:800, fontSize:11, color:'#c084fc', marginBottom:3, textTransform:'uppercase', letterSpacing:0.5 }}>📐 Methodology</div>
+      <p style={{ fontFamily:FONT, fontSize:12, color:T_BODY, lineHeight:1.6, margin:0 }}>{notes[type]}</p>
     </div>
   )
 }

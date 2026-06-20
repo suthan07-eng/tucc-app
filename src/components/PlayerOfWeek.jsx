@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { C, FONT } from '../constants'
+import { FONT } from '../constants'
 
 // Decorative SVG cricket ball
 function CricketBallBg({ color, size = 220, opacity = 0.06 }) {
@@ -442,15 +442,27 @@ export default function PlayerOfWeek({ compact = false }) {
   return (
     <div style={{ marginTop: compact ? 0 : 28, marginBottom: compact ? 0 : 28 }}>
       {/* Section header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 4, height: 22, borderRadius: 99, background: 'linear-gradient(180deg, #fbbf24, #d97706)' }} />
-          <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: 17, color: C.dark, letterSpacing: -0.3 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 4, height: 24, borderRadius: 99, background: 'linear-gradient(180deg, #e9a020, #d97706)', boxShadow: '0 0 12px rgba(233,160,32,0.5)' }} />
+          <span style={{
+            fontFamily: FONT, fontWeight: 900, fontSize: 18, letterSpacing: -0.3,
+            color: '#fff',
+            backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
             Players of the Week 🏆
           </span>
         </div>
         {data?.matchDate && (
-          <span style={{ fontFamily: FONT, fontSize: 12, color: C.gray3, fontWeight: 500 }}>
+          <span style={{
+            fontFamily: FONT, fontSize: 11, fontWeight: 700, letterSpacing: 1,
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.72)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: 999, padding: '5px 12px',
+          }}>
             {data.matchDate}{data.opponent ? ` · vs ${data.opponent}` : ''}
           </span>
         )}

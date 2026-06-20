@@ -105,14 +105,27 @@ export default function Register() {
           }}>
             <img src="/logo.png" alt="DTU CC" style={{ width: 64, height: 64, objectFit: 'contain' }} />
           </motion.div>
+          <motion.div variants={fadeUp} style={{
+            display: 'inline-block', marginBottom: 12,
+            padding: '5px 12px', borderRadius: 999,
+            border: '1px solid rgba(255,255,255,0.22)',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'rgba(255,255,255,0.78)',
+            fontSize: 10.5, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase',
+          }}>
+            Player Portal
+          </motion.div>
           <motion.h1 variants={fadeUp} style={{
             color: '#fff', fontSize: 26, fontWeight: 900, margin: '0 0 8px',
             letterSpacing: -0.4,
+            backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
           }}>
             Join Tamil United CC
           </motion.h1>
           <motion.p variants={fadeUp} style={{
-            color: 'rgba(255,255,255,.6)', fontSize: 14, margin: '0 auto',
+            color: 'rgba(255,255,255,.7)', fontSize: 14, margin: '0 auto',
             maxWidth: 300, lineHeight: 1.5,
           }}>
             Register once — submit your availability every match week
@@ -122,7 +135,14 @@ export default function Register() {
 
       <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '24px 16px 40px', width: '100%' }}>
         <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ transitionDelay: '0.2s' }}>
-        <Card>
+        <Card style={{
+          background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+          border: '1px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+          borderRadius: 22,
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        }}>
           <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <Field label="Full Name" required error={errors.name}>
               <Input
@@ -177,10 +197,10 @@ export default function Register() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          style={{ textAlign: 'center', marginTop: 18, color: C.gray4, fontSize: 14 }}
+          style={{ textAlign: 'center', marginTop: 18, color: 'rgba(255,255,255,0.5)', fontSize: 14 }}
         >
           Already registered?{' '}
-          <Link to="/availability" style={{ color: C.green, fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/availability" style={{ color: '#c084fc', fontWeight: 700, textDecoration: 'none' }}>
             Submit availability →
           </Link>
         </motion.p>

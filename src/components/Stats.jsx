@@ -33,6 +33,36 @@ const TAB_THEMES = {
   matchlog: { color: '#1d4ed8', light: '#3b82f6', bg: 'rgba(59,130,246,0.12)', grad: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' },
 }
 
+// ── Bold Gradient theme helpers ───────────────────────────
+const GLASS_CARD = {
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  border: '1px solid rgba(255,255,255,0.18)',
+  boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+  borderRadius: 22,
+  backdropFilter: 'blur(20px) saturate(160%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+}
+const GLASS_NESTED = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: 16,
+}
+const GRAD_TEXT = {
+  color: '#fff',
+  backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+}
+const PILL_BTN = {
+  background: 'linear-gradient(180deg,#818cf8,#6d28d9)',
+  color: '#fff',
+  border: '1px solid rgba(255,255,255,0.28)',
+  boxShadow: '0 12px 30px -8px rgba(124,58,237,0.65), inset 0 1px 0 rgba(255,255,255,0.4)',
+  borderRadius: 12,
+  fontWeight: 700,
+}
+
 // ── Custom tooltip ────────────────────────────────────────
 function ChartTooltip({ active, payload, label, unit = '', color }) {
   if (!active || !payload?.length) return null
@@ -71,10 +101,10 @@ function RunsBarChart({ data, color }) {
   ]
 
   return (
-    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ ...GLASS_CARD, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#2563eb,#1d4ed8)', borderRadius: 99 }} />
-        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Runs This Season</span>
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#60a5fa,#c084fc)', borderRadius: 99 }} />
+        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, ...GRAD_TEXT }}>Runs This Season</span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={top} layout="vertical" margin={{ left: 0, right: 28, top: 0, bottom: 0 }} barSize={18}>
@@ -128,10 +158,10 @@ function AvgSRChart({ data, color }) {
   }
 
   return (
-    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 8px', marginBottom: 28 }}>
+    <div style={{ ...GLASS_CARD, padding: '20px 16px 8px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#0369a1,#0ea5e9)', borderRadius: 99 }} />
-        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Average vs Strike Rate</span>
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#60a5fa,#c084fc)', borderRadius: 99 }} />
+        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, ...GRAD_TEXT }}>Average vs Strike Rate</span>
       </div>
       <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, marginBottom: 12, paddingLeft: 12 }}>Bubble size = runs scored</div>
       <ResponsiveContainer width="100%" height={200}>
@@ -174,10 +204,10 @@ function WicketsBarChart({ data, color }) {
   const BAR_COLORS = ['#be123c','#e11d48','#f43f5e','#fb7185','#be123c','#e11d48','#f43f5e','#fb7185']
 
   return (
-    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ ...GLASS_CARD, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#be123c,#f43f5e)', borderRadius: 99 }} />
-        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Wickets This Season</span>
+        <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#60a5fa,#c084fc)', borderRadius: 99 }} />
+        <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, ...GRAD_TEXT }}>Wickets This Season</span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={top} layout="vertical" margin={{ left: 0, right: 28, top: 0, bottom: 0 }} barSize={18}>
@@ -221,11 +251,11 @@ function EconomyChart({ data, color }) {
   }
 
   return (
-    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ ...GLASS_CARD, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#0891b2,#06b6d4)', borderRadius: 99 }} />
-          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Economy Rates</span>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#60a5fa,#c084fc)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, ...GRAD_TEXT }}>Economy Rates</span>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           {[['< 6','#15803d'],['6–8','#b45309'],['8+','#be123c']].map(([lbl, col]) => (
@@ -279,11 +309,11 @@ function FieldingChart({ data }) {
   if (!fielders.length) return null
 
   return (
-    <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, padding: '20px 16px 12px', marginBottom: 28 }}>
+    <div style={{ ...GLASS_CARD, padding: '20px 16px 12px', marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#6d28d9,#8b5cf6)', borderRadius: 99 }} />
-          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Fielding Breakdown</span>
+          <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg,#60a5fa,#c084fc)', borderRadius: 99 }} />
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, ...GRAD_TEXT }}>Fielding Breakdown</span>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           {[['Catches','#6d28d9'],['Run Outs','#be123c'],['Stumpings','#b45309']].map(([lbl, col]) => (
@@ -498,9 +528,10 @@ function Podium({ items, valueKey, label, fmtFn = fmtN, tabTheme }) {
             key={s.id}
             variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', duration: 0.55, bounce: 0.28 } } }}
             style={{
-              flex: 1, background: C.white, borderRadius: 20, overflow: 'hidden',
+              flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 20, overflow: 'hidden',
               boxShadow: mc.shadow,
-              border: `2px solid ${ri === 0 ? '#f59e0b' : 'transparent'}`,
+              border: `1px solid ${ri === 0 ? '#f59e0b' : 'rgba(255,255,255,0.10)'}`,
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               minHeight: mc.height,
             }}
@@ -529,8 +560,8 @@ function Podium({ items, valueKey, label, fmtFn = fmtN, tabTheme }) {
 function SectionHeading({ children, theme }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-      <div style={{ width: 4, height: 20, background: theme.grad, borderRadius: 99 }} />
-      <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>{children}</div>
+      <div style={{ width: 4, height: 20, background: 'linear-gradient(180deg,#60a5fa,#c084fc)', borderRadius: 99 }} />
+      <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, ...GRAD_TEXT }}>{children}</div>
     </div>
   )
 }
@@ -550,10 +581,10 @@ function SkeletonDash() {
 
 function EmptyState({ tab }) {
   return (
-    <div style={{ textAlign: 'center', padding: '60px 20px', background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}` }}>
+    <div style={{ ...GLASS_CARD, textAlign: 'center', padding: '60px 20px' }}>
       <div style={{ fontSize: 52, marginBottom: 14 }}>📊</div>
-      <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 17, color: C.dark }}>No {tab} stats yet</div>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray3, marginTop: 6 }}>Upload the Excel file to populate this section.</div>
+      <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 17, ...GRAD_TEXT }}>No {tab} stats yet</div>
+      <div style={{ fontFamily: FONT, fontSize: 13, color: C.gray4, marginTop: 6 }}>Upload the Excel file to populate this section.</div>
     </div>
   )
 }
@@ -604,9 +635,9 @@ function BattingDashboard({ stats, loading }) {
       <Podium items={sorted} valueKey="bat_runs" label="Runs" tabTheme={theme} />
 
       <SectionHeading theme={theme}>Batting Averages</SectionHeading>
-      <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, overflow: 'hidden' }}>
+      <div style={{ ...GLASS_CARD, overflow: 'hidden' }}>
         {/* Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 34px 42px 44px 34px 52px', padding: '11px 14px', background: `${theme.color}0a`, borderBottom: `2px solid ${theme.color}22` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 34px 42px 44px 34px 52px', padding: '11px 14px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
           <div />
           {[
             { col: 'player_name', label: 'Player', align: 'left' },
@@ -637,8 +668,8 @@ function BattingDashboard({ stats, loading }) {
             style={{
               display: 'grid', gridTemplateColumns: '28px 1fr 34px 42px 44px 34px 52px',
               padding: '12px 14px', alignItems: 'center',
-              borderBottom: i < visible.length - 1 ? `1px solid ${C.gray1}` : 'none',
-              background: i === 0 ? `${theme.color}07` : i % 2 !== 0 ? `${C.gray1}70` : 'transparent',
+              borderBottom: i < visible.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              background: i === 0 ? 'rgba(192,132,252,0.14)' : i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent',
             }}
           >
             <RankBadge rank={i + 1} />
@@ -662,9 +693,8 @@ function BattingDashboard({ stats, loading }) {
 
       {sorted.length > 8 && (
         <button onClick={() => setShowAll(a => !a)} style={{
-          marginTop: 10, width: '100%', background: `${theme.color}0e`, border: `1.5px solid ${theme.color}28`,
-          borderRadius: 14, padding: '12px', fontFamily: FONT, fontSize: 13,
-          fontWeight: 700, color: theme.color, cursor: 'pointer',
+          ...PILL_BTN, marginTop: 12, width: '100%', padding: '12px',
+          fontFamily: FONT, fontSize: 13, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
           <ChevronDown size={14} style={{ transform: showAll ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
@@ -722,8 +752,8 @@ function BowlingDashboard({ stats, loading }) {
       <Podium items={sorted} valueKey="bowl_wickets" label="Wkts" tabTheme={theme} />
 
       <SectionHeading theme={theme}>Bowling Figures</SectionHeading>
-      <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 40px 36px 48px 52px 52px', padding: '11px 14px', background: `${theme.color}0a`, borderBottom: `2px solid ${theme.color}22` }}>
+      <div style={{ ...GLASS_CARD, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 40px 36px 48px 52px 52px', padding: '11px 14px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
           <div />
           {[
             { col: 'player_name',       label: 'Player', align: 'left' },
@@ -754,8 +784,8 @@ function BowlingDashboard({ stats, loading }) {
             style={{
               display: 'grid', gridTemplateColumns: '28px 1fr 40px 36px 48px 52px 52px',
               padding: '12px 14px', alignItems: 'center',
-              borderBottom: i < visible.length - 1 ? `1px solid ${C.gray1}` : 'none',
-              background: i === 0 ? `${theme.color}07` : i % 2 !== 0 ? `${C.gray1}70` : 'transparent',
+              borderBottom: i < visible.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              background: i === 0 ? 'rgba(192,132,252,0.14)' : i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent',
             }}
           >
             <RankBadge rank={i + 1} />
@@ -777,9 +807,8 @@ function BowlingDashboard({ stats, loading }) {
 
       {sorted.length > 8 && (
         <button onClick={() => setShowAll(a => !a)} style={{
-          marginTop: 10, width: '100%', background: `${theme.color}0e`, border: `1.5px solid ${theme.color}28`,
-          borderRadius: 14, padding: '12px', fontFamily: FONT, fontSize: 13,
-          fontWeight: 700, color: theme.color, cursor: 'pointer',
+          ...PILL_BTN, marginTop: 12, width: '100%', padding: '12px',
+          fontFamily: FONT, fontSize: 13, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
           <ChevronDown size={14} style={{ transform: showAll ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
@@ -818,8 +847,8 @@ function FieldingDashboard({ stats, loading }) {
       <FieldingChart data={stats} />
 
       <SectionHeading theme={theme}>🧤 Fielding Contributions</SectionHeading>
-      <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.gray2}`, boxShadow: `0 4px 20px ${C.shadow}`, overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 44px 60px 50px 52px', padding: '11px 14px', background: `${theme.color}0a`, borderBottom: `2px solid ${theme.color}22` }}>
+      <div style={{ ...GLASS_CARD, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 44px 60px 50px 52px', padding: '11px 14px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
           <div />
           {['Player', 'Cat', 'Run Out', 'Stmp', 'Total'].map((h, idx) => (
             <div key={h} style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, color: C.gray3, textTransform: 'uppercase', letterSpacing: 0.7, textAlign: idx === 0 ? 'left' : 'center' }}>{h}</div>
@@ -828,7 +857,7 @@ function FieldingDashboard({ stats, loading }) {
         {fielders.map((s, i) => (
           <motion.div key={s.id}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
-            style={{ display: 'grid', gridTemplateColumns: '28px 1fr 44px 60px 50px 52px', padding: '12px 14px', borderBottom: i < fielders.length - 1 ? `1px solid ${C.gray1}` : 'none', alignItems: 'center', background: i % 2 !== 0 ? `${C.gray1}70` : 'transparent' }}
+            style={{ display: 'grid', gridTemplateColumns: '28px 1fr 44px 60px 50px 52px', padding: '12px 14px', borderBottom: i < fielders.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', background: i === 0 ? 'rgba(192,132,252,0.14)' : i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}
           >
             <RankBadge rank={i + 1} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, paddingLeft: 6 }}>
@@ -891,13 +920,14 @@ function MatchLogDashboard({ season }) {
           <button key={m.id} onClick={() => { setSelectedId(m.id); loadPerfs(m.id) }}
             style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px',
-              borderRadius: 14, border: `2px solid ${m.id === selectedId ? theme.color : C.gray2}`,
-              background: m.id === selectedId ? theme.bg : C.white,
+              borderRadius: 14, border: `1px solid ${m.id === selectedId ? 'rgba(192,132,252,0.6)' : 'rgba(255,255,255,0.10)'}`,
+              background: m.id === selectedId ? 'rgba(192,132,252,0.14)' : 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
               cursor: 'pointer', textAlign: 'left', width: '100%',
             }}
           >
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: m.id === selectedId ? theme.color : C.dark }}>vs {m.opponent || 'TBC'}</div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: m.id === selectedId ? '#c084fc' : C.dark }}>vs {m.opponent || 'TBC'}</div>
               <div style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, marginTop: 2 }}>
                 {m.date ? new Date(m.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBD'}{m.venue ? ` · ${m.venue}` : ''}
               </div>
@@ -911,12 +941,12 @@ function MatchLogDashboard({ season }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {batters.length > 0 && (
             <div>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: C.greenDark, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.7 }}>🏏 Batting</div>
-              <div style={{ background: C.white, borderRadius: 14, border: `1px solid ${C.gray2}`, overflow: 'hidden' }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.7, ...GRAD_TEXT }}>🏏 Batting</div>
+              <div style={{ ...GLASS_NESTED, overflow: 'hidden' }}>
                 {batters.map((p, i) => {
                   const sr = p.bat_balls ? ((p.bat_runs || 0) * 100 / p.bat_balls).toFixed(0) : '—'
                   return (
-                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 36px 40px', padding: '10px 14px', borderBottom: i < batters.length - 1 ? `1px solid ${C.gray1}` : 'none', alignItems: 'center', gap: 0 }}>
+                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 36px 40px', padding: '10px 14px', borderBottom: i < batters.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', gap: 0, background: i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Avatar name={p.player_name} size={26} />
                         <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.player_name}</span>
@@ -934,12 +964,12 @@ function MatchLogDashboard({ season }) {
           )}
           {bowlers.length > 0 && (
             <div>
-              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: C.greenDark, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.7 }}>⚡ Bowling</div>
-              <div style={{ background: C.white, borderRadius: 14, border: `1px solid ${C.gray2}`, overflow: 'hidden' }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.7, ...GRAD_TEXT }}>⚡ Bowling</div>
+              <div style={{ ...GLASS_NESTED, overflow: 'hidden' }}>
                 {bowlers.map((p, i) => {
                   const econ = p.bowl_overs ? (p.bowl_runs / p.bowl_overs).toFixed(2) : '—'
                   return (
-                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 44px', padding: '10px 14px', borderBottom: i < bowlers.length - 1 ? `1px solid ${C.gray1}` : 'none', alignItems: 'center', gap: 0 }}>
+                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 44px', padding: '10px 14px', borderBottom: i < bowlers.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', gap: 0, background: i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Avatar name={p.player_name} size={26} />
                         <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.player_name}</span>
@@ -1027,7 +1057,8 @@ export default function Stats() {
                   <img src="/logo.png" alt="TUCC" style={{ width: 40, height: 40, objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <h1 style={{ color: '#fff', fontSize: 23, fontWeight: 900, margin: 0, letterSpacing: -0.4 }}>Player Statistics</h1>
+                  <div style={{ display: 'inline-block', fontFamily: FONT, fontSize: 10.5, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 99, padding: '3px 10px', marginBottom: 8 }}>Season Stats</div>
+                  <h1 style={{ color: '#fff', fontSize: 23, fontWeight: 900, margin: 0, letterSpacing: -0.4, ...GRAD_TEXT }}>Player Statistics</h1>
                   <div style={{ color: 'rgba(255,255,255,.45)', fontSize: 12, marginTop: 2 }}>Tamil United CC · {season} Season</div>
                 </div>
               </div>
