@@ -4,6 +4,7 @@ import { C, FONT, ADMIN_EMAIL } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import statsJson from '../data/stats-2026.json'
+import { loadMergedStats } from '../utils/statsOverlay'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -490,16 +491,19 @@ export default function PlayersPage() {
   const [searchQuery, setSearchQuery]   = useState('')
   const [showMethodology, setShowMethodology] = useState(false)
   const [focusedPlayer, setFocusedPlayer]     = useState(null)
+  const [stats, setStats]                     = useState(statsJson)
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       try {
-        const [playersRes, scoresRes, { data: sbPlayers }] = await Promise.all([
+        const [playersRes, scoresRes, { data: sbPlayers }, mergedStats] = await Promise.all([
           fetch('/api/players'),
           fetch('/api/player-profiles?action=scores&season=2026'),
           supabase.from('players').select('name, role'),
+          loadMergedStats('2026'),
         ])
+        setStats(mergedStats)
         const playersRaw = await playersRes.json()
         const scoresRaw  = await scoresRes.json()
 
@@ -533,13 +537,13 @@ export default function PlayersPage() {
 
   const enriched = useMemo(() =>
     players.map(p => {
-      const withStats = { ...p, _bat: matchStat(statsJson.batting, p.name), _bowl: matchStat(statsJson.bowling, p.name) }
+      const withStats = { ...p, _bat: matchStat(stats.batting, p.name), _bowl: matchStat(stats.bowling, p.name) }
       // Admin-set role takes priority over auto-detected role
       const adminRole = adminRoles[(p.name || '').toLowerCase().trim()]
       const _role = adminRole || detectRole(withStats)
       return { ...withStats, _computed: computeScore(withStats), _role }
     }),
-    [players, adminRoles]
+    [players, adminRoles, stats]
   )
 
   // Squad-wide stats

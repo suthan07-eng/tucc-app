@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { supabase } from '../../supabase'
 import statsJson from '../../data/stats-2026.json'
+import { loadMergedStats } from '../../utils/statsOverlay'
 import PublicNav from '../PublicNav'
 import PublicFooter from '../PublicFooter'
 import { SITE } from '../siteConfig'
@@ -374,14 +375,17 @@ export default function PublicPlayers() {
   const [activeTab, setActiveTab] = useState('All')
   const [sortBy, setSortBy]       = useState('score')
   const [search, setSearch]       = useState('')
+  const [stats, setStats]         = useState(statsJson)
 
   useEffect(() => {
     async function load() {
       try {
-        const [{ data: sbPlayers }, { data: sbProfiles }] = await Promise.all([
+        const [{ data: sbPlayers }, { data: sbProfiles }, mergedStats] = await Promise.all([
           supabase.from('players').select('*').order('name'),
           supabase.from('tucc_player_scores').select('*').eq('season', '2026'),
+          loadMergedStats('2026'),
         ])
+        setStats(mergedStats)
 
         const roleMap = {}
         for (const p of (sbPlayers || [])) {
@@ -411,11 +415,11 @@ export default function PublicPlayers() {
 
   const enriched = useMemo(() =>
     players.map(p => {
-      const withStats = { ...p, _bat: matchStat(statsJson.batting, p.name), _bowl: matchStat(statsJson.bowling, p.name) }
+      const withStats = { ...p, _bat: matchStat(stats.batting, p.name), _bowl: matchStat(stats.bowling, p.name) }
       const adminRole = adminRoles[(p.name || '').toLowerCase().trim()]
       return { ...withStats, _role: adminRole || detectRole(withStats), _score: computeScore(withStats) }
     }),
-    [players, adminRoles]
+    [players, adminRoles, stats]
   )
 
   const squadStats = useMemo(() => {
