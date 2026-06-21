@@ -38,6 +38,12 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
     @keyframes spatial-orb-c { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(5vw,-6vh,0) scale(1.15); } }
     @keyframes spatial-sheen { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
     @keyframes spatial-hero-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
+    /* Portrait backdrop on phones, wide backdrop on larger screens */
+    .spatial-hero-mobile { display: none; }
+    @media (max-width: 640px) {
+      .spatial-hero-desktop { display: none; }
+      .spatial-hero-mobile { display: block; }
+    }
 
     /* Frosted-glass cards — concentric, machined feel. Hover gives a gentle lift. */
     .spatial-card {
@@ -80,12 +86,18 @@ export function SpatialBackground({ image }) {
   const orbs = skin.orbs
   return (
     <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: -1, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* cinematic cricket hero image — top-anchored, fades into the dark base */}
+      {/* cinematic cricket hero image — full-cover; portrait variant on mobile, wide on desktop */}
       {image && (
         <>
-          <div key={image} style={{
+          <div key={image} className="spatial-hero spatial-hero-desktop" style={{
             position: 'absolute', inset: 0,
             backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center',
+            opacity: 1,
+            animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
+          }} />
+          <div key={`${image}-m`} className="spatial-hero spatial-hero-mobile" style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${image.replace('.webp', '-m.webp')})`, backgroundSize: 'cover', backgroundPosition: 'center',
             opacity: 1,
             animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
           }} />
