@@ -81,13 +81,30 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
 }
 
 /* ── Drifting orb background (fixed, behind content, portal only) ── */
-export function SpatialBackground({ image }) {
+export function SpatialBackground({ image, video }) {
   const skin = useSkinTokens()
   const orbs = skin.orbs
+  const vidStyle = {
+    position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+    opacity: 1, animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
+  }
   return (
     <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: -1, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* cinematic cricket hero image — full-cover; portrait variant on mobile, wide on desktop */}
-      {image && (
+      {/* cinematic cricket hero — animated video where provided, else image; portrait on mobile, wide on desktop */}
+      {video ? (
+        <>
+          <video key={video} className="spatial-hero spatial-hero-desktop" style={vidStyle}
+            autoPlay muted loop playsInline preload="auto" poster={image}>
+            <source src={video} type="video/mp4" />
+          </video>
+          <video key={`${video}-m`} className="spatial-hero spatial-hero-mobile" style={vidStyle}
+            autoPlay muted loop playsInline preload="auto" poster={image && image.replace('.webp', '-m.webp')}>
+            <source src={video.replace('.mp4', '-m.mp4')} type="video/mp4" />
+          </video>
+          <div style={{ position: 'absolute', inset: 0,
+            background: 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)' }} />
+        </>
+      ) : image && (
         <>
           <div key={image} className="spatial-hero spatial-hero-desktop" style={{
             position: 'absolute', inset: 0,

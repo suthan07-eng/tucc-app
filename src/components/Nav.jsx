@@ -12,8 +12,12 @@ import { SpatialBackground } from './ui/spatial'
 const EASE = [0.23, 1, 0.32, 1]
 
 // Per-page cinematic cricket backdrop (portal only) — a unique scene per page
+// Pages with an animated video backdrop (poster falls back to the matching image)
+const HERO_VIDEO = {
+  '/app': '/portal-bg/hero.mp4',
+}
 const HERO_BG = {
-  '/app':          '/portal-bg/stadium.webp',
+  '/app':          '/portal-bg/scoreboard.webp',
   '/availability': '/portal-bg/huddle.webp',
   '/league':       '/portal-bg/pitch.webp',
   '/fixtures':     '/portal-bg/bowler.webp',
@@ -67,7 +71,7 @@ export default function Nav() {
   return (
     <>
       {/* ── Spatial depth layer + cinematic cricket backdrop (portal only) ── */}
-      {!isAdmin && <SpatialBackground image={HERO_BG[pathname] || HERO_BG._default} />}
+      {!isAdmin && <SpatialBackground image={HERO_BG[pathname] || HERO_BG._default} video={HERO_VIDEO[pathname]} />}
 
       {/* ── Top bar ── */}
       <nav
