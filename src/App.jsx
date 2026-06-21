@@ -3,22 +3,28 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { useActivityLog, useButtonTracking } from './hooks/useActivityLog'
 
-// Lazy import with one retry + reload-on-stale-chunk, so a transient/stale
-// chunk fetch never leaves the user on a blank screen.
+// Force-fetch a FRESH build: reload to a cache-busted URL so the browser/CDN
+// can't serve the stale HTML that points at purged chunks. Time-guarded (not
+// once-ever) so a stuck client always recovers; returns false if guarded.
+function hardReload() {
+  try {
+    const last = +sessionStorage.getItem('tucc_chunk_reload_at') || 0
+    if (Date.now() - last < 20000) return false
+    sessionStorage.setItem('tucc_chunk_reload_at', String(Date.now()))
+  } catch (e) {}
+  window.location.replace(window.location.pathname + '?_r=' + Date.now())
+  return true
+}
+
+// Lazy import with one retry + cache-busting reload on a stale/missing chunk,
+// so a transient/stale chunk fetch never leaves the user stuck.
 function lazyWithRetry(factory) {
   return lazy(() =>
     factory().catch(() =>
       new Promise((resolve, reject) => {
         setTimeout(() => {
           factory().then(resolve).catch((err) => {
-            try {
-              if (!sessionStorage.getItem('tucc_chunk_reload')) {
-                sessionStorage.setItem('tucc_chunk_reload', '1')
-                window.location.reload()
-                return
-              }
-            } catch (e) {}
-            reject(err)
+            if (!hardReload()) reject(err)
           })
         }, 400)
       })
@@ -79,14 +85,9 @@ class RouteErrorBoundary extends Component {
   static getDerivedStateFromError() { return { failed: true } }
   componentDidCatch(err) {
     const msg = (err && err.message) || ''
-    // Stale chunk after a deploy → reload once to fetch the fresh build
-    if (/dynamically imported module|module script failed|Failed to fetch|Importing a module/i.test(msg)) {
-      try {
-        if (!sessionStorage.getItem('tucc_chunk_reload')) {
-          sessionStorage.setItem('tucc_chunk_reload', '1')
-          window.location.reload()
-        }
-      } catch (e) {}
+    // Stale/missing chunk after a deploy → cache-busting reload to fetch fresh build
+    if (/dynamically imported module|module script failed|failed to fetch|importing a module|error loading|unexpected token/i.test(msg)) {
+      hardReload()
     }
   }
   render() {
@@ -96,7 +97,7 @@ class RouteErrorBoundary extends Component {
           <div style={{ fontSize: 40 }}>🏏</div>
           <div style={{ fontSize: 18, fontWeight: 800 }}>Just a moment…</div>
           <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', maxWidth: 320, lineHeight: 1.5 }}>The page didn’t finish loading. Tap below to reload.</div>
-          <button onClick={() => { try { sessionStorage.removeItem('tucc_chunk_reload') } catch (e) {} window.location.reload() }}
+          <button onClick={() => { try { sessionStorage.removeItem('tucc_chunk_reload_at') } catch (e) {} window.location.replace(window.location.pathname + '?_r=' + Date.now()) }}
             style={{ background: '#e9a020', color: '#1a0a00', border: 'none', borderRadius: 12, padding: '12px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>
             Reload
           </button>
