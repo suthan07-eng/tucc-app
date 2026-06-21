@@ -16,14 +16,6 @@ const EASE = [0.23, 1, 0.32, 1]
 const HERO_VIDEO = {
   '/app': '/portal-bg/hero.mp4',
 }
-// Lighter readability scrim on pages where the backdrop should read more strongly
-const LIGHT_SCRIM = 'linear-gradient(to bottom, rgba(10,18,40,0.10) 0%, rgba(10,18,40,0.16) 50%, rgba(10,18,40,0.42) 100%)'
-const HERO_SCRIM = {
-  '/results':  LIGHT_SCRIM,
-  '/fixtures': LIGHT_SCRIM,
-  '/players':  LIGHT_SCRIM,
-  '/stats':    LIGHT_SCRIM,
-}
 const HERO_BG = {
   '/app':          '/portal-bg/hero-poster.webp',
   '/availability': '/portal-bg/huddle.webp',
@@ -79,7 +71,7 @@ export default function Nav() {
   return (
     <>
       {/* ── Spatial depth layer + cinematic cricket backdrop (portal only) ── */}
-      {!isAdmin && <SpatialBackground image={HERO_BG[pathname] || HERO_BG._default} video={HERO_VIDEO[pathname]} scrim={HERO_SCRIM[pathname]} />}
+      {!isAdmin && <SpatialBackground image={HERO_BG[pathname] || HERO_BG._default} video={HERO_VIDEO[pathname]} />}
 
       {/* ── Top bar ── */}
       <nav

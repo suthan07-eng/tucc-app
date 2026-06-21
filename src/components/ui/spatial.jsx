@@ -39,9 +39,9 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
     @keyframes spatial-orb-c { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(5vw,-6vh,0) scale(1.15); } }
     @keyframes spatial-sheen { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
     @keyframes spatial-hero-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
-    /* Portrait backdrop on phones, wide backdrop on larger screens */
+    /* Portrait backdrop on any portrait screen (phone + tablet portrait), wide on landscape */
     .spatial-hero-mobile { display: none; }
-    @media (max-width: 640px) {
+    @media (orientation: portrait) {
       .spatial-hero-desktop { display: none; }
       .spatial-hero-mobile { display: block; }
     }
@@ -86,7 +86,7 @@ export function SpatialBackground({ image, video, scrim }) {
   const skin = useSkinTokens()
   const orbs = skin.orbs
   const zoomRef = useRef(null)
-  const scrimBg = scrim || 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)'
+  const scrimBg = scrim || 'linear-gradient(to bottom, rgba(10,18,40,0.12) 0%, rgba(10,18,40,0.18) 50%, rgba(10,18,40,0.44) 100%)'
 
   // Scroll-driven zoom: zoom IN to the subject on scroll down, OUT on scroll up
   useEffect(() => {
