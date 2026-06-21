@@ -82,10 +82,11 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
 }
 
 /* ── Drifting orb background (fixed, behind content, portal only) ── */
-export function SpatialBackground({ image, video }) {
+export function SpatialBackground({ image, video, scrim }) {
   const skin = useSkinTokens()
   const orbs = skin.orbs
   const zoomRef = useRef(null)
+  const scrimBg = scrim || 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)'
 
   // Scroll-driven zoom: zoom IN to the subject on scroll down, OUT on scroll up
   useEffect(() => {
@@ -141,8 +142,7 @@ export function SpatialBackground({ image, video }) {
             )}
           </div>
           {/* readability scrim — kept light so the cricket image stays visible behind every section incl. footer */}
-          <div style={{ position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: scrimBg }} />
         </>
       )}
       {orbs.map((o, i) => (
