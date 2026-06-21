@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FONT } from '../../constants'
 import { useSkinTokens, useSkin, setSkin, SKINS, SKIN_ORDER } from './portalSkin'
@@ -84,6 +85,25 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
 export function SpatialBackground({ image, video }) {
   const skin = useSkinTokens()
   const orbs = skin.orbs
+  const zoomRef = useRef(null)
+
+  // Scroll-driven zoom: zoom IN to the subject on scroll down, OUT on scroll up
+  useEffect(() => {
+    const el = zoomRef.current
+    if (!el) return
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const s = 1 + Math.min((window.scrollY || 0) / 1500, 0.32)
+      el.style.transform = `scale(${s})`
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    update()
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [image, video])
+
   const vidStyle = {
     position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
     opacity: 1, animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
@@ -91,33 +111,35 @@ export function SpatialBackground({ image, video }) {
   return (
     <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: -1, overflow: 'hidden', pointerEvents: 'none' }}>
       {/* cinematic cricket hero — animated video where provided, else image; portrait on mobile, wide on desktop */}
-      {video ? (
+      {(video || image) && (
         <>
-          <video key={video} className="spatial-hero spatial-hero-desktop" style={vidStyle}
-            autoPlay muted loop playsInline preload="auto" poster={image}>
-            <source src={video} type="video/mp4" />
-          </video>
-          <video key={`${video}-m`} className="spatial-hero spatial-hero-mobile" style={vidStyle}
-            autoPlay muted loop playsInline preload="auto" poster={image && image.replace('.webp', '-m.webp')}>
-            <source src={video.replace('.mp4', '-m.mp4')} type="video/mp4" />
-          </video>
-          <div style={{ position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)' }} />
-        </>
-      ) : image && (
-        <>
-          <div key={image} className="spatial-hero spatial-hero-desktop" style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center',
-            opacity: 1,
-            animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
-          }} />
-          <div key={`${image}-m`} className="spatial-hero spatial-hero-mobile" style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: `url(${image.replace('.webp', '-m.webp')})`, backgroundSize: 'cover', backgroundPosition: 'center',
-            opacity: 1,
-            animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
-          }} />
+          <div ref={zoomRef} style={{ position: 'absolute', inset: 0, willChange: 'transform', transformOrigin: 'center center', transition: 'transform 120ms linear' }}>
+            {video ? (
+              <>
+                <video key={video} className="spatial-hero spatial-hero-desktop" style={vidStyle}
+                  autoPlay muted loop playsInline preload="auto" poster={image}>
+                  <source src={video} type="video/mp4" />
+                </video>
+                <video key={`${video}-m`} className="spatial-hero spatial-hero-mobile" style={vidStyle}
+                  autoPlay muted loop playsInline preload="auto" poster={image && image.replace('.webp', '-m.webp')}>
+                  <source src={video.replace('.mp4', '-m.mp4')} type="video/mp4" />
+                </video>
+              </>
+            ) : (
+              <>
+                <div key={image} className="spatial-hero spatial-hero-desktop" style={{
+                  position: 'absolute', inset: 0,
+                  backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center',
+                  opacity: 1, animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
+                }} />
+                <div key={`${image}-m`} className="spatial-hero spatial-hero-mobile" style={{
+                  position: 'absolute', inset: 0,
+                  backgroundImage: `url(${image.replace('.webp', '-m.webp')})`, backgroundSize: 'cover', backgroundPosition: 'center',
+                  opacity: 1, animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
+                }} />
+              </>
+            )}
+          </div>
           {/* readability scrim — kept light so the cricket image stays visible behind every section incl. footer */}
           <div style={{ position: 'absolute', inset: 0,
             background: 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)' }} />

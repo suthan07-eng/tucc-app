@@ -17,7 +17,7 @@ const HERO_VIDEO = {
   '/app': '/portal-bg/hero.mp4',
 }
 const HERO_BG = {
-  '/app':          '/portal-bg/scoreboard.webp',
+  '/app':          '/portal-bg/hero-poster.webp',
   '/availability': '/portal-bg/huddle.webp',
   '/league':       '/portal-bg/pitch.webp',
   '/fixtures':     '/portal-bg/bowler.webp',
