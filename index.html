@@ -152,22 +152,28 @@
     <div id="root"></div>
     <script>
       /* Auto-recover from a stale cached page referencing JS chunks that no
-         longer exist after a deploy (common cause of a blank page on mobile). */
+         longer exist after a deploy (common cause of a blank page). Reloads with
+         a cache-busting query so the browser/CDN fetch FRESH HTML + chunks, and
+         a time-based guard (not once-ever) so a stuck client always recovers. */
       (function () {
-        function reloadOnce() {
+        var CHUNK_RE = /dynamically imported module|module script failed|failed to fetch|importing a module|error loading|chunkloaderror|unexpected token '<'/i;
+        function hardReload() {
           try {
-            if (sessionStorage.getItem('tucc_chunk_reload')) return;
-            sessionStorage.setItem('tucc_chunk_reload', '1');
+            var last = +sessionStorage.getItem('tucc_chunk_reload_at') || 0;
+            if (Date.now() - last < 20000) return; // avoid reload loops
+            sessionStorage.setItem('tucc_chunk_reload_at', String(Date.now()));
           } catch (e) {}
-          location.reload();
+          var u = location.pathname + (location.search || '');
+          u += (u.indexOf('?') > -1 ? '&' : '?') + '_r=' + Date.now();
+          location.replace(u); // unique URL → bypass stale HTML cache
         }
-        window.addEventListener('vite:preloadError', reloadOnce);
+        window.addEventListener('vite:preloadError', function (e) { if (e && e.preventDefault) e.preventDefault(); hardReload(); });
         window.addEventListener('error', function (e) {
-          var msg = (e && e.message) || '';
-          if (/dynamically imported module|module script failed|Failed to fetch|Importing a module/i.test(msg)) reloadOnce();
-        });
-        window.addEventListener('load', function () {
-          try { sessionStorage.removeItem('tucc_chunk_reload'); } catch (e) {}
+          if (CHUNK_RE.test((e && e.message) || '')) hardReload();
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e && e.reason; var m = (r && (r.message || r)) || '';
+          if (CHUNK_RE.test(String(m))) hardReload();
         });
       })();
     </script>
