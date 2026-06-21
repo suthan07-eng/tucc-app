@@ -192,17 +192,22 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
         borderRadius: 22,
         overflow: 'hidden',
         boxShadow: medal
-          ? `0 0 0 2px ${medal.glow}, 0 8px 32px rgba(30,58,138,0.18)`
-          : `0 4px 20px rgba(30,58,138,0.10)`,
-        background: C.white,
-        border: medal ? `2px solid ${medal.bg}` : `1.5px solid ${C.gray2}`,
+          ? `0 0 0 2px ${medal.glow}, 0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)`
+          : `0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)`,
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        border: medal ? `2px solid ${medal.bg}` : `1px solid rgba(255,255,255,0.18)`,
         cursor: 'pointer',
       }}
       onClick={() => setExpanded(e => !e)}
     >
       {/* ── Gradient header ── */}
       <div style={{
-        background: rc.grad,
+        background: `linear-gradient(rgba(13,22,48,0.18), rgba(13,22,48,0.18)), ${rc.grad}`,
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.26)',
         padding: '20px 20px 18px',
         position: 'relative',
         overflow: 'hidden',
@@ -418,10 +423,12 @@ function LeaderRow({ player, rank, cachedScore, onClick }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 16px',
-        background: C.white,
-        borderRadius: 14,
-        border: medal ? `1.5px solid ${medal.bg}` : `1px solid ${C.gray2}`,
-        boxShadow: medal ? `0 2px 12px rgba(30,58,138,0.12)` : `0 1px 6px rgba(30,58,138,0.06)`,
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        borderRadius: 16,
+        border: medal ? `1.5px solid ${medal.bg}` : `1px solid rgba(255,255,255,0.18)`,
+        boxShadow: medal ? `0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)` : `0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)`, // glass
         cursor: 'pointer',
         transition: 'transform 0.15s, box-shadow 0.15s',
       }}
@@ -445,15 +452,15 @@ function LeaderRow({ player, rank, cachedScore, onClick }) {
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.dark, lineHeight: 1.2, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: '#fff', lineHeight: 1.2, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {player.name}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ background: rc.light, color: rc.text, fontFamily: FONT, fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 10, textTransform: 'uppercase', letterSpacing: 0.4 }}>
             {getRoleIcons(role)} {role}
           </span>
-          {bat && <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray4 }}>{bat.runs}r</span>}
-          {bowl && (bowl.overs || 0) >= 4 && <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray4 }}>{bowl.wickets}w</span>}
+          {bat && <span style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{bat.runs}r</span>}
+          {bowl && (bowl.overs || 0) >= 4 && <span style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{bowl.wickets}w</span>}
         </div>
       </div>
 
@@ -650,10 +657,13 @@ export default function PlayersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
         style={{
-          background: `linear-gradient(135deg, ${C.greenDark} 0%, ${C.green} 60%, #3b82f6 100%)`,
+          background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
           borderRadius: 24, padding: '32px 28px 28px', marginBottom: 22,
           position: 'relative', overflow: 'hidden',
-          boxShadow: '0 8px 40px rgba(30,58,138,0.25)',
+          border: '1px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
         }}
       >
         {/* Decorative orbs */}
@@ -666,7 +676,7 @@ export default function PlayersPage() {
             <span style={{ fontSize: 12 }}>🏏</span>
             <span style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase' }}>TUCC · 2026 Season</span>
           </div>
-          <h1 style={{ fontFamily: FONT, fontWeight: 900, fontSize: 32, color: '#fff', margin: '0 0 10px', lineHeight: 1.1, letterSpacing: -0.5 }}>Our Squad</h1>
+          <h1 style={{ fontFamily: FONT, fontWeight: 900, fontSize: 32, color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: '0 0 10px', lineHeight: 1.1, letterSpacing: -0.5 }}>Our Squad</h1>
           <p style={{ fontFamily: FONT, fontSize: 13.5, color: 'rgba(255,255,255,0.72)', margin: '0 0 24px', lineHeight: 1.6, maxWidth: 520 }}>
             TUCC Performance Scores reflect each player's 2026 BTCL Premier Division contributions — role-weighted, confidence-adjusted.
           </p>
@@ -809,8 +819,8 @@ export default function PlayersPage() {
             transition={{ duration: 0.25 }}
             style={{ overflow: 'hidden', marginBottom: 16 }}
           >
-            <div style={{ background: C.gray1, borderRadius: 14, padding: '16px 18px', fontFamily: FONT, fontSize: 12, color: C.gray5, lineHeight: 1.7, border: `1px solid ${C.gray2}` }}>
-              <strong style={{ color: C.dark, fontSize: 13 }}>TUCC Performance Score (0–100)</strong>
+            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '16px 18px', fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
+              <strong style={{ color: '#fff', fontSize: 13 }}>TUCC Performance Score (0–100)</strong>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
                 {[
                   { title: '⚡ Batting', text: 'Runs (40pts) + Strike rate tier (30pts) + Average (20pts) + Milestones (10pts)' },
@@ -818,9 +828,9 @@ export default function PlayersPage() {
                   { title: '⚖️ Role Weights', text: 'Batters/WK: 80/20 · Bowlers: 20/80 · All-rounders: 50/50 + bonus' },
                   { title: '📊 Confidence', text: 'Scores shrunk for <4 matches to prevent small-sample inflation' },
                 ].map(x => (
-                  <div key={x.title} style={{ background: C.white, borderRadius: 10, padding: '10px 12px', border: `1px solid ${C.gray2}` }}>
-                    <div style={{ fontWeight: 700, color: C.dark, marginBottom: 4, fontSize: 12 }}>{x.title}</div>
-                    <div style={{ fontSize: 11, color: C.gray4 }}>{x.text}</div>
+                  <div key={x.title} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
+                    <div style={{ fontWeight: 700, color: '#fff', marginBottom: 4, fontSize: 12 }}>{x.title}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{x.text}</div>
                   </div>
                 ))}
               </div>
@@ -848,10 +858,13 @@ export default function PlayersPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                   style={{
-                    background: rc.grad, borderRadius: 18, padding: '18px 14px',
+                    background: `linear-gradient(rgba(13,22,48,0.18), rgba(13,22,48,0.18)), ${rc.grad}`,
+                    backdropFilter: 'blur(20px) saturate(160%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+                    borderRadius: 18, padding: '18px 14px',
                     textAlign: 'center', position: 'relative', overflow: 'hidden',
-                    boxShadow: `0 8px 24px ${rc.accent}40`,
-                    border: `1px solid ${rc.accent}60`,
+                    boxShadow: `0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px ${rc.accent}80, inset 0 1px 0 rgba(255,255,255,0.26)`,
+                    border: `1px solid rgba(255,255,255,0.18)`,
                     cursor: 'pointer',
                   }}
                   whileHover={{ scale: 1.03, y: -2, transition: { duration: 0.2 } }}
@@ -943,7 +956,7 @@ export default function PlayersPage() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
               transition={{ ease: [0.32, 0.72, 0, 1] }}
-              style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', borderRadius: 24, background: C.white }}
+              style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', borderRadius: 24, background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)' }}
               onClick={e => e.stopPropagation()}
             >
               <PlayerCard

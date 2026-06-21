@@ -366,7 +366,7 @@ function UploadModal({ user, playerInfo, onClose, onPosted, existingAlbums = [] 
           )}
 
           {/* ── ITEM GRID ── */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(340px, 1fr))', gap:16 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap:16 }}>
             <AnimatePresence>
               {items.map((item, idx) => {
                 const active = item.status==='compressing'||item.status==='uploading'
@@ -943,7 +943,7 @@ function GroupedMediaView({ mediaType, sorted, albumMap, albumNames, noAlbum, on
             </div>
 
             {/* Photo grid (max 6) */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:8 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 140px), 1fr))', gap:8 }}>
               {preview.map((post, i) => {
                 const isLast = i === PREVIEW - 1 && overflow > 0
                 return (
@@ -1004,7 +1004,7 @@ function AlbumCard({ albumName, posts, onClick }) {
       onClick={onClick}
       style={{ borderRadius:18, overflow:'hidden', cursor:'pointer',
         border:'1px solid rgba(255,255,255,0.18)',
-        background:'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+        background:'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
         boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', position:'relative' }}
     >
       {/* Collage: 1 big left + 2 stacked right */}
@@ -1265,7 +1265,7 @@ export default function GalleryPage() {
 
       {/* ── Hero Header ─────────────────────────────────────── */}
       <div style={{
-        background:'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+        background:'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
         border:'1px solid rgba(255,255,255,0.18)',
         boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
         backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)',
@@ -1362,7 +1362,7 @@ export default function GalleryPage() {
 
         {loading ? (
           /* Skeleton */
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:12 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap:12 }}>
             {Array.from({length:9}).map((_,i) => (
               <motion.div key={i} initial={{ opacity:0 }} animate={{ opacity:[0.3,0.6,0.3] }} transition={{ duration:1.4, repeat:Infinity, delay:i*.08 }}
                 style={{ paddingTop:'75%', borderRadius:18, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.10)', position:'relative' }}/>
@@ -1411,7 +1411,7 @@ export default function GalleryPage() {
                   No {albumInnerTab} in this album yet.
                 </div>
               ) : (
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:10 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 140px), 1fr))', gap:10 }}>
                   {(albumInnerTab==='photos'?albumPhotos:albumVideos).map((post, i) => (
                     <motion.div key={post.id} initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }}
                       transition={{ type:'spring', damping:20, delay:Math.min(i*.03,.25) }}>
@@ -1447,7 +1447,7 @@ export default function GalleryPage() {
                       <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.5)', fontFamily:FONT, textTransform:'uppercase', letterSpacing:.8, marginBottom:14 }}>
                         {albumNames.length} Album{albumNames.length!==1?'s':''}
                       </div>
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16, marginBottom:36 }}>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap:16, marginBottom:36 }}>
                         {albumNames.map((name, i) => (
                           <motion.div key={name} initial={{ opacity:0, scale:.93 }} animate={{ opacity:1, scale:1 }}
                             transition={{ type:'spring', damping:20, delay:Math.min(i*.06,.3) }}>
@@ -1465,7 +1465,7 @@ export default function GalleryPage() {
                           Other
                         </div>
                       )}
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16 }}>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap:16 }}>
                         <motion.div initial={{ opacity:0, scale:.93 }} animate={{ opacity:1, scale:1 }}
                           transition={{ type:'spring', damping:20, delay:Math.min(albumNames.length*.06,.3) }}>
                           <AlbumCard

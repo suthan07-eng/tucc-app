@@ -37,6 +37,7 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
     @keyframes spatial-orb-b { 0%,100% { transform: translate3d(0,0,0) scale(1.05); } 50% { transform: translate3d(-7vw,-5vh,0) scale(0.92); } }
     @keyframes spatial-orb-c { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(5vw,-6vh,0) scale(1.15); } }
     @keyframes spatial-sheen { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+    @keyframes spatial-hero-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
 
     /* Frosted-glass cards — concentric, machined feel. Hover gives a gentle lift. */
     .spatial-card {
@@ -74,11 +75,25 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
 }
 
 /* ── Drifting orb background (fixed, behind content, portal only) ── */
-export function SpatialBackground() {
+export function SpatialBackground({ image }) {
   const skin = useSkinTokens()
   const orbs = skin.orbs
   return (
     <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: -1, overflow: 'hidden', pointerEvents: 'none' }}>
+      {/* cinematic cricket hero image — top-anchored, fades into the dark base */}
+      {image && (
+        <>
+          <div key={image} style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center',
+            opacity: 1,
+            animation: 'spatial-hero-in 1.1s cubic-bezier(0.22,1,0.36,1) both',
+          }} />
+          {/* readability scrim — kept light so the cricket image stays visible behind every section incl. footer */}
+          <div style={{ position: 'absolute', inset: 0,
+            background: 'linear-gradient(to bottom, rgba(10,18,40,0.30) 0%, rgba(10,18,40,0.34) 50%, rgba(10,18,40,0.52) 100%)' }} />
+        </>
+      )}
       {orbs.map((o, i) => (
         <div key={`${skin.name}-${i}`} className="spatial-orb" style={{
           position: 'absolute', top: o.top, left: o.left,

@@ -11,6 +11,22 @@ import { SpatialBackground } from './ui/spatial'
 
 const EASE = [0.23, 1, 0.32, 1]
 
+// Per-page cinematic cricket backdrop (portal only) — a unique scene per page
+const HERO_BG = {
+  '/app':          '/portal-bg/stadium.webp',
+  '/availability': '/portal-bg/huddle.webp',
+  '/league':       '/portal-bg/pitch.webp',
+  '/fixtures':     '/portal-bg/bowler.webp',
+  '/results':      '/portal-bg/stumps.webp',
+  '/players':      '/portal-bg/batsman.webp',
+  '/stats':        '/portal-bg/scoreboard.webp',
+  '/gallery':      '/portal-bg/trophy.webp',
+  '/analyse':      '/portal-bg/ball.webp',
+  '/register':     '/portal-bg/gear.webp',
+  '/success':      '/portal-bg/trophy.webp',
+  _default:        '/portal-bg/stadium.webp',
+}
+
 const MENU_LINKS = [
   { path: '/app',          label: 'Home',         Icon: Home,          color: '#1d4ed8', bg: 'rgba(59,130,246,0.12)' },
   { path: '/league',       label: 'League Table', Icon: Trophy,        color: '#b45309', bg: 'rgba(233,160,32,0.12)' },
@@ -50,8 +66,8 @@ export default function Nav() {
 
   return (
     <>
-      {/* ── Spatial depth layer (portal only) ── */}
-      {!isAdmin && <SpatialBackground />}
+      {/* ── Spatial depth layer + cinematic cricket backdrop (portal only) ── */}
+      {!isAdmin && <SpatialBackground image={HERO_BG[pathname] || HERO_BG._default} />}
 
       {/* ── Top bar ── */}
       <nav

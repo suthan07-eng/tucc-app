@@ -86,7 +86,7 @@ export const SKINS = {
     ],
     grain: 0.04,
     card: {
-      background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+      background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
       border: '1px solid rgba(255,255,255,0.18)',
       boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
       radius: 22,

@@ -80,10 +80,12 @@ function PosterCard({ hero, type, delay = 0, onClick }) {
       transition={{ duration: 0.5, delay, ease: [0.23, 1, 0.32, 1] }}
       onClick={onClick}
       style={{
-        flex: 1, minWidth: 150, maxWidth: 200, cursor: 'pointer',
+        flex: '1 1 150px', minWidth: 0, maxWidth: 200, width: '100%', cursor: 'pointer',
         borderRadius: 18, overflow: 'hidden', position: 'relative',
-        background: `linear-gradient(175deg, ${bgTop} 0%, ${bgMid} 45%, ${bgBot} 100%)`,
-        boxShadow: `0 12px 36px ${glow}, 0 0 0 1px rgba(255,255,255,.07), inset 0 1px 0 rgba(255,255,255,.08)`,
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
       }}
     >
       {/* Decorative cricket ball watermark */}
@@ -208,9 +210,10 @@ function PosterCard({ hero, type, delay = 0, onClick }) {
         {/* Message banner */}
         <div style={{
           margin: '8px 10px 12px',
-          background: `linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.03))`,
+          background: 'rgba(255,255,255,0.05)',
+          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
           borderRadius: 10, padding: '7px 10px',
-          border: `1px solid ${accentMid}30`,
+          border: '1px solid rgba(255,255,255,0.10)',
           position: 'relative', overflow: 'hidden',
         }}>
           <div style={{
@@ -232,7 +235,7 @@ function PosterCard({ hero, type, delay = 0, onClick }) {
 
 function ShimmerCard() {
   return (
-    <div style={{ flex: 1, minWidth: 150, maxWidth: 200, borderRadius: 18, overflow: 'hidden', background: 'linear-gradient(175deg,#030d1a,#1e3a8a)', height: 260, position: 'relative' }}>
+    <div style={{ flex: '1 1 150px', minWidth: 0, maxWidth: 200, width: '100%', borderRadius: 18, overflow: 'hidden', background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', height: 260, position: 'relative' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)', animation: 'shimmer 1.6s infinite' }} />
     </div>
   )
@@ -289,8 +292,10 @@ function CardModal({ hero, type, onClose }) {
           style={{
             width: '100%', maxWidth: 380,
             borderRadius: 28, overflow: 'hidden', position: 'relative',
-            background: `linear-gradient(175deg, ${bgTop} 0%, ${bgMid} 45%, ${bgBot} 100%)`,
-            boxShadow: `0 40px 100px ${glow}, 0 0 0 1px rgba(255,255,255,.1), inset 0 1px 0 rgba(255,255,255,.1)`,
+            background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+            backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
           }}
         >
           {/* Close button */}
@@ -397,9 +402,10 @@ function CardModal({ hero, type, onClose }) {
             {/* Message */}
             <div style={{
               margin: '18px 20px 24px',
-              background: 'linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03))',
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
               borderRadius: 16, padding: '14px 18px',
-              border: `1px solid ${accentMid}30`, position: 'relative', overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.10)', position: 'relative', overflow: 'hidden',
             }}>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${accent}, ${accentDk})`, borderRadius: '3px 0 0 3px' }} />
               <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,.8)', lineHeight: 1.6, textAlign: 'center', paddingLeft: 4 }}>

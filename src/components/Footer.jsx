@@ -26,8 +26,11 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: C.greenDark,
-        borderTop: `1px solid rgba(255,255,255,.08)`,
+        background: 'linear-gradient(180deg, rgba(13,22,48,0.38), rgba(10,18,40,0.26))',
+        backdropFilter: 'blur(22px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(22px) saturate(150%)',
+        borderTop: `1px solid rgba(255,255,255,.14)`,
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10)',
         padding: '32px 20px 28px',
         marginTop: 40,
       }}

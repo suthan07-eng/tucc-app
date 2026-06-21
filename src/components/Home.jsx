@@ -25,8 +25,11 @@ function SponsorBanner() {
         marginTop: 20,
         borderRadius: 18,
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-        boxShadow: '0 4px 24px rgba(15,23,42,.18), 0 0 0 1px rgba(233,160,32,.15)',
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
         position: 'relative',
       }}
     >
@@ -212,7 +215,7 @@ function NextFixtureCard() {
   return (
     <motion.div
       variants={staggerItem}
-      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', boxShadow: '0 10px 40px rgba(29,78,216,.4)', position: 'relative', background: 'linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 45%, #2563eb 100%)' }}
+      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', position: 'relative', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))' }}
     >
       {/* Decorative blobs */}
       <div style={{ position: 'absolute', top: -36, right: -36, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,.06)', pointerEvents: 'none' }} />
@@ -273,7 +276,7 @@ function NextFixtureCard() {
       )}
 
       {/* Venue */}
-      <div style={{ margin: '14px 16px 0', background: 'rgba(0,0,0,.2)', borderRadius: 13, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ margin: '14px 16px 0', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: 16, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <MapPin size={13} color="rgba(255,255,255,.5)" strokeWidth={2} style={{ flexShrink: 0 }} />
         <div style={{ flex: 1, fontFamily: FONT, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.65)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fixture.venue}</div>
         <a href={mapUrl} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 8, padding: '4px 9px', fontFamily: FONT, fontSize: 10, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
@@ -282,7 +285,7 @@ function NextFixtureCard() {
       </div>
 
       {/* ── 7-Day Weather Forecast ── */}
-      <div style={{ margin: '12px 16px 16px', background: 'rgba(0,0,0,.22)', borderRadius: 16, padding: '12px 12px 10px', backdropFilter: 'blur(4px)' }}>
+      <div style={{ margin: '12px 16px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 16, padding: '12px 12px 10px', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
         {/* Section title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
           <span style={{ fontSize: 13 }}>🌤️</span>
@@ -418,8 +421,8 @@ function SeasonSnapshot() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #2563eb, #1d4ed8)', borderRadius: 99 }} />
-          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>2026 Season</span>
-          <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3, fontWeight: 500 }}>BTCL</span>
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>2026 Season</span>
+          <span style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>BTCL</span>
         </div>
         <button onClick={() => nav('/league')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.green, display: 'flex', alignItems: 'center', gap: 3 }}>
           Full table <ChevronRight size={12} />
@@ -494,7 +497,7 @@ function TopPerformers() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 4, height: 20, background: 'linear-gradient(180deg,#f59e0b,#b45309)', borderRadius: 99 }} />
-          <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: C.dark }}>Top Performers</span>
+          <span style={{ fontFamily: FONT, fontSize: 15, fontWeight: 800, color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Top Performers</span>
           <span style={{ fontSize: 14 }}>⭐</span>
         </div>
         <button onClick={() => nav('/stats')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12, fontWeight: 700, color: C.green, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -611,11 +614,13 @@ function ResultsTeaser() {
       onClick={() => nav('/results')}
       style={{
         marginTop: 16, cursor: 'pointer',
-        background: `linear-gradient(135deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         borderRadius: 16, padding: '16px 18px',
         display: 'flex', alignItems: 'center', gap: 14,
-        boxShadow: `0 4px 16px ${C.shadowMd}`,
-        border: `1px solid rgba(255,255,255,.08)`,
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+        border: '1px solid rgba(255,255,255,0.18)',
         transition: 'transform 150ms ease, box-shadow 150ms ease',
       }}
       whileHover={{ scale: 1.01 }}
@@ -811,7 +816,11 @@ export default function Home() {
       <div
         className="hero-parallax"
         style={{
-          background: `radial-gradient(ellipse at 70% 0%, ${C.greenLight}55 0%, transparent 60%), linear-gradient(160deg, ${C.greenDark} 0%, #1e3a8a 100%)`,
+          background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          borderBottom: '1px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
           padding: '36px 20px 60px',
           position: 'relative',
         }}
@@ -959,7 +968,7 @@ export default function Home() {
         {/* ── Availability Cards Heading ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, marginBottom: 2 }}>
           <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #2563eb, #1d4ed8)', borderRadius: 99 }} />
-          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Next Match Availability</span>
+          <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Next Match Availability</span>
           <span style={{ fontSize: 13 }}>📋</span>
         </div>
 
@@ -1032,16 +1041,16 @@ export default function Home() {
         )}
 
         {/* Player chips */}
-        <Card style={{ marginTop: 16, overflow: 'hidden', padding: 0 }}>
+        <Card style={{ marginTop: 16, overflow: 'hidden', padding: 0, background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)' }}>
           <div style={{
             padding: '14px 16px 12px',
-            background: `linear-gradient(135deg, ${C.greenDark}08, ${C.greenLight}10)`,
-            borderBottom: `1px solid ${C.gray2}`,
+            background: 'rgba(255,255,255,0.05)',
+            borderBottom: '1px solid rgba(255,255,255,0.10)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 4, height: 18, background: 'linear-gradient(180deg, #2563eb, #1d4ed8)', borderRadius: 99 }} />
-              <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: C.dark }}>Squad</span>
+              <span style={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Squad</span>
               {!loading && (
                 <span style={{ background: C.greenBg, color: C.green, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
                   {players.length} players
@@ -1114,17 +1123,20 @@ export default function Home() {
           <div
             style={{
               marginTop: 16,
-              background: C.white,
+              background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+              backdropFilter: 'blur(20px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+              border: '1px solid rgba(255,255,255,0.18)',
               borderRadius: 14,
               padding: '18px 20px',
-              boxShadow: '0 2px 12px rgba(0,0,0,.06)',
+              boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
               borderLeft: `4px solid ${C.green}`,
             }}
           >
             <div style={{ fontSize: 11, fontWeight: 700, color: C.green, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>
               📣 Message from the Captain
             </div>
-            <div style={{ fontSize: 14, color: C.gray5, lineHeight: 1.65, fontStyle: 'italic' }}>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.9)', lineHeight: 1.65, fontStyle: 'italic' }}>
               "{match.home_message}"
             </div>
           </div>
@@ -1155,7 +1167,7 @@ export default function Home() {
             ['Deadline', deadline],
           ].filter(([, v]) => v)
           return (
-            <div style={{ marginTop: 14, background: `linear-gradient(145deg, ${C.greenDark} 0%, #1e3a8a 100%)`, borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(15,23,42,.35), 0 0 0 1px rgba(255,255,255,.06)' }}>
+            <div style={{ marginTop: 14, background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)' }}>
               {/* Gold top bar */}
               <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#e9a020,#f59e0b,transparent)' }}/>
               <div style={{ padding: '16px 18px' }}>
@@ -1187,7 +1199,7 @@ export default function Home() {
         {/* ── Upcoming & Recent Matches ── */}
         {!loading && allMatches.length > 0 && (
           <div style={{ marginTop: 24 }} className="scroll-reveal">
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.gray5, marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 12 }}>
               Upcoming & Recent Matches
             </div>
             <motion.div
@@ -1201,14 +1213,16 @@ export default function Home() {
                   key={m.id}
                   variants={staggerItem}
                   style={{
-                    background: C.white,
-                    borderRadius: 12,
+                    background: m.is_active ? 'rgba(124,58,237,0.16)' : 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    borderRadius: 16,
                     padding: '14px 16px',
-                    boxShadow: '0 1px 6px rgba(0,0,0,.05)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 14,
-                    border: m.is_active ? `2px solid ${C.green}` : `1px solid ${C.gray2}`,
+                    border: m.is_active ? `1.5px solid ${C.green}` : '1px solid rgba(255,255,255,0.10)',
                   }}
                 >
                   <div
@@ -1232,10 +1246,10 @@ export default function Home() {
                     </div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: C.dark }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>
                       vs {m.opponent || 'TBC'}
                     </div>
-                    <div style={{ fontSize: 12, color: C.gray3, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {m.venue || 'Venue TBC'}{m.time ? ` · ${m.time}` : ''}
                     </div>
                   </div>
@@ -1243,7 +1257,7 @@ export default function Home() {
                     {m.is_active && (
                       <Badge variant="available" style={{ fontSize: 11 }}>Active</Badge>
                     )}
-                    <span style={{ fontSize: 11, color: C.gray3 }}>{m.format || 'T20'}</span>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>{m.format || 'T20'}</span>
                   </div>
                 </motion.div>
               ))}
@@ -1270,9 +1284,12 @@ function SelectedXICard({ match, teamSelection }) {
   return (
     <div
       style={{
-        background: C.white,
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        border: '1px solid rgba(255,255,255,0.18)',
         borderRadius: 14,
-        boxShadow: '0 2px 14px rgba(0,0,0,.07)',
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
         overflow: 'hidden',
         marginTop: 16,
       }}
@@ -1327,7 +1344,7 @@ function SelectedXICard({ match, teamSelection }) {
                   alignItems: 'center',
                   gap: 10,
                   padding: '9px 0',
-                  borderBottom: i < xi.length - 1 ? `1px solid ${C.gray1}` : 'none',
+                  borderBottom: i < xi.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
                 }}
               >
                 <div
@@ -1347,7 +1364,7 @@ function SelectedXICard({ match, teamSelection }) {
                 >
                   {i + 1}
                 </div>
-                <div style={{ flex: 1, fontWeight: 600, fontSize: 14, color: C.dark, minWidth: 0 }}>
+                <div style={{ flex: 1, fontWeight: 600, fontSize: 14, color: '#fff', minWidth: 0 }}>
                   {s.player_name}
                 </div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
@@ -1418,7 +1435,7 @@ function SelectedXICard({ match, teamSelection }) {
               style={{
                 fontSize: 11,
                 fontWeight: 700,
-                color: C.gray3,
+                color: 'rgba(255,255,255,0.55)',
                 margin: '12px 0 8px',
                 textTransform: 'uppercase',
                 letterSpacing: 0.5,
@@ -1434,7 +1451,7 @@ function SelectedXICard({ match, teamSelection }) {
                   alignItems: 'center',
                   gap: 10,
                   padding: '8px 0',
-                  borderBottom: `1px solid ${C.gray1}`,
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
                   opacity: 0.75,
                 }}
               >
@@ -1455,7 +1472,7 @@ function SelectedXICard({ match, teamSelection }) {
                 >
                   R
                 </div>
-                <div style={{ flex: 1, fontWeight: 500, fontSize: 14, color: C.gray4 }}>
+                <div style={{ flex: 1, fontWeight: 500, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
                   {s.player_name}
                 </div>
               </div>
@@ -1465,7 +1482,7 @@ function SelectedXICard({ match, teamSelection }) {
 
         {/* Last updated */}
         {lastUpdated && (
-          <div style={{ fontSize: 11, color: C.gray3, marginTop: 12, textAlign: 'right' }}>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 12, textAlign: 'right' }}>
             Last updated:{' '}
             {new Date(lastUpdated).toLocaleString('en-GB', {
               day: 'numeric',

@@ -15,7 +15,7 @@ const EASE = [0.23, 1, 0.32, 1]
 
 // ── Bold Gradient theme tokens ───────────────────────────────────────────────
 const GLASS = {
-  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
   border: '1px solid rgba(255,255,255,0.18)',
   boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
   borderRadius: 22,
@@ -522,7 +522,7 @@ function MatchPlan({ batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats,
   return (
     <div>
       {/* === INTEL SUMMARY === */}
-      <div style={{ background:`linear-gradient(135deg, ${C.greenDark}, #1e40af)`, borderRadius:16, padding:'16px 18px', marginBottom:20, color:'#fff' }}>
+      <div style={{ background:'linear-gradient(135deg, rgba(15,23,42,0.55), rgba(30,64,175,0.45))', backdropFilter:'blur(18px) saturate(150%)', WebkitBackdropFilter:'blur(18px) saturate(150%)', border:'1px solid rgba(255,255,255,0.12)', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 44px -20px rgba(0,0,0,0.5)', borderRadius:16, padding:'16px 18px', marginBottom:20, color:'#fff' }}>
         <div style={{ fontFamily:FONT, fontWeight:800, fontSize:13, marginBottom:10, color:'rgba(255,255,255,.7)', textTransform:'uppercase', letterSpacing:0.5 }}>📋 Pre-Match Intel</div>
         <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
           {[
@@ -765,7 +765,7 @@ function CompareTab({ oppName, oppBat, oppBowl, our }) {
       </Section>
 
       {/* Overall verdict */}
-      <div style={{ ...GLASS, padding:'18px 18px 20px', background:'linear-gradient(150deg, rgba(124,58,237,0.4), rgba(37,99,235,0.34) 60%, rgba(20,184,166,0.22))' }}>
+      <div style={{ ...GLASS, padding:'18px 18px 20px', background:'linear-gradient(150deg, rgba(124,58,237,0.4), rgba(37,99,235,0.24) 60%, rgba(20,184,166,0.22))' }}>
         <div style={{ fontFamily:FONT, fontSize:10.5, fontWeight:800, letterSpacing:1, textTransform:'uppercase', color:'rgba(255,255,255,0.7)', marginBottom:6 }}>🧠 Overall Verdict</div>
         <div style={{ fontFamily:FONT, fontWeight:900, fontSize:20, color:'#fff', marginBottom:8 }}>
           {overall==='TUCC' ? `${TUCC} favoured (${tWins}–${oWins})` : overall==='OPP' ? `${oppName} favoured (${oWins}–${tWins})` : `Too close to call (${tWins}–${oWins})`}

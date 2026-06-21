@@ -45,7 +45,7 @@ export default function League() {
       <Nav />
 
       {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`, padding: '24px 20px' }}>
+      <div style={{ background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', padding: '24px 20px' }}>
         <motion.div variants={staggerList} initial="hidden" animate="visible" style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
           <motion.button
             variants={fadeUp}
@@ -57,7 +57,7 @@ export default function League() {
           <motion.div variants={fadeUp} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <span style={{ fontSize: 38, flexShrink: 0 }}>🏆</span>
             <div>
-              <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
+              <h1 style={{ color: '#fff', backgroundImage: 'linear-gradient(92deg,#60a5fa,#c084fc 60%,#f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
                 BTCL UK · British Tamil Cricket League
               </h1>
               <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 13, margin: '4px 0 0' }}>
@@ -69,7 +69,7 @@ export default function League() {
       </div>
 
       {/* Sub-tabs */}
-      <div style={{ background: C.white, borderBottom: `1px solid ${C.gray2}` }}>
+      <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
         <div
           style={{
             maxWidth: MAX_WIDTH,
@@ -89,7 +89,7 @@ export default function League() {
                 background: 'none',
                 border: 'none',
                 borderBottom: `2.5px solid ${activeTab === t.id ? C.green : 'transparent'}`,
-                color: activeTab === t.id ? C.green : C.gray4,
+                color: activeTab === t.id ? '#fff' : 'rgba(255,255,255,0.55)',
                 cursor: 'pointer',
                 fontFamily: FONT,
                 fontSize: 13,
@@ -112,10 +112,13 @@ export default function League() {
         ) : (
           <div
             style={{
-              borderRadius: 14,
+              borderRadius: 22,
               overflow: 'hidden',
-              background: C.white,
-              boxShadow: '0 2px 14px rgba(0,0,0,.07)',
+              background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+              border: '1px solid rgba(255,255,255,0.18)',
+              boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+              backdropFilter: 'blur(20px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(160%)',
               minHeight: iframeState === 'loading' ? 380 : 'auto',
             }}
           >
@@ -131,8 +134,8 @@ export default function League() {
                 }}
               >
                 <span style={{ fontSize: 36 }}>⏳</span>
-                <div style={{ color: C.gray4, fontSize: 14, fontWeight: 500 }}>Loading league data…</div>
-                <div style={{ color: C.gray3, fontSize: 12 }}>
+                <div style={{ color: '#fff', fontSize: 14, fontWeight: 500 }}>Loading league data…</div>
+                <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>
                   Will open in browser if unavailable here
                 </div>
               </div>
@@ -167,15 +170,21 @@ function FallbackCard() {
   return (
     <div
       style={{
-        background: C.white,
-        borderRadius: 16,
-        boxShadow: '0 2px 14px rgba(0,0,0,.07)',
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        border: '1px solid rgba(255,255,255,0.18)',
+        borderRadius: 22,
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         overflow: 'hidden',
       }}
     >
       <div
         style={{
-          background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`,
+          background: 'rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.10)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           padding: '32px 24px 28px',
           textAlign: 'center',
         }}
@@ -193,7 +202,7 @@ function FallbackCard() {
       <div style={{ padding: '24px 24px 32px' }}>
         <p
           style={{
-            color: C.gray4,
+            color: 'rgba(255,255,255,0.55)',
             fontSize: 14,
             textAlign: 'center',
             marginTop: 0,

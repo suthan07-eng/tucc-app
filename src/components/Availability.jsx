@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext'
 const EASE_OUT = [0.23, 1, 0.32, 1]
 
 const GLASS_CARD = {
-  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
   border: '1px solid rgba(255,255,255,0.18)',
   boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
   borderRadius: 22,
@@ -322,12 +322,12 @@ export default function Availability() {
     <div style={{ minHeight: '100vh', background: 'transparent', fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
       <Nav />
       {/* Header */}
-      <div style={{ background: 'transparent', padding: '28px 20px' }}>
+      <div style={{ background: 'transparent', padding: '28px 16px' }}>
         <motion.div
           variants={staggerList}
           initial="hidden"
           animate="visible"
-          style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}
+          style={{ maxWidth: MAX_WIDTH, margin: '0 auto', width: '100%' }}
         >
           <motion.button
             variants={fadeUp}
@@ -339,7 +339,7 @@ export default function Availability() {
           <motion.div variants={fadeUp} style={{ ...EYEBROW, marginBottom: 12 }}>
             Player Portal
           </motion.div>
-          <motion.h1 variants={fadeUp} style={{ ...GRADIENT_TEXT, fontSize: 30, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>
+          <motion.h1 variants={fadeUp} style={{ ...GRADIENT_TEXT, fontSize: 'clamp(24px, 6vw, 30px)', fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>
             Submit Availability
           </motion.h1>
           {selectedMatch && (
@@ -443,9 +443,9 @@ export default function Availability() {
           <>
             {/* Player card */}
             <Card style={{ ...GLASS_CARD, marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                 <Avatar name={player.name} size={48} />
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: '1 1 160px', minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>{player.name}</div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{player.role} · {player.phone}</div>
                 </div>
@@ -472,7 +472,7 @@ export default function Availability() {
                 <div style={{ color: C.red, fontSize: 13, marginBottom: 12 }}>{errors.available}</div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 20 }}>
                 {[
                   { value: true,  emoji: '✅', label: "Yes, I'm in", activeColor: C.ok,  activeBg: C.okBg,  activeBorder: '#86efac' },
                   { value: false, emoji: '❌', label: "Can't make it", activeColor: C.red, activeBg: C.redBg, activeBorder: '#fca5a5' },

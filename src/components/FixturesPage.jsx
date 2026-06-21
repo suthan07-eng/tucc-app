@@ -161,8 +161,11 @@ function NextMatchBanner({ fixture, countdown }) {
       {/* Inner core */}
       <div style={{
         borderRadius: 26, overflow: 'hidden', position: 'relative',
-        background: 'linear-gradient(145deg, #060d2e 0%, #0f1e5a 45%, #1a1060 75%, #0a0730 100%)',
-        boxShadow: 'inset 0 1px 1px rgba(255,255,255,.08)',
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
       }}>
         {/* Ambient orbs */}
         <motion.div animate={{ scale:[1,1.3,1], opacity:[.18,.05,.18] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
@@ -249,7 +252,7 @@ function NextMatchBanner({ fixture, countdown }) {
           )}
 
           {/* Venue */}
-          <div style={{ background:'rgba(0,0,0,.22)', border:'1px solid rgba(255,255,255,.07)', borderRadius:18, padding:'13px 16px', display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:16, backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)', padding:'13px 16px', display:'flex', alignItems:'center', gap:12 }}>
             <div style={{ width:34, height:34, borderRadius:12, background:'rgba(99,102,241,.15)', border:'1px solid rgba(99,102,241,.25)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               <MapPin size={15} color="#a5b4fc" strokeWidth={2}/>
             </div>
@@ -296,12 +299,11 @@ function FixtureCard({ fixture, index }) {
       {/* Inner core */}
       <div style={{
         borderRadius: 21, overflow: 'hidden',
-        background: isTucc
-          ? 'linear-gradient(145deg, #060d2e 0%, #0f1e5a 50%, #1a1060 100%)'
-          : 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.20)',
-        backdropFilter: isTucc ? 'none' : 'blur(20px) saturate(160%)',
-        WebkitBackdropFilter: isTucc ? 'none' : 'blur(20px) saturate(160%)',
+        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.26)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         position: 'relative',
       }}>
         {/* Subtle ambient */}
@@ -394,7 +396,7 @@ function FixtureCard({ fixture, index }) {
         </div>
 
         {/* Venue row */}
-        <div style={{ margin:'0 14px 14px', background:'rgba(0,0,0,.2)', border:'1px solid rgba(255,255,255,.06)', borderRadius:14, padding:'10px 13px', display:'flex', alignItems:'center', gap:9, position:'relative', zIndex:1 }}>
+        <div style={{ margin:'0 14px 14px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:16, backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)', padding:'10px 13px', display:'flex', alignItems:'center', gap:9, position:'relative', zIndex:1 }}>
           <MapPin size={12} color={isTucc?'#a5b4fc':'rgba(255,255,255,.3)'} strokeWidth={2} style={{ flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:0, fontFamily:FONT, fontSize:11, fontWeight:500, color:'rgba(255,255,255,.45)', lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
             {fixture.venue}
@@ -618,7 +620,7 @@ export default function FixturesPage() {
                 initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:.4 }}
                 style={{ borderRadius:22, padding:2, background:'rgba(233,160,32,.1)', border:'1px solid rgba(233,160,32,.2)', marginTop:6 }}
               >
-                <div style={{ borderRadius:21, background:'linear-gradient(145deg,#060d2e,#0f1e5a)', padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                <div style={{ borderRadius:21, background:'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)', border:'1px solid rgba(255,255,255,0.18)', boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
                   <div>
                     <div style={{ fontFamily:FONT, fontSize:14, fontWeight:800, color:'#fff' }}>Full season schedule</div>
                     <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.3)', marginTop:3 }}>View on play-cricket.com</div>

@@ -14,7 +14,7 @@ const OUR_NAMES = ['Tamil United', 'TUCC', 'DTU']
 
 // ── Bold Gradient theme tokens ─────────────────────────────
 const GLASS_CARD = {
-  background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
+  background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
   border: '1px solid rgba(255,255,255,0.18)',
   boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
   borderRadius: 22,
@@ -25,6 +25,8 @@ const NESTED = {
   background: 'rgba(255,255,255,0.05)',
   border: '1px solid rgba(255,255,255,0.10)',
   borderRadius: 16,
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
 }
 const GRAD_TITLE = {
   color: '#fff',
@@ -151,7 +153,7 @@ function ResultCard({ result, index }) {
   const theme = us
     ? won
       ? {
-          headerGrad:  'linear-gradient(135deg, #15803d 0%, #3b82f6 100%)',
+          headerGrad:  'linear-gradient(135deg, rgba(21,128,61,0.55) 0%, rgba(59,130,246,0.45) 100%)',
           cardBg:      'rgba(34,197,94,0.12)',
           cardBorder:  '#bbf7d0',
           shadow:      '0 8px 32px rgba(21,128,61,.18)',
@@ -162,7 +164,7 @@ function ResultCard({ result, index }) {
           labelColor:  '#fff',
         }
       : {
-          headerGrad:  'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)',
+          headerGrad:  'linear-gradient(135deg, rgba(190,18,60,0.55) 0%, rgba(244,63,94,0.45) 100%)',
           cardBg:      'rgba(239,68,68,0.12)',
           cardBorder:  '#fecaca',
           shadow:      '0 8px 32px rgba(190,18,60,.15)',
@@ -173,7 +175,7 @@ function ResultCard({ result, index }) {
           labelColor:  '#fff',
         }
     : {
-        headerGrad:  'linear-gradient(135deg, #6d28d9 0%, #2563eb 100%)',
+        headerGrad:  'linear-gradient(135deg, rgba(109,40,217,0.55) 0%, rgba(37,99,235,0.45) 100%)',
         cardBg:      'transparent',
         cardBorder:  'rgba(255,255,255,0.10)',
         shadow:      'none',
@@ -201,6 +203,9 @@ function ResultCard({ result, index }) {
       {/* ── Header band ── */}
       <div style={{
         background: theme.headerGrad,
+        backdropFilter: 'blur(18px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(150%)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)',
         padding: '13px 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
         position: 'relative', overflow: 'hidden',
@@ -330,17 +335,17 @@ function TeamRow({ logo, name, score, pts, isOurs, isWinner, theme }) {
 // ── Skeleton ───────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div style={{ borderRadius: 22, overflow: 'hidden', border: `1px solid ${C.gray2}`, background: C.white }}>
-      <div style={{ height: 62, background: C.gray2, backgroundImage: `linear-gradient(90deg,${C.gray2} 25%,${C.gray1} 50%,${C.gray2} 75%)`, backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
+    <div style={{ ...GLASS_CARD, overflow: 'hidden' }}>
+      <div style={{ height: 62, background: 'rgba(255,255,255,0.08)', backgroundImage: 'linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.05) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
       <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {[0,1].map(i => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 50, height: 50, borderRadius: 14, background: C.gray1, flexShrink: 0 }} />
+            <div style={{ width: 50, height: 50, borderRadius: 14, background: 'rgba(255,255,255,0.06)', flexShrink: 0 }} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 13, width: '50%', borderRadius: 6, background: C.gray1 }} />
-              <div style={{ height: 20, width: '35%', borderRadius: 6, background: C.gray2 }} />
+              <div style={{ height: 13, width: '50%', borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} />
+              <div style={{ height: 20, width: '35%', borderRadius: 6, background: 'rgba(255,255,255,0.10)' }} />
             </div>
-            <div style={{ width: 52, height: 32, borderRadius: 10, background: C.gray1 }} />
+            <div style={{ width: 52, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.06)' }} />
           </div>
         ))}
       </div>
@@ -353,8 +358,11 @@ function SeasonPill({ label, value, grad, shadow }) {
   return (
     <div style={{
       background: grad, borderRadius: 16,
+      backdropFilter: 'blur(18px) saturate(150%)',
+      WebkitBackdropFilter: 'blur(18px) saturate(150%)',
+      border: '1px solid rgba(255,255,255,0.12)',
       padding: '14px 16px', textAlign: 'center', minWidth: 68,
-      boxShadow: shadow, flex: 1,
+      boxShadow: `${shadow}, inset 0 1px 0 rgba(255,255,255,0.12)`, flex: 1,
       position: 'relative', overflow: 'hidden',
     }}>
       <div style={{ position: 'absolute', top: -12, right: -12, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,.12)', pointerEvents: 'none' }} />
@@ -482,11 +490,11 @@ export default function ResultsPage() {
             {/* Season stats pills */}
             {teamStats ? (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 2 }}>
-                <SeasonPill label="Played"   value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,#2563eb,#3b82f6)" shadow="0 6px 20px rgba(37,99,235,.35)" />
-                <SeasonPill label="Won"      value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,#15803d,#3b82f6)" shadow="0 6px 20px rgba(21,128,61,.35)" />
-                <SeasonPill label="Lost"     value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,#be123c,#f43f5e)" shadow="0 6px 20px rgba(190,18,60,.3)" />
-                <SeasonPill label="Points"   value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,#b45309,#f59e0b)" shadow="0 6px 20px rgba(180,83,9,.35)" />
-                <SeasonPill label="NRR"      value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,#15803d,#3b82f6)' : 'linear-gradient(135deg,#6d28d9,#8b5cf6)'} shadow="0 6px 20px rgba(109,40,217,.3)" />
+                <SeasonPill label="Played"   value={teamStats.p   ?? '—'} grad="linear-gradient(135deg,rgba(37,99,235,0.55),rgba(59,130,246,0.45))" shadow="0 6px 20px rgba(37,99,235,.35)" />
+                <SeasonPill label="Won"      value={teamStats.w   ?? '0'} grad="linear-gradient(135deg,rgba(21,128,61,0.55),rgba(59,130,246,0.45))" shadow="0 6px 20px rgba(21,128,61,.35)" />
+                <SeasonPill label="Lost"     value={teamStats.l   ?? '—'} grad="linear-gradient(135deg,rgba(190,18,60,0.55),rgba(244,63,94,0.45))" shadow="0 6px 20px rgba(190,18,60,.3)" />
+                <SeasonPill label="Points"   value={teamStats.pts ?? '—'} grad="linear-gradient(135deg,rgba(180,83,9,0.55),rgba(245,158,11,0.45))" shadow="0 6px 20px rgba(180,83,9,.35)" />
+                <SeasonPill label="NRR"      value={teamStats.nrr ?? '—'} grad={parseFloat(teamStats.nrr) >= 0 ? 'linear-gradient(135deg,rgba(21,128,61,0.55),rgba(59,130,246,0.45))' : 'linear-gradient(135deg,rgba(109,40,217,0.55),rgba(139,92,246,0.45))'} shadow="0 6px 20px rgba(109,40,217,.3)" />
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 8 }}>
@@ -537,7 +545,7 @@ export default function ResultsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {[0,1,2].map(i => (
               <div key={i}>
-                <div style={{ height: 38, width: 160, background: C.gray2, borderRadius: 12, marginBottom: 14, backgroundImage: `linear-gradient(90deg,${C.gray2} 25%,${C.gray1} 50%,${C.gray2} 75%)`, backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
+                <div style={{ height: 38, width: 160, background: 'rgba(255,255,255,0.08)', borderRadius: 12, marginBottom: 14, backgroundImage: 'linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.05) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite linear' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {Array.from({ length: i === 0 ? 3 : 1 }).map((_, j) => <SkeletonCard key={j} />)}
                 </div>

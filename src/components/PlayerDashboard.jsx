@@ -142,10 +142,10 @@ function ChangePasswordModal({ onClose }) {
           onClick={e => e.stopPropagation()}
           style={{
             width: '100%', maxWidth: 380,
-            background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
-            border: '1px solid rgba(255,255,255,.18)',
+            background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+            border: '1px solid rgba(255,255,255,0.18)',
             borderRadius: 24, padding: '28px 24px',
-            boxShadow: '0 26px 64px -20px rgba(37,40,120,.62), 0 0 40px -16px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.26)',
+            boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
             backdropFilter: 'blur(20px) saturate(160%)',
             WebkitBackdropFilter: 'blur(20px) saturate(160%)',
           }}
@@ -338,8 +338,11 @@ export default function PlayerDashboard() {
         {/* ── Inner core ── */}
         <div style={{
           borderRadius: 22, overflow: 'hidden', position: 'relative',
-          background: 'linear-gradient(150deg, rgba(37,99,235,0.34), rgba(124,58,237,0.30) 60%, rgba(20,184,166,0.20))',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,.26)',
+          background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+          border: '1px solid rgba(255,255,255,0.18)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
         }}>
 
           {/* Ambient orbs */}
@@ -417,7 +420,7 @@ export default function PlayerDashboard() {
                 initial={{ opacity:0, x:-16 }}
                 animate={{ opacity:1, x:0 }}
                 transition={{ delay:.15, duration:.55, ease:EASE }}
-                style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:12, minWidth:130 }}
+                style={{ flex:'1 1 130px', display:'flex', flexDirection:'column', alignItems:'center', gap:12, minWidth:130, maxWidth:200, margin:'0 auto' }}
               >
                 {/* Photo */}
                 <div style={{ position:'relative' }}>
@@ -580,7 +583,7 @@ export default function PlayerDashboard() {
               >
                 {/* Info chips 2×2 grid */}
                 {myPlayer && (
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(130px, 1fr))', gap:8 }}>
                     {infoItems.map((item, i) => (
                       <motion.div key={item.label}
                         initial={{ opacity:0, y:10 }}
