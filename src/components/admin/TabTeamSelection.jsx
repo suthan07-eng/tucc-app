@@ -187,8 +187,19 @@ export default function TabTeamSelection() {
   const xi       = selection.filter((s) => !s.is_reserve)
   const reserves = selection.filter((s) =>  s.is_reserve)
 
+  // Players currently marked Available for this match (responded YES)
+  const availableIds = new Set(availablePlayers.map((p) => p.id))
+  // Selected players who are NO LONGER available (changed their mind to No / withdrew)
+  const unavailableSelected = selection.filter((s) => !availableIds.has(s.player_id))
+
   function isSelected(playerId) {
     return selection.some((s) => s.player_id === playerId)
+  }
+
+  // Remove a player from the XI/reserves regardless of their availability
+  // (they may have changed to "No" and dropped out of the available pool).
+  function removeFromSelection(playerId) {
+    setSelection((prev) => prev.filter((s) => s.player_id !== playerId))
   }
 
   function togglePlayer(player) {
@@ -574,13 +585,21 @@ export default function TabTeamSelection() {
             </div>
           )}
 
+          {unavailableSelected.length > 0 && (
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 12px', marginBottom: 14, fontSize: 12.5, color: '#b91c1c', lineHeight: 1.5 }}>
+              ⚠️ <strong>{unavailableSelected.map((s) => s.player_name).join(', ')}</strong> {unavailableSelected.length === 1 ? 'is' : 'are'} in the team but changed to <strong>Unavailable</strong>. Tap ✕ to remove, then re-save{publishStatus === 'published' ? ' / re-publish' : ''}.
+            </div>
+          )}
+
           {xi.length === 0 ? (
             <div style={{ color: AC.gray3, fontSize: 13, textAlign: 'center', padding: '10px 0' }}>
               No players in XI yet — add from pool above.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {xi.map((s, i) => (
+              {xi.map((s, i) => {
+                const gone = !availableIds.has(s.player_id)
+                return (
                 <div
                   key={s.player_id}
                   style={{
@@ -588,7 +607,8 @@ export default function TabTeamSelection() {
                     alignItems: 'center',
                     gap: 8,
                     padding: '10px 12px',
-                    background: AC.gray1,
+                    background: gone ? '#fef2f2' : AC.gray1,
+                    border: gone ? '1px solid #fecaca' : '1px solid transparent',
                     borderRadius: 10,
                   }}
                 >
@@ -708,8 +728,25 @@ export default function TabTeamSelection() {
                       </span>
                     )}
                   </div>
+
+                  {/* Remove from team (works even if the player is no longer available) */}
+                  <button
+                    onClick={() => removeFromSelection(s.player_id)}
+                    title={gone ? 'Player changed to Unavailable — remove from team' : 'Remove from team'}
+                    style={{
+                      flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+                      border: `1px solid ${gone ? '#fca5a5' : AC.gray2}`,
+                      background: gone ? '#fee2e2' : AC.white,
+                      color: gone ? '#dc2626' : AC.gray4,
+                      cursor: 'pointer', fontSize: 13, fontWeight: 800, lineHeight: 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    ✕
+                  </button>
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -762,6 +799,18 @@ export default function TabTeamSelection() {
                       {s.player_name}
                     </div>
                     <RolePill role={s.position} />
+                    <button
+                      onClick={() => removeFromSelection(s.player_id)}
+                      title="Remove from team"
+                      style={{
+                        flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+                        border: `1px solid ${AC.gray2}`, background: AC.white, color: AC.gray4,
+                        cursor: 'pointer', fontSize: 13, fontWeight: 800, lineHeight: 1,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
