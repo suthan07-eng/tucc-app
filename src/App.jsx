@@ -42,6 +42,7 @@ const PublicGallery    = lazyWithRetry(() => import('./public/pages/PublicGaller
 const PublicContact    = lazyWithRetry(() => import('./public/pages/PublicContact'))
 const PublicSponsors   = lazyWithRetry(() => import('./public/pages/PublicSponsors'))
 const PublicPlayers    = lazyWithRetry(() => import('./public/pages/PublicPlayers'))
+const SurvivalReport   = lazyWithRetry(() => import('./components/SurvivalReport'))
 
 // Auth / member dashboard
 const LandingPage  = lazyWithRetry(() => import('./components/LandingPage'))
@@ -145,6 +146,7 @@ function AppRoutes() {
       <Route path="/contact" element={<PublicContact />} />
       <Route path="/sponsors" element={<PublicSponsors />} />
       <Route path="/squad"   element={<PublicPlayers />} />
+      <Route path="/survival-report" element={<SurvivalReport />} />
 
       {/* Public — landing / login */}
       <Route path="/login" element={<LandingPage />} />

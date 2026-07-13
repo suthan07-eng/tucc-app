@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TUCC Premier Division Survival Report 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f8f6;color:#1a1a19;font-size:14px;padding:1.5rem}
+  h1{font-size:22px;font-weight:600;margin-bottom:.25rem}
+  h2{font-size:16px;font-weight:600;margin:1.5rem 0 .5rem;text-transform:uppercase;letter-spacing:.06em;color:#898781;font-size:11px}
+  .header{background:#fff;border:1px solid #e1e0d9;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:.5rem}
+  .pill{font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid #e1e0d9;background:#f8f8f6;color:#52514e}
+  .pill-red{background:#fcebeb;color:#a32d2d;border-color:#f7c1c1}
+  .pill-green{background:#eaf3de;color:#3b6d11;border-color:#c0dd97}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{font-size:10px;font-weight:600;color:#898781;text-align:left;padding:6px 8px;border-bottom:1px solid #d3d1c7;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+  td{padding:7px 8px;border-bottom:1px solid #e1e0d9;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .tw{overflow-x:auto;border:1px solid #e1e0d9;border-radius:12px;margin-bottom:14px;background:#fff}
+  .card{background:#fff;border:1px solid #e1e0d9;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+  .hr{border:none;border-top:1px solid #e1e0d9;margin:1.5rem 0}
+  .b-safe{background:#eaf3de;color:#3b6d11;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .b-warn{background:#faeeda;color:#854f0b;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .b-dang{background:#fcebeb;color:#a32d2d;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .b-gone{background:#e24b4a;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .b-nrr{background:#e6f1fb;color:#185fa5;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .b-neu{background:#f8f8f6;color:#52514e;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;border:1px solid #e1e0d9;white-space:nowrap}
+  .rel-row{background:#fff5f5}
+  .tucc-row{background:#fffbf0}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .metric{background:#f8f8f6;border-radius:8px;padding:.75rem 1rem;text-align:center;border:1px solid #e1e0d9}
+  .big{font-size:26px;font-weight:600;line-height:1.1}
+  .ml{font-size:10px;color:#898781;text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+  .scen{border-radius:12px;padding:1rem 1.1rem;margin-bottom:10px}
+  .sgreen{border:2px solid #c0dd97;background:#eaf3de}
+  .sred{border:1px solid #f7c1c1;background:#fcebeb}
+  .sorange{border:1px solid #fac775;background:#faeeda}
+  .points-box{background:#fff;border:1px solid #e1e0d9;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+  .floor-box{background:#fcebeb;border:2px solid #f7c1c1;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
+  .nrr-box{background:#fcebeb;border:1.5px solid #f7c1c1;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
+  .verdict-box{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1.25rem}
+  .game-card{padding:.9rem;border-radius:12px;flex:1}
+  .game-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <p style="font-size:11px;font-weight:600;color:#898781;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Dollishill Tamil United CC · Knights · BTCL Premier Division 2026</p>
+  <h1>Premier Division Survival Report</h1>
+  <div class="pills">
+    <span class="pill pill-red">8th place · 86 pts</span>
+    <span class="pill">W1 L9 A1 from 11 games</span>
+    <span class="pill">NRR −2.86</span>
+    <span class="pill pill-red">Bottom 2 relegated · 3 games remain</span>
+  </div>
+</div>
+
+<h2>Official BTCL Points System — Section 11.1</h2>
+<div class="points-box">
+  <div class="g4" style="margin-bottom:.85rem">
+    <div class="metric" style="border-color:#c0dd97">
+      <div class="big" style="color:#3b6d11">20</div>
+      <div class="ml">Win — fixed</div>
+      <div style="font-size:10px;color:#e24b4a;margin-top:2px">No bonus added</div>
+    </div>
+    <div class="metric" style="border-color:#fac775">
+      <div class="big" style="color:#854f0b">0–10</div>
+      <div class="ml">Loss — bonus only</div>
+      <div style="font-size:10px;color:#898781;margin-top:2px">Avg 6–7 per loss</div>
+    </div>
+    <div class="metric">
+      <div class="big" style="color:#52514e">10</div>
+      <div class="ml">Abandoned</div>
+      <div style="font-size:10px;color:#898781;margin-top:2px">Each team</div>
+    </div>
+    <div class="metric">
+      <div class="big" style="color:#52514e">5</div>
+      <div class="ml">Cancelled</div>
+      <div style="font-size:10px;color:#898781;margin-top:2px">Each team</div>
+    </div>
+  </div>
+  <div style="background:#f8f8f6;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#52514e;line-height:1.7">
+    <strong style="color:#1a1a19">Loss bonus (losing team only):</strong> 1 pt per 40 runs batted (max 5) + 1 pt per 2 wickets taken (max 5) = <strong>max 10 pts per loss</strong>. Average ~6–7 pts per loss based on TUCC's season: 58 BP ÷ 9 losses = 6.4 per loss. Winning team earns exactly 20 pts — nothing more. NRR settles all equal-points ties.
+  </div>
+</div>
+
+<div class="hr"></div>
+<h2>Current League Table</h2>
+<div class="tw">
+<table>
+<thead><tr><th>Pos</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>A</th><th>BP</th><th>Pen</th><th>NRR</th><th>Pts</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Stanly CC - A</td><td>11</td><td>10</td><td>1</td><td>0</td><td>8</td><td>0</td><td>+2.57</td><td><strong>208</strong></td><td><span class="b-safe">Safe</span></td></tr>
+<tr><td>2</td><td>Lewisham CC - A</td><td>11</td><td>9</td><td>1</td><td>1</td><td>7</td><td>0</td><td>+2.45</td><td><strong>197</strong></td><td><span class="b-safe">Safe</span></td></tr>
+<tr><td>3</td><td>Northerns CC - A</td><td>11</td><td>8</td><td>3</td><td>0</td><td>21</td><td>0</td><td>+2.22</td><td><strong>181</strong></td><td><span class="b-safe">Safe</span></td></tr>
+<tr><td>4</td><td>West 3 CC</td><td>11</td><td>4</td><td>7</td><td>0</td><td>52</td><td>2</td><td>−0.89</td><td><strong>130</strong></td><td><span class="b-safe">Likely safe</span></td></tr>
+<tr><td>5</td><td>Northerns CC - B</td><td>11</td><td>4</td><td>6</td><td>1</td><td>42</td><td>20</td><td>−0.81</td><td><strong>112</strong></td><td><span class="b-warn">Borderline</span></td></tr>
+<tr><td>6</td><td>Kent United CC</td><td>11</td><td>3</td><td>7</td><td>1</td><td>42</td><td>0</td><td>−1.13</td><td><strong>112</strong></td><td><span class="b-warn">Borderline</span></td></tr>
+<tr class="rel-row"><td>7</td><td>Redbridge Lankians SS&amp;SC</td><td>11</td><td>3</td><td>8</td><td>0</td><td>51</td><td>0</td><td>−1.91</td><td><strong>111</strong></td><td><span class="b-dang">Danger zone</span></td></tr>
+<tr class="rel-row tucc-row"><td><strong>8</strong></td><td><strong>Dollishill Tamil United CC</strong></td><td>11</td><td>1</td><td>9</td><td>1</td><td>58</td><td>2</td><td>−2.86</td><td><strong>86</strong></td><td><span class="b-gone">Relegated</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="hr"></div>
+<h2>All Remaining Fixtures</h2>
+<div class="tw">
+<table>
+<thead><tr><th>Date</th><th>Home</th><th>Away</th><th>Venue</th><th>Win probability</th><th>TUCC relevance</th></tr></thead>
+<tbody>
+<tr style="background:#fff5f5"><td><strong>19 July</strong></td><td>Lewisham CC-A</td><td><strong>TUCC</strong></td><td>Orpington CC</td><td>TUCC 15% · Lewisham 85%</td><td><span class="b-gone">TUCC Game 1</span></td></tr>
+<tr><td>19 July</td><td>Northerns CC-B</td><td>Redbridge</td><td>Tentelow CC, Osterley</td><td>NB 55% · Redbridge 45%</td><td><span class="b-dang">Watch — if Redbridge win, NB stays low</span></td></tr>
+<tr><td>19 July</td><td>Kent United CC</td><td>Northerns CC-A</td><td>London Tigers Sports Complex</td><td>Kent 10% · Northerns A 90%</td><td><span class="b-safe">Good — Kent almost certainly lose</span></td></tr>
+<tr><td>19 July</td><td>West 3 CC</td><td>Stanly CC-A</td><td>Stanmore Common</td><td>West 3 5% · Stanly 95%</td><td><span class="b-safe">Good — West 3 almost certainly lose</span></td></tr>
+<tr style="background:#f0faf0"><td><strong>26 July</strong></td><td><strong>TUCC</strong></td><td>Northerns CC-B</td><td>Harrow Town CC</td><td>TUCC 55% · NB 45%</td><td><span class="b-safe">TUCC Game 2 — HOME — MUST WIN</span></td></tr>
+<tr><td>26 July</td><td>Redbridge</td><td>West 3 CC</td><td>Walthamstow CC</td><td>Redbridge 42% · West 3 58%</td><td><span class="b-warn">Watch — West 3 likely win</span></td></tr>
+<tr><td>26 July</td><td>Kent United CC</td><td>Stanly CC-A</td><td>Alexandra Recreation Ground</td><td>Kent 5% · Stanly 95%</td><td><span class="b-safe">Good — Kent almost certainly lose</span></td></tr>
+<tr style="background:#eaf4ff"><td><strong>02 Aug</strong></td><td>West 3 CC</td><td><strong>TUCC</strong></td><td>Stanmore Common</td><td>TUCC 50% · West 3 50%</td><td><span class="b-warn">TUCC Game 3 — AWAY — MUST WIN</span></td></tr>
+<tr style="background:#fff5f5"><td><strong>02 Aug</strong></td><td>Redbridge</td><td>Kent United CC</td><td>Walthamstow CC</td><td>Redbridge 50% · Kent 50%</td><td><span class="b-dang">CRITICAL — decides who rises above TUCC</span></td></tr>
+<tr><td>02 Aug</td><td>Lewisham CC-A</td><td>Northerns CC-B</td><td>TBC</td><td>Lewisham 80% · NB 20%</td><td><span class="b-safe">Good — Lewisham win caps NB pts</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="hr"></div>
+<h2>TUCC Point Projections — 3 Remaining Games</h2>
+<div class="g4" style="margin-bottom:1.25rem">
+  <div class="metric" style="border-color:#c0dd97">
+    <div class="big" style="color:#3b6d11">146</div>
+    <div class="ml">Win all 3</div>
+    <div style="font-size:10px;color:#898781;margin-top:3px">86+20+20+20</div>
+  </div>
+  <div class="metric" style="border-color:#f7c1c1">
+    <div class="big" style="color:#e24b4a">133</div>
+    <div class="ml">Win 2 · lose 1</div>
+    <div style="font-size:10px;color:#898781;margin-top:3px">86+7+20+20</div>
+  </div>
+  <div class="metric" style="border-color:#f7c1c1">
+    <div class="big" style="color:#e24b4a">120</div>
+    <div class="ml">Win 1 · lose 2</div>
+    <div style="font-size:10px;color:#898781;margin-top:3px">86+7+20+7</div>
+  </div>
+  <div class="metric" style="border-color:#f7c1c1">
+    <div class="big" style="color:#e24b4a">107</div>
+    <div class="ml">Win 0 · lose 3</div>
+    <div style="font-size:10px;color:#898781;margin-top:3px">86+7+7+7</div>
+  </div>
+</div>
+
+<div class="hr"></div>
+<h2>Rival Team Analysis</h2>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:.75rem">
+    <div><p style="font-size:13px;font-weight:600">Northerns CC - B &nbsp;<span class="b-warn">5th · 112 pts · NRR −0.81 · 20 pen pts</span></p><p style="font-size:11px;color:#898781;margin-top:2px">W4 L6 A1 · 3 games left</p></div>
+  </div>
+  <div class="tw" style="margin-bottom:.65rem">
+  <table><thead><tr><th>Date</th><th>Fixture</th><th>Win %</th><th>NB wins → pts</th><th>NB loses → pts</th></tr></thead>
+  <tbody>
+  <tr><td>19 July</td><td>vs Redbridge (home)</td><td>NB ~55%</td><td>112+20=132</td><td>112+7=119</td></tr>
+  <tr><td>26 July</td><td>vs TUCC (away at Harrow)</td><td>NB ~45%</td><td>+20</td><td>+7 (TUCC must win)</td></tr>
+  <tr><td>02 Aug</td><td>vs Lewisham (away)</td><td>NB ~20%</td><td>+20</td><td>+7</td></tr>
+  </tbody></table></div>
+  <div class="g3">
+    <div class="metric"><div style="font-size:18px;font-weight:600;color:#3b6d11">133</div><div class="ml">Floor (lose all)</div><div style="font-size:10px;color:#898781">112+7+7+7</div></div>
+    <div class="metric"><div style="font-size:18px;font-weight:600;color:#e24b4a">146</div><div class="ml">Win 1 (vs Redbridge)</div><div style="font-size:10px;color:#898781">112+20+7+7</div></div>
+    <div class="metric"><div style="font-size:18px;font-weight:600;color:#e24b4a">159</div><div class="ml">Win 2 (beat Lewisham)</div><div style="font-size:10px;color:#898781">unlikely</div></div>
+  </div>
+  <div style="margin-top:.65rem;background:#fcebeb;border-radius:8px;padding:.65rem .9rem;font-size:12px;color:#52514e"><strong>Key risk:</strong> If NB beats Redbridge on 19 July, they reach 146 — tied with TUCC's 3-win total. NRR: NB (−0.81) beats TUCC (−2.86). Most likely NB finish: ~146.</div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:.75rem">
+    <div><p style="font-size:13px;font-weight:600">Kent United CC &nbsp;<span class="b-warn">6th · 112 pts · NRR −1.13 · BRUTAL schedule</span></p><p style="font-size:11px;color:#898781;margin-top:2px">W3 L7 A1 · 3 games left</p></div>
+  </div>
+  <div class="tw" style="margin-bottom:.65rem">
+  <table><thead><tr><th>Date</th><th>Fixture</th><th>Win %</th><th>Kent wins → pts</th><th>Kent loses → pts</th></tr></thead>
+  <tbody>
+  <tr><td>19 July</td><td>vs Northerns CC-A (home)</td><td>Kent ~10% — Northerns A W8 NRR+2.22</td><td>+20</td><td>+7</td></tr>
+  <tr><td>26 July</td><td>vs Stanly CC-A (home)</td><td>Kent ~5% — Stanly W10 NRR+2.57</td><td>+20</td><td>+7</td></tr>
+  <tr><td>02 Aug</td><td>vs Redbridge (away)</td><td>~50% — direct survival battle</td><td>112+7+7+20=146</td><td>112+7+7+7=133</td></tr>
+  </tbody></table></div>
+  <div class="g3">
+    <div class="metric"><div style="font-size:18px;font-weight:600;color:#3b6d11">133</div><div class="ml">Most likely (lose all)</div><div style="font-size:10px;color:#898781">112+7+7+7</div></div>
+    <div class="metric"><div style="font-size:18px;font-weight:600;color:#e24b4a">146</div><div class="ml">Win 1 (only vs Redbridge)</div><div style="font-size:10px;color:#898781">112+7+7+20</div></div>
+    <div class="metric"><div style="font-size:18px;font-weight:600;color:#898781">159</div><div class="ml">Win 2 (near impossible)</div><div style="font-size:10px;color:#898781">would need to beat top 3</div></div>
+  </div>
+  <div style="margin-top:.65rem;background:#eaf3de;border-radius:8px;padding:.65rem .9rem;font-size:12px;color:#52514e"><strong>Good news for TUCC:</strong> Kent face Northerns A (3rd, W8, NRR +2.22) then Stanly (1st, W10, NRR +2.57). Near-certain to lose both. Only realistic win is vs Redbridge on 02 Aug (50/50). Most likely Kent finish: ~133 or ~146.</div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:.75rem">
+    <div><p style="font-size:13px;font-weight:600">Redbridge Lankians SS&amp;SC &nbsp;<span class="b-dang">7th · 111 pts · NRR −1.91</span></p><p style="font-size:11px;color:#898781;margin-top:2px">W3 L8 · 3 winnable games left</p></div>
+  </div>
+  <div class="tw" style="margin-bottom:.65rem">
+  <table><thead><tr><th>Date</th><th>Fixture</th><th>Win %</th><th>Pts if win</th><th>Pts if lose</th></tr></thead>
+  <tbody>
+  <tr><td>19 July</td><td>vs Northerns B (away at Tentelow)</td><td>Redbridge ~45%</td><td>+20</td><td>+7</td></tr>
+  <tr><td>26 July</td><td>vs West 3 (home at Walthamstow)</td><td>Redbridge ~42%</td><td>+20</td><td>+7</td></tr>
+  <tr><td>02 Aug</td><td>vs Kent United (home at Walthamstow)</td><td>Redbridge ~50%</td><td>+20</td><td>+7</td></tr>
+  </tbody></table></div>
+  <div class="g4">
+    <div class="metric"><div style="font-size:16px;font-weight:600">132</div><div class="ml">Win 0</div><div style="font-size:10px;color:#898781">111+7+7+7</div></div>
+    <div class="metric"><div style="font-size:16px;font-weight:600;color:#854f0b">145</div><div class="ml">Win 1</div><div style="font-size:10px;color:#898781">111+20+7+7</div></div>
+    <div class="metric"><div style="font-size:16px;font-weight:600;color:#e24b4a">158</div><div class="ml">Win 2</div><div style="font-size:10px;color:#898781">111+20+20+7</div></div>
+    <div class="metric"><div style="font-size:16px;font-weight:600;color:#e24b4a">171</div><div class="ml">Win 3</div><div style="font-size:10px;color:#898781">111+20+20+20</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="margin-bottom:.75rem"><p style="font-size:13px;font-weight:600">West 3 CC &nbsp;<span class="b-neu">4th · 130 pts · NRR −0.89 · likely safe regardless</span></p></div>
+  <div class="tw" style="margin-bottom:.5rem">
+  <table><thead><tr><th>Date</th><th>Fixture</th><th>Win %</th><th>Most likely result</th></tr></thead>
+  <tbody>
+  <tr><td>19 July</td><td>vs Stanly CC-A (home)</td><td>West 3 ~5%</td><td>Lose → +7</td></tr>
+  <tr><td>26 July</td><td>vs Redbridge (away)</td><td>West 3 ~58%</td><td>Win → +20</td></tr>
+  <tr><td>02 Aug</td><td>vs TUCC (home)</td><td>50/50</td><td>Lose to TUCC → +7</td></tr>
+  </tbody></table></div>
+  <p style="font-size:12px;color:#52514e">Most likely West 3 finish: 130+7+20+7 = <strong>164 pts</strong> if TUCC beats them. Safe regardless of TUCC's result.</p>
+</div>
+
+<div class="hr"></div>
+
+<div class="floor-box">
+  <p style="font-size:13px;font-weight:600;color:#a32d2d;margin-bottom:.6rem">⚠ Why winning 2 games (133 pts) cannot save TUCC</p>
+  <p style="font-size:12px;color:#52514e;margin-bottom:.75rem">Since losing teams always earn bonus points, Northerns B and Kent United have a guaranteed minimum even if they lose every remaining game:</p>
+  <div class="g3" style="margin-bottom:.75rem">
+    <div class="metric"><div class="big" style="color:#e24b4a">133</div><div class="ml">NB — lose all 3</div><div style="font-size:11px;margin-top:4px">112+7+7+7</div></div>
+    <div class="metric"><div class="big" style="color:#e24b4a">133</div><div class="ml">Kent — lose all 3</div><div style="font-size:11px;margin-top:4px">112+7+7+7</div></div>
+    <div class="metric"><div class="big" style="color:#854f0b">133</div><div class="ml">TUCC — win 2</div><div style="font-size:11px;margin-top:4px">86+7+20+20</div></div>
+  </div>
+  <p style="font-size:12px;color:#52514e;border-top:1px solid #f7c1c1;padding-top:.65rem"><strong>All three teams end on exactly 133 pts even in rivals' worst case.</strong> NRR decides: NB (−0.81) 6th, Kent (−1.13) 7th, TUCC (−2.86) 8th — or some order where TUCC always finishes last. <strong>2 wins mathematically cannot save TUCC in any scenario.</strong></p>
+</div>
+
+<div class="hr"></div>
+<h2>Scenario Matrix — TUCC Wins All 3 Games = 146 pts</h2>
+
+<div class="scen sred">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:.65rem">
+    <p style="font-size:12px;font-weight:600;color:#a32d2d">Scenario A — NB beats Redbridge (19 July) · Kent beats Redbridge (02 Aug) · ~28% likely</p>
+    <span class="b-gone">TUCC 7th — RELEGATED on NRR</span>
+  </div>
+  <div class="tw" style="margin-bottom:6px">
+  <table style="font-size:11px"><thead><tr><th>Pos</th><th>Team</th><th>Points calc</th><th>Final pts</th><th>NRR</th></tr></thead>
+  <tbody>
+  <tr><td>4</td><td>West 3</td><td>130+7+20+7</td><td>164</td><td>−0.89</td></tr>
+  <tr><td>5</td><td>Northerns B</td><td>112+20+7+7</td><td>146</td><td>−0.81</td></tr>
+  <tr><td>6</td><td>Kent United</td><td>112+7+7+20</td><td>146</td><td>−1.13</td></tr>
+  <tr class="rel-row tucc-row"><td><strong>7 REL</strong></td><td><strong>TUCC</strong></td><td>86+20+20+20</td><td><strong>146</strong></td><td>−2.86 (worst)</td></tr>
+  <tr class="rel-row"><td>8 REL</td><td>Redbridge</td><td>111+7+7+7</td><td>132</td><td>−1.91</td></tr>
+  </tbody></table></div>
+  <p style="font-size:10px;color:#a32d2d">Three-way tie at 146. NRR order: NB 5th · Kent 6th · TUCC 7th. Relegated unless TUCC improves NRR above −1.13 through massive winning margins.</p>
+</div>
+
+<div class="scen sorange">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:.65rem">
+    <p style="font-size:12px;font-weight:600;color:#854f0b">Scenario B — NB beats Redbridge (19 July) · Redbridge beats Kent (02 Aug) · ~28% likely</p>
+    <span class="b-nrr">TUCC 6th — SAFE only if NRR &gt; −0.81</span>
+  </div>
+  <div class="tw" style="margin-bottom:6px">
+  <table style="font-size:11px"><thead><tr><th>Pos</th><th>Team</th><th>Points calc</th><th>Final pts</th><th>NRR</th></tr></thead>
+  <tbody>
+  <tr><td>4</td><td>West 3</td><td>130+7+20+7</td><td>164</td><td>−0.89</td></tr>
+  <tr><td>5</td><td>Northerns B</td><td>112+20+7+7</td><td>146</td><td>−0.81</td></tr>
+  <tr class="tucc-row"><td><strong>6 SAFE</strong></td><td><strong>TUCC</strong></td><td>86+20+20+20</td><td><strong>146</strong></td><td>Must improve above −0.81</td></tr>
+  <tr class="rel-row"><td>7 REL</td><td>Redbridge</td><td>111+7+7+20</td><td>145</td><td>−1.91</td></tr>
+  <tr class="rel-row"><td>8 REL</td><td>Kent United</td><td>112+7+7+7</td><td>133</td><td>−1.13</td></tr>
+  </tbody></table></div>
+  <p style="font-size:10px;color:#854f0b">Two-way tie (TUCC vs NB) at 146. TUCC safe only if NRR improved above NB's −0.81. Requires very large winning margins in Games 2 and 3.</p>
+</div>
+
+<div class="scen sorange">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:.65rem">
+    <p style="font-size:12px;font-weight:600;color:#854f0b">Scenario C — Redbridge beats NB (19 July) · Kent beats Redbridge (02 Aug) · ~22% likely</p>
+    <span class="b-nrr">TUCC 5th — SAFE only if NRR &gt; −1.13</span>
+  </div>
+  <div class="tw" style="margin-bottom:6px">
+  <table style="font-size:11px"><thead><tr><th>Pos</th><th>Team</th><th>Points calc</th><th>Final pts</th><th>NRR</th></tr></thead>
+  <tbody>
+  <tr><td>4</td><td>West 3</td><td>130+7+20+7</td><td>164</td><td>−0.89</td></tr>
+  <tr class="tucc-row"><td><strong>5 SAFE</strong></td><td><strong>TUCC</strong></td><td>86+20+20+20</td><td><strong>146</strong></td><td>Must improve above −1.13</td></tr>
+  <tr><td>6</td><td>Kent United</td><td>112+7+7+20</td><td>146</td><td>−1.13</td></tr>
+  <tr class="rel-row"><td>7 REL</td><td>Redbridge</td><td>111+20+7+7</td><td>145</td><td>−1.91</td></tr>
+  <tr class="rel-row"><td>8 REL</td><td>Northerns B</td><td>112+7+7+7</td><td>133</td><td>−0.81</td></tr>
+  </tbody></table></div>
+  <p style="font-size:10px;color:#854f0b">Two-way tie (TUCC vs Kent) at 146. TUCC safe if NRR improved above Kent's −1.13. More achievable than beating NB on NRR.</p>
+</div>
+
+<div class="scen sgreen">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:.65rem">
+    <p style="font-size:12px;font-weight:600;color:#3b6d11">Scenario D — Redbridge beats NB (19 July) · Redbridge beats Kent (02 Aug) · ~22% likely</p>
+    <span class="b-safe">TUCC 5th — CLEARLY SAFE, no NRR concern</span>
+  </div>
+  <div class="tw" style="margin-bottom:6px">
+  <table style="font-size:11px"><thead><tr><th>Pos</th><th>Team</th><th>Points calc</th><th>Final pts</th><th>NRR</th></tr></thead>
+  <tbody>
+  <tr><td>4</td><td>West 3</td><td>130+7+20+7</td><td>164</td><td>−0.89</td></tr>
+  <tr class="tucc-row"><td><strong>5 SAFE</strong></td><td><strong>TUCC</strong></td><td>86+20+20+20</td><td><strong>146</strong></td><td>−2.86 (no tie — safe)</td></tr>
+  <tr><td>6 safe</td><td>Redbridge</td><td>111+20+7+20</td><td>158</td><td>−1.91</td></tr>
+  <tr class="rel-row"><td>7 REL</td><td>Northerns B</td><td>112+7+7+7</td><td>133</td><td>−0.81</td></tr>
+  <tr class="rel-row"><td>8 REL</td><td>Kent United</td><td>112+7+7+7</td><td>133</td><td>−1.13</td></tr>
+  </tbody></table></div>
+  <p style="font-size:10px;color:#3b6d11">Best case. TUCC clearly 5th on 146 pts. No points tie, NRR irrelevant. NB and Kent both on 133 — relegated.</p>
+</div>
+
+<div class="hr"></div>
+
+<div class="nrr-box">
+  <p style="font-size:13px;font-weight:600;color:#a32d2d;margin-bottom:.6rem">NRR — the deciding factor in 3 of 4 scenarios</p>
+  <div class="g3" style="margin-bottom:.75rem">
+    <div class="metric"><div class="big" style="color:#e24b4a">−2.86</div><div class="ml">TUCC current NRR</div><div style="font-size:10px;color:#e24b4a;margin-top:3px">Worst in division</div></div>
+    <div class="metric"><div class="big" style="color:#854f0b">−1.13</div><div class="ml">Kent NRR — target 1</div><div style="font-size:10px;color:#898781;margin-top:3px">Beat this for Scenario C</div></div>
+    <div class="metric"><div class="big" style="color:#854f0b">−0.81</div><div class="ml">NB NRR — target 2</div><div style="font-size:10px;color:#898781;margin-top:3px">Beat this for Scenario B</div></div>
+  </div>
+  <div style="background:rgba(255,255,255,.5);border-radius:8px;padding:.85rem 1rem;font-size:12px;color:#52514e;line-height:1.8">
+    <strong style="color:#1a1a19">Two rules every player must know for NRR:</strong><br>
+    1. <strong>When batting — score as many runs as quickly as possible.</strong> Target 200+ in Games 2 and 3.<br>
+    2. <strong>When bowling — get opponents out cheaply AND quickly.</strong> Bowl them out under 100 in under 30 overs.<br><br>
+    <strong>Double benefit of bowling tight:</strong> Restricting Northerns B to say 80 runs → they earn only 2 batting BP (1 per 40 runs) instead of max 5. Cheap dismissals hurt their points AND improve TUCC's NRR at the same time.
+  </div>
+</div>
+
+<div class="hr"></div>
+
+<h2>Survival Probability Chart</h2>
+<div style="background:#fff;border:1px solid #e1e0d9;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem">
+  <div style="position:relative;height:230px"><canvas id="c1" role="img" aria-label="Survival probability: Win 0 = 0%, Win 1 = 0%, Win 2 = 0%, Win 3 no NRR change = 22%, Win 3 NRR above minus 1.13 = 44%, Win 3 NRR above minus 0.81 = 72%."></canvas></div>
+  <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:.75rem;font-size:11px;color:#52514e">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e24b4a;margin-right:4px"></span>Cannot survive</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#eda100;margin-right:4px"></span>Survive — Scenario D only</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1baf7a;margin-right:4px"></span>Survive — NRR-dependent or clear</span>
+  </div>
+</div>
+
+<h2>Projected Final Table — Most Likely (TUCC Wins 3, Scenario B)</h2>
+<div style="background:#fff;border:1px solid #e1e0d9;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem">
+  <div style="position:relative;height:250px"><canvas id="c2" role="img" aria-label="Projected final table: Stanly 240, Lewisham 228, Northerns A 200, West 3 164, NB 146, TUCC 146, Redbridge 145, Kent 133."></canvas></div>
+  <p style="font-size:10px;color:#898781;margin-top:.5rem">Scenario B — NB beats Redbridge (19 July) · Redbridge beats Kent (02 Aug). Orange = TUCC. NB and TUCC tied on 146 — NRR settles position. TUCC must improve NRR above −0.81.</p>
+</div>
+
+<div class="hr"></div>
+<h2>Games to Watch — Outside TUCC's Control</h2>
+<div class="tw">
+<table>
+<thead><tr><th>#</th><th>Game</th><th>Date</th><th>Best result for TUCC</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr style="background:#fff5f5"><td><strong>1</strong></td><td>Northerns B vs Redbridge</td><td>19 July</td><td><span class="b-safe">Redbridge wins</span></td><td style="font-size:11px">NB drops to their floor (133) instead of rising to 146. Removes their points tie threat against TUCC.</td></tr>
+<tr><td><strong>2</strong></td><td>Kent United vs Northerns A</td><td>19 July</td><td><span class="b-safe">Northerns A wins (~90% likely)</span></td><td style="font-size:11px">Keeps Kent on 133 floor. Almost certain but good to confirm.</td></tr>
+<tr><td><strong>3</strong></td><td>Kent United vs Stanly</td><td>26 July</td><td><span class="b-safe">Stanly wins (~95% likely)</span></td><td style="font-size:11px">Keeps Kent on 133 before their crunch game vs Redbridge.</td></tr>
+<tr style="background:#fff5f5"><td><strong>4</strong></td><td><strong>Redbridge vs Kent United</strong></td><td><strong>02 Aug</strong></td><td><span class="b-warn">Redbridge wins → Scenario B or D (better)</span></td><td style="font-size:11px">If Redbridge wins: Kent stays on 133. If Kent wins: Kent rises to 146, joining TUCC in a three-way or two-way tie. Either way one rival rises — but Redbridge winning is better for TUCC.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="hr"></div>
+<h2>Captain's Verdict — Match by Match</h2>
+<div class="game-row">
+  <div class="game-card" style="background:#fcebeb;border-left:4px solid #f7c1c1">
+    <p style="font-size:10px;color:#898781;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Game 1 · 19 July · Away</p>
+    <p style="font-size:14px;font-weight:600">vs Lewisham CC-A</p>
+    <p style="font-size:11px;color:#52514e;margin-top:5px;line-height:1.6">Orpington CC · 13:00<br>Win = 20 pts · Loss = ~7 pts<br>Only 13 pts difference. Go for the win — every run scored improves NRR regardless of result. Fight hard from the first ball.</p>
+  </div>
+  <div class="game-card" style="background:#eaf3de;border-left:4px solid #c0dd97">
+    <p style="font-size:10px;color:#898781;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Game 2 · 26 July · HOME</p>
+    <p style="font-size:14px;font-weight:600">vs Northerns CC-B</p>
+    <p style="font-size:11px;color:#52514e;margin-top:5px;line-height:1.6">Harrow Town CC · 13:00<br><strong>Season-defining match.</strong><br>Must win AND win BIG. Score 200+ runs. Bowl NB out under 80 in under 30 overs. Every run and wicket counts for NRR and reduces their BP.</p>
+  </div>
+  <div class="game-card" style="background:#e6f1fb;border-left:4px solid #b5d4f4">
+    <p style="font-size:10px;color:#898781;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Game 3 · 02 Aug · Away</p>
+    <p style="font-size:14px;font-weight:600">vs West 3 CC</p>
+    <p style="font-size:11px;color:#52514e;margin-top:5px;line-height:1.6">Stanmore Common · 13:00<br><strong>Must win + win BIG.</strong><br>Carry full momentum from Game 2. West 3 arrive low after losing to Stanly. Same approach — bat massive, bowl tight and fast.</p>
+  </div>
+</div>
+
+<div class="verdict-box">
+  <p style="font-size:13px;font-weight:600;margin-bottom:.65rem">Complete summary</p>
+  <table style="font-size:12px">
+  <thead><tr><th>Result</th><th>TUCC pts</th><th>Survival</th><th>Why</th></tr></thead>
+  <tbody>
+  <tr class="rel-row"><td>Win 0</td><td>107</td><td><span class="b-gone">0% — relegated</span></td><td>Below all rivals in every scenario</td></tr>
+  <tr class="rel-row"><td>Win 1</td><td>120</td><td><span class="b-gone">0% — relegated</span></td><td>Below rivals' guaranteed minimum of 132–133</td></tr>
+  <tr class="rel-row"><td>Win 2</td><td>133</td><td><span class="b-gone">0% — relegated</span></td><td>Rivals' floor is also 133, TUCC loses all ties on NRR</td></tr>
+  <tr><td>Win 3 · NRR unchanged</td><td>146</td><td><span class="b-warn">22% — Scenario D only</span></td><td>Safe only if Redbridge beats both NB and Kent</td></tr>
+  <tr><td>Win 3 · NRR above −1.13</td><td>146</td><td><span class="b-nrr">44% — Scenarios C+D</span></td><td>Beats Kent in ties, needs Redbridge to beat NB</td></tr>
+  <tr style="background:#eaf3de"><td>Win 3 · NRR above −0.81</td><td>146</td><td><span class="b-safe">72% — Scenarios B+C+D</span></td><td>Beats both NB and Kent in any tie — only Scenario A loses</td></tr>
+  </tbody></table>
+  <div style="margin-top:.85rem;padding:.85rem 1rem;background:#f8f8f6;border-radius:8px;font-size:12px;color:#52514e;line-height:1.8">
+    <strong style="color:#1a1a19">The mission:</strong> Win all 3 games. Win by the biggest possible margins. Bat for maximum runs — bowl for minimum conceded in minimum overs. Two huge wins in Games 2 and 3 could shift NRR from −2.86 to above −1.13, securing Premier Division survival in 3 of the 4 possible scenarios.<br><br>
+    <strong>வெற்றி பெறுவோம்! 🏏</strong>
+  </div>
+</div>
+
+<script>
+new Chart(document.getElementById('c1'),{
+  type:'bar',
+  data:{
+    labels:['Win 0\n107 pts','Win 1\n120 pts','Win 2\n133 pts','Win 3 · 146\nNRR unchanged','Win 3 · 146\nNRR > −1.13','Win 3 · 146\nNRR > −0.81'],
+    datasets:[{data:[0,0,0,22,44,72],backgroundColor:['#e24b4a','#e24b4a','#e24b4a','#eda100','#1baf7a','#1baf7a'],borderRadius:4,borderSkipped:false}]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Survival chance: ${c.parsed.y}%`}}},
+    scales:{
+      x:{ticks:{color:'#898781',font:{size:9},maxRotation:0},grid:{display:false},border:{color:'#c3c2b7'}},
+      y:{min:0,max:100,ticks:{color:'#898781',font:{size:11},callback:v=>v+'%'},grid:{color:'#e1e0d9',lineWidth:0.5},border:{display:false}}
+    }
+  }
+});
+new Chart(document.getElementById('c2'),{
+  type:'bar',
+  data:{
+    labels:['Stanly','Lewisham','Northerns A','West 3','Northerns B','TUCC','Redbridge','Kent Utd'],
+    datasets:[{label:'Projected pts',data:[240,228,200,164,146,146,145,133],backgroundColor:['#1baf7a','#1baf7a','#1baf7a','#1baf7a','#e24b4a','#eda100','#e24b4a','#e24b4a'],borderRadius:4,borderSkipped:false}]
+  },
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.x} pts`}}},
+    scales:{
+      x:{min:60,max:270,ticks:{color:'#898781',font:{size:10}},grid:{color:'#e1e0d9',lineWidth:0.5},border:{display:false}},
+      y:{ticks:{color:'#898781',font:{size:10}},grid:{display:false},border:{display:false}}
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -138,6 +138,22 @@ export default function Nav() {
                   />
                 )
               })}
+              <motion.button
+                onClick={() => nav('/survival-report')}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.95 }}
+                title="2026 Premier Division Survival Report"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  color: '#fff', background: '#c62828', border: 'none',
+                  borderRadius: 10, padding: '8px 12px', cursor: 'pointer',
+                  fontFamily: FONT, fontWeight: 800, fontSize: 12.5,
+                  marginLeft: 8, minHeight: 38, whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 14px rgba(198,40,40,.4)', animation: 'tuccPulse 2s infinite',
+                }}
+              >
+                🚨 Survival Report
+              </motion.button>
               <motion.a
                 href="/"
                 whileHover={{ scale: 1.03 }}
@@ -303,6 +319,24 @@ export default function Nav() {
 
               {/* Nav links */}
               <div style={{ padding: '16px 16px', flex: 1 }}>
+                <motion.button
+                  onClick={() => { nav('/survival-report'); setOpen(false) }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                    padding: '14px 16px', borderRadius: 14, marginBottom: 14,
+                    background: 'linear-gradient(135deg,#b71c1c,#c62828)', border: 'none',
+                    cursor: 'pointer', textAlign: 'left', boxShadow: '0 6px 20px rgba(198,40,40,.4)',
+                    animation: 'tuccPulse 2s infinite',
+                  }}
+                >
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>🚨</span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: 'block', fontFamily: FONT, fontSize: 15, fontWeight: 800, color: '#fff' }}>2026 Survival Report</span>
+                    <span style={{ display: 'block', fontFamily: FONT, fontSize: 11.5, color: 'rgba(255,255,255,.85)' }}>Relegation battle — read the analysis</span>
+                  </span>
+                  <ChevronRight size={16} color="#fff" strokeWidth={2} />
+                </motion.button>
                 <div style={{ fontSize: 10, fontWeight: 800, color: C.gray3, letterSpacing: 1, textTransform: 'uppercase', fontFamily: FONT, marginBottom: 10, paddingLeft: 4 }}>
                   Navigation
                 </div>
@@ -391,6 +425,7 @@ export default function Nav() {
 
       {/* ── Responsive CSS ── */}
       <style>{`
+        @keyframes tuccPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.72; } }
         /* ── Liquid-glass: frost any card using the translucent surface tokens ── */
         [style*="rgba(15,28,60,0.58)"], [style*="rgba(15, 28, 60, 0.58)"],
         [style*="rgba(22,36,80,0.52)"], [style*="rgba(22, 36, 80, 0.52)"] {

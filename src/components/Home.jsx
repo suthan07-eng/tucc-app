@@ -895,6 +895,28 @@ export default function Home() {
 
       <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '0 16px 40px', width: '100%' }}>
 
+        {/* ── Survival Report banner ── */}
+        <div
+          onClick={() => nav('/survival-report')}
+          role="button"
+          style={{
+            marginTop: 16, cursor: 'pointer',
+            background: 'linear-gradient(135deg,#b71c1c,#c62828)', color: '#fff',
+            borderRadius: 14, padding: '14px 18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+            boxShadow: '0 10px 30px -8px rgba(198,40,40,.55), inset 0 1px 0 rgba(255,255,255,.2)',
+            border: '1px solid rgba(255,255,255,.18)',
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 15, marginBottom: 3 }}>🚨 Relegation Battle — Read the Survival Report</div>
+            <div style={{ fontFamily: FONT, fontSize: 12, opacity: 0.92 }}>We must win all 3 remaining games and improve our NRR. See the full analysis.</div>
+          </div>
+          <span style={{ background: '#fff', color: '#c62828', padding: '8px 16px', borderRadius: 9, fontFamily: FONT, fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
+            View Report →
+          </span>
+        </div>
+
         {/* ── Player Dashboard ── */}
         <div style={{ marginTop: 16 }}>
           <PlayerDashboard />
