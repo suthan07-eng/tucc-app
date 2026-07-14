@@ -146,7 +146,6 @@ function AppRoutes() {
       <Route path="/contact" element={<PublicContact />} />
       <Route path="/sponsors" element={<PublicSponsors />} />
       <Route path="/squad"   element={<PublicPlayers />} />
-      <Route path="/survival-report" element={<SurvivalReport />} />
 
       {/* Public — landing / login */}
       <Route path="/login" element={<LandingPage />} />
@@ -165,6 +164,7 @@ function AppRoutes() {
       <Route path="/players" element={<RequireAuth><PlayersPage /></RequireAuth>} />
       <Route path="/gallery"  element={<RequireAuth><GalleryPage /></RequireAuth>} />
       <Route path="/analyse" element={<RequireAuth><AnalysePage /></RequireAuth>} />
+      <Route path="/survival-report" element={<RequireAuth><SurvivalReport /></RequireAuth>} />
 
       {/* Password reset (public — accessed via email link) */}
       <Route path="/reset-password" element={<ResetPassword />} />

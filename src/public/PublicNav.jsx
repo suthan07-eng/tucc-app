@@ -79,14 +79,6 @@ export default function PublicNav() {
 
           {/* Desktop CTAs */}
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }} className="desktop-ctas">
-            <Link to="/survival-report" style={{
-              display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none',
-              background: '#c62828', color: '#fff', fontSize: 12.5, fontWeight: 700,
-              padding: '8px 14px', borderRadius: 8, letterSpacing: '0.2px',
-              boxShadow: '0 4px 14px rgba(198,40,40,.4)', animation: 'tuccPulse 2s infinite',
-            }}>
-              🚨 2026 Survival Report
-            </Link>
             <Link to="/login" style={{
               color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 600,
               padding: '8px 18px', borderRadius: 8,
@@ -143,15 +135,7 @@ export default function PublicNav() {
               {l.label}
             </Link>
           ))}
-          <Link to="/survival-report" style={{
-            marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none',
-            background: '#c62828', color: '#fff', fontSize: 17, fontWeight: 700,
-            padding: '12px 22px', borderRadius: 10, boxShadow: '0 6px 20px rgba(198,40,40,.45)',
-            animation: 'tuccPulse 2s infinite',
-          }}>
-            🚨 2026 Survival Report
-          </Link>
-          <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
+          <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
             <Link to="/login" style={{ color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 600, padding: '10px 24px', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: 8 }}>
               Player Login
             </Link>
