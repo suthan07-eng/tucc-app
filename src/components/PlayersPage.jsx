@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import statsJson from '../data/stats-2026.json'
 import { loadMergedStats } from '../utils/statsOverlay'
+import { getSquad } from '../lib/squad'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -513,14 +514,14 @@ export default function PlayersPage() {
     async function load() {
       setLoading(true)
       try {
-        const [playersRes, scoresRes, { data: sbPlayers }, mergedStats] = await Promise.all([
-          fetch('/api/players'),
+        const [squadRes, scoresRes, { data: sbPlayers }, mergedStats] = await Promise.all([
+          getSquad(),
           fetch('/api/player-profiles?action=scores&season=2026'),
           supabase.from('players').select('name, role'),
           loadMergedStats('2026'),
         ])
         setStats(mergedStats)
-        const playersRaw = await playersRes.json()
+        const playersRaw = squadRes
         const scoresRaw  = await scoresRes.json()
 
         // Build a name→role map from admin-set Supabase roles

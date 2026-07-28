@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, animate } from '
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import { FONT } from '../constants'
+import { getSquad } from '../lib/squad'
 
 const EASE = [0.32, 0.72, 0, 1]
 
@@ -279,7 +280,7 @@ export default function PlayerDashboard() {
     if (!displayName) { setLoaded(true); return }
     const norm = s => s.toLowerCase().replace(/\s+/g, ' ').trim()
     const dn = norm(displayName)
-    fetch('/api/players').then(r => r.json()).then(({ players = [] }) => {
+    getSquad().then(({ players = [] }) => {
       let hit = players.find(p => norm(p.name) === dn)
       if (!hit) {
         const parts = dn.split(' ').filter(w => w.length > 2)

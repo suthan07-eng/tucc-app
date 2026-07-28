@@ -12,6 +12,7 @@ import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
 import { getLeagueTable, getFixtures } from '../lib/btcl'
+import { getSquad } from '../lib/squad'
 import { useSetting } from '../lib/appSettings'
 import PlayerDashboard from './PlayerDashboard'
 import PlayerOfWeek from './PlayerOfWeek'
@@ -460,7 +461,7 @@ function TopPerformers() {
     // Fetch stats + squad photos in parallel
     Promise.all([
       fetch('/api/player-stats').then(r => r.json()).catch(() => ({})),
-      fetch('/api/players').then(r => r.json()).catch(() => ({})),
+      getSquad().catch(() => ({})),
     ]).then(([stats, sq]) => {
       const bat  = (stats.batting  || []).sort((a, b) => (b.runs    || 0) - (a.runs    || 0))[0]
       const bowl = (stats.bowling  || []).sort((a, b) => (b.wickets || 0) - (a.wickets || 0))[0]
