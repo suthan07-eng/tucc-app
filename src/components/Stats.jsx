@@ -889,29 +889,39 @@ function MatchLogDashboard({ season }) {
   useEffect(() => {
     async function load() {
       setLoadingM(true)
-      const { data: ps } = await supabase.from('match_performances').select('match_id').eq('season', season)
-      const ids = [...new Set((ps || []).map(p => p.match_id))]
-      if (!ids.length) { setMatches([]); setLoadingM(false); return }
-      const { data: ms } = await supabase.from('matches').select('id,opponent,date,venue,format').in('id', ids).order('date', { ascending: false })
-      setMatches(ms || [])
-      if (ms?.length) { setSelectedId(ms[0].id); loadPerfs(ms[0].id) }
+      // Source of truth: match_results (from uploaded scorecards)
+      const { data: ms } = await supabase
+        .from('match_results')
+        .select('id,opponent,match_date,venue,result,our_score,our_wickets,their_score,their_wickets,our_batting,our_bowling')
+        .eq('season', season)
+        .order('match_date', { ascending: false })
+      const list = (ms || []).map(m => ({
+        id: m.id, opponent: m.opponent,
+        date: m.match_date, venue: m.venue,
+        format: null, result: m.result,
+        our_score: m.our_score, our_wickets: m.our_wickets,
+        their_score: m.their_score, their_wickets: m.their_wickets,
+        batting: m.our_batting || [], bowling: m.our_bowling || [],
+      }))
+      setMatches(list)
+      if (list.length) { setSelectedId(list[0].id); setPerfs(list[0]) }
       setLoadingM(false)
     }
     load()
   }, [season])
 
-  async function loadPerfs(mid) {
-    setLoadingP(true)
-    const { data } = await supabase.from('match_performances').select('*').eq('match_id', mid)
-    setPerfs(data || []); setLoadingP(false)
+  function loadPerfs(mid) {
+    const m = matches.find(x => x.id === mid)
+    setPerfs(m || null)
   }
 
   if (loadingM) return <div style={{ color: C.gray3, fontSize: 13, padding: '20px 0' }}>Loading…</div>
   if (!matches.length) return <EmptyState tab="match log" />
 
   const theme   = TAB_THEMES.matchlog
-  const batters = perfs.filter(p => p.bat_did_bat).sort((a, b) => (b.bat_runs || 0) - (a.bat_runs || 0))
-  const bowlers = perfs.filter(p => p.bowl_did_bowl).sort((a, b) => (b.bowl_wickets || 0) - (a.bowl_wickets || 0))
+  const cur     = perfs || {}
+  const batters = (cur.batting || []).filter(p => p.did_bat).sort((a, b) => (b.runs || 0) - (a.runs || 0))
+  const bowlers = (cur.bowling || []).sort((a, b) => (b.wickets || 0) - (a.wickets || 0))
 
   return (
     <div>
@@ -932,7 +942,10 @@ function MatchLogDashboard({ season }) {
                 {m.date ? new Date(m.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBD'}{m.venue ? ` · ${m.venue}` : ''}
               </div>
             </div>
-            <span style={{ fontFamily: FONT, fontSize: 11, color: C.gray3 }}>{m.format || 'T20'}</span>
+            <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 800, color: m.result === 'won' ? '#22c55e' : (m.result === 'lost' ? '#ef4444' : C.gray3), textTransform: 'uppercase' }}>
+              {m.result === 'won' ? 'Won' : m.result === 'lost' ? 'Lost' : (m.result || '')}
+              {m.our_score != null ? ` · ${m.our_score}-${m.our_wickets}` : ''}
+            </span>
           </button>
         ))}
       </div>
@@ -944,17 +957,17 @@ function MatchLogDashboard({ season }) {
               <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.7, ...GRAD_TEXT }}>🏏 Batting</div>
               <div style={{ ...GLASS_NESTED, overflow: 'hidden' }}>
                 {batters.map((p, i) => {
-                  const sr = p.bat_balls ? ((p.bat_runs || 0) * 100 / p.bat_balls).toFixed(0) : '—'
+                  const sr = p.balls ? ((p.runs || 0) * 100 / p.balls).toFixed(0) : '—'
                   return (
-                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 36px 40px', padding: '10px 14px', borderBottom: i < batters.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', gap: 0, background: i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 36px 40px', padding: '10px 14px', borderBottom: i < batters.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', gap: 0, background: i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Avatar name={p.player_name} size={26} />
-                        <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.player_name}</span>
+                        <Avatar name={p.name} size={26} />
+                        <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.name}</span>
                       </div>
-                      <div style={{ ...cellStyle, fontWeight: 800, color: C.green }}>{p.bat_runs ?? '—'}{p.bat_not_out ? '*' : ''}</div>
-                      <div style={cellStyle}>{p.bat_balls ?? '—'}</div>
-                      <div style={cellStyle}>{p.bat_fours ?? '—'}</div>
-                      <div style={cellStyle}>{p.bat_sixes ?? '—'}</div>
+                      <div style={{ ...cellStyle, fontWeight: 800, color: C.green }}>{p.runs ?? '—'}{p.not_out ? '*' : ''}</div>
+                      <div style={cellStyle}>{p.balls ?? '—'}</div>
+                      <div style={cellStyle}>{p.fours ?? '—'}</div>
+                      <div style={cellStyle}>{p.sixes ?? '—'}</div>
                       <div style={cellStyle}>{sr}</div>
                     </div>
                   )
@@ -967,16 +980,17 @@ function MatchLogDashboard({ season }) {
               <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.7, ...GRAD_TEXT }}>⚡ Bowling</div>
               <div style={{ ...GLASS_NESTED, overflow: 'hidden' }}>
                 {bowlers.map((p, i) => {
-                  const econ = p.bowl_overs ? (p.bowl_runs / p.bowl_overs).toFixed(2) : '—'
+                  const ov = parseFloat(p.overs) || 0
+                  const econ = ov ? (p.runs / ov).toFixed(2) : '—'
                   return (
-                    <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 44px', padding: '10px 14px', borderBottom: i < bowlers.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', gap: 0, background: i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 36px 36px 36px 44px', padding: '10px 14px', borderBottom: i < bowlers.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', alignItems: 'center', gap: 0, background: i % 2 !== 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Avatar name={p.player_name} size={26} />
-                        <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.player_name}</span>
+                        <Avatar name={p.name} size={26} />
+                        <span style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.dark }}>{p.name}</span>
                       </div>
-                      <div style={cellStyle}>{p.bowl_overs ?? '—'}</div>
-                      <div style={{ ...cellStyle, fontWeight: 800, color: C.red }}>{p.bowl_wickets ?? '—'}</div>
-                      <div style={cellStyle}>{p.bowl_runs ?? '—'}</div>
+                      <div style={cellStyle}>{p.overs ?? '—'}</div>
+                      <div style={{ ...cellStyle, fontWeight: 800, color: C.red }}>{p.wickets ?? '—'}</div>
+                      <div style={cellStyle}>{p.runs ?? '—'}</div>
                       <div style={cellStyle}>{econ}</div>
                     </div>
                   )

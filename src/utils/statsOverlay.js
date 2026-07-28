@@ -1,11 +1,9 @@
 import { supabase } from '../supabase'
-import statsJson from '../data/stats-2026.json'
 
-// ── Stats overlay ───────────────────────────────────────────────────────────
-// The static Excel file (stats-2026.json) is the bulk base. The admin "Stats"
-// tab writes to the Supabase `player_stats` table — those rows OVERRIDE / ADD
-// on top of the base, so admins can correct any player and it shows live.
-// If a player has no admin row, the Excel figure is used unchanged.
+// ── Season stats source ──────────────────────────────────────────────────────
+// The Supabase `player_stats` table is the single source of truth — it is
+// aggregated from the uploaded match scorecards (see admin Scorecards tab).
+// (Previously this overlaid an Excel file; scorecards now replace that entirely.)
 
 const norm = s => String(s == null ? '' : s).toLowerCase().trim()
 const n = (v, d = 0) => (v == null ? d : Number(v))
@@ -31,7 +29,7 @@ function toBowling(r) {
   }
 }
 
-// Returns { batting, bowling } — Excel base with admin player_stats overlaid by name.
+// Returns { batting, bowling } straight from the scorecard-aggregated table.
 export async function loadMergedStats(season = '2026') {
   let rows = []
   try {
@@ -41,20 +39,13 @@ export async function loadMergedStats(season = '2026') {
     rows = []
   }
 
-  const batOv = new Map(), bowlOv = new Map()
+  const batting = [], bowling = []
   for (const r of rows) {
     if (!r.player_name) continue
-    const hasBat = r.bat_matches != null || r.bat_innings != null || r.bat_runs != null
-    const hasBowl = r.bowl_matches != null || r.bowl_overs != null || r.bowl_wickets != null
-    if (hasBat) batOv.set(norm(r.player_name), toBatting(r))
-    if (hasBowl) bowlOv.set(norm(r.player_name), toBowling(r))
+    if (Number(r.bat_innings) > 0 || Number(r.bat_runs) > 0) batting.push(toBatting(r))
+    if (Number(r.bowl_matches) > 0 || Number(r.bowl_wickets) > 0 || Number(r.bowl_overs) > 0) bowling.push(toBowling(r))
   }
-
-  const merge = (base, ov) =>
-    (base || []).filter(p => !ov.has(norm(p.name))).concat([...ov.values()])
-
-  return {
-    batting: merge(statsJson.batting, batOv),
-    bowling: merge(statsJson.bowling, bowlOv),
-  }
+  batting.sort((a, b) => b.runs - a.runs)
+  bowling.sort((a, b) => b.wickets - a.wickets)
+  return { batting, bowling }
 }
