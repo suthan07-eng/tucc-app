@@ -12,6 +12,7 @@ import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
 import { getLeagueTable, getFixtures } from '../lib/btcl'
+import { useSetting } from '../lib/appSettings'
 import PlayerDashboard from './PlayerDashboard'
 import PlayerOfWeek from './PlayerOfWeek'
 
@@ -703,6 +704,7 @@ const chipItem = {
 
 export default function Home() {
   const nav = useNavigate()
+  const [survivalOn] = useSetting('survival_report_enabled', false)
   const [match, setMatch] = useState(null)
   const [nextFixture, setNextFixture] = useState(null)   // auto-fetched from BTCL
   const [allMatches, setAllMatches] = useState([])
@@ -893,7 +895,8 @@ export default function Home() {
 
       <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '0 16px 40px', width: '100%' }}>
 
-        {/* ── Survival Report banner ── */}
+        {/* ── Survival Report banner (admin-toggleable) ── */}
+        {survivalOn && (
         <div
           onClick={() => nav('/survival-report')}
           role="button"
@@ -914,6 +917,7 @@ export default function Home() {
             View Report →
           </span>
         </div>
+        )}
 
         {/* ── Player Dashboard ── */}
         <div style={{ marginTop: 16 }}>

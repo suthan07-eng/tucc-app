@@ -8,6 +8,7 @@ import {
 import { C, FONT, MAX_WIDTH } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { SpatialBackground } from './ui/spatial'
+import { useSetting } from '../lib/appSettings'
 
 const EASE = [0.23, 1, 0.32, 1]
 
@@ -59,6 +60,7 @@ export default function Nav() {
   const isAdmin       = pathname.startsWith('/admin')
   const [open, setOpen] = useState(false)
   const { signOut }   = useAuth()
+  const [survivalOn]  = useSetting('survival_report_enabled', false)
 
   // Close menu on route change
   useEffect(() => { setOpen(false) }, [pathname])
@@ -138,6 +140,7 @@ export default function Nav() {
                   />
                 )
               })}
+              {survivalOn && (
               <motion.button
                 onClick={() => nav('/survival-report')}
                 whileHover={{ scale: 1.03 }}
@@ -154,6 +157,7 @@ export default function Nav() {
               >
                 🚨 Survival Report
               </motion.button>
+              )}
               <motion.a
                 href="/"
                 whileHover={{ scale: 1.03 }}
@@ -319,6 +323,7 @@ export default function Nav() {
 
               {/* Nav links */}
               <div style={{ padding: '16px 16px', flex: 1 }}>
+                {survivalOn && (
                 <motion.button
                   onClick={() => { nav('/survival-report'); setOpen(false) }}
                   whileTap={{ scale: 0.97 }}
@@ -337,6 +342,7 @@ export default function Nav() {
                   </span>
                   <ChevronRight size={16} color="#fff" strokeWidth={2} />
                 </motion.button>
+                )}
                 <div style={{ fontSize: 10, fontWeight: 800, color: C.gray3, letterSpacing: 1, textTransform: 'uppercase', fontFamily: FONT, marginBottom: 10, paddingLeft: 4 }}>
                   Navigation
                 </div>
