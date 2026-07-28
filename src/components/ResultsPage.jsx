@@ -6,7 +6,8 @@ import {
   TrendingUp, TrendingDown, Minus,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
-import { getLeagueTable } from '../lib/btcl'
+import { getLeagueTable, getResults } from '../lib/btcl'
+import { supabase } from '../supabase'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -146,7 +147,7 @@ function PtsBadge({ pts }) {
 }
 
 // ── Result Card ────────────────────────────────────────────
-function ResultCard({ result, index }) {
+function ResultCard({ result, index, onScorecard }) {
   const us  = involved(result)
   const won = us && weWon(result)
 
@@ -229,24 +230,22 @@ function ResultCard({ result, index }) {
           </div>
         </div>
 
-        {result.scorecardUrl && (
-          <a
-            href={result.scorecardUrl}
-            target="_blank" rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
+        {result._scorecard && (
+          <button
+            onClick={e => { e.stopPropagation(); onScorecard?.(result._scorecard) }}
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
-              fontSize: 12, fontWeight: 700,
-              color: '#fff', textDecoration: 'none', flexShrink: 0,
-              background: 'rgba(255,255,255,.2)',
-              border: '1px solid rgba(255,255,255,.3)',
+              fontSize: 12, fontWeight: 800, cursor: 'pointer',
+              color: '#fff', flexShrink: 0,
+              background: 'rgba(255,255,255,.22)',
+              border: '1px solid rgba(255,255,255,.35)',
               borderRadius: 10, padding: '6px 12px',
               fontFamily: FONT, backdropFilter: 'blur(4px)',
               whiteSpace: 'nowrap',
             }}
           >
-            Scorecard <ExternalLink size={11} strokeWidth={2} />
-          </a>
+            📋 Scorecard
+          </button>
         )}
       </div>
 
@@ -401,6 +400,93 @@ function DateHeader({ date, count, index }) {
   )
 }
 
+// ── Full scorecard modal ───────────────────────────────────
+function InningsBlock({ inn }) {
+  const bat = (inn.batting || [])
+  const bowl = (inn.bowling || [])
+  const cell = { fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,0.82)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }
+  return (
+    <div style={{ ...NESTED, padding: 14, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 14, color: '#fff' }}>{shorten(inn.team)}</div>
+        {inn.total != null && (
+          <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 16, ...GRAD_TITLE }}>
+            {inn.total}{inn.wickets != null && Number(inn.wickets) < 10 ? `-${inn.wickets}` : ''}
+          </div>
+        )}
+      </div>
+      {/* Batting */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 30px 30px 26px 26px', gap: 4, padding: '4px 6px', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+        <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Batter</div>
+        {['R','B','4s','6s'].map(h => <div key={h} style={{ ...cell, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)' }}>{h}</div>)}
+      </div>
+      {bat.filter(b => b.did_bat).map((b, i) => (
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 30px 30px 26px 26px', gap: 4, padding: '6px', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: FONT, fontSize: 12.5, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.name}{b.not_out ? ' *' : ''}</div>
+            <div style={{ fontFamily: FONT, fontSize: 10.5, color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.how_out || 'not out'}</div>
+          </div>
+          <div style={{ ...cell, fontWeight: 800, color: '#fff' }}>{b.runs}</div>
+          <div style={cell}>{b.balls}</div>
+          <div style={cell}>{b.fours}</div>
+          <div style={cell}>{b.sixes}</div>
+        </div>
+      ))}
+      {/* Bowling */}
+      {bowl.length > 0 && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 34px 28px 34px 30px', gap: 4, padding: '4px 6px', marginTop: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+            <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Bowler</div>
+            {['O','M','R','W'].map(h => <div key={h} style={{ ...cell, fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)' }}>{h}</div>)}
+          </div>
+          {bowl.map((b, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 34px 28px 34px 30px', gap: 4, padding: '6px', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+              <div style={{ fontFamily: FONT, fontSize: 12.5, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.name}</div>
+              <div style={cell}>{b.overs}</div>
+              <div style={cell}>{b.maidens}</div>
+              <div style={cell}>{b.runs}</div>
+              <div style={{ ...cell, fontWeight: 800, color: '#f472b6' }}>{b.wickets}</div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  )
+}
+
+function ScorecardModal({ data, onClose }) {
+  const innings = data?.scorecard?.innings || []
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(6,10,28,0.72)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '5vh 14px', overflowY: 'auto' }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 24 }}
+        transition={{ duration: 0.28, ease: EASE_OUT }}
+        onClick={e => e.stopPropagation()}
+        style={{ ...GLASS_CARD, width: '100%', maxWidth: 560, overflow: 'hidden' }}
+      >
+        <div style={{ background: 'linear-gradient(135deg, rgba(109,40,217,0.6), rgba(37,99,235,0.5))', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 15, color: '#fff' }}>Tamil United vs {shorten(data.opponent || '')}</div>
+            <div style={{ fontFamily: FONT, fontSize: 11.5, color: 'rgba(255,255,255,0.75)', marginTop: 2 }}>
+              {data.match_date ? new Date(data.match_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
+              {data.result ? ` · ${data.result === 'won' ? 'Tamil United won' : data.result === 'lost' ? 'Tamil United lost' : data.result}` : ''}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', borderRadius: 10, width: 32, height: 32, cursor: 'pointer', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>✕</button>
+        </div>
+        <div style={{ padding: 16, maxHeight: '72vh', overflowY: 'auto' }}>
+          {innings.length ? innings.map((inn, i) => <InningsBlock key={i} inn={inn} />)
+            : <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', padding: 24, fontFamily: FONT, fontSize: 13 }}>Scorecard details unavailable.</div>}
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 // ── Main page ──────────────────────────────────────────────
 export default function ResultsPage() {
   const nav = useNavigate()
@@ -411,19 +497,31 @@ export default function ResultsPage() {
   const [source, setSource]         = useState(null)
   const [refreshing, setRefreshing] = useState(false)
   const [teamStats, setTeamStats]   = useState(null)
+  const [scorecard, setScorecard]   = useState(null)  // open scorecard modal
 
-  const load = (bust = false) => {
+  const load = async () => {
     setRefreshing(true)
-    fetch(bust ? `/api/results?t=${Date.now()}` : '/api/results')
-      .then(r => r.json())
-      .then(d => {
-        setResults(d.results || [])
-        setUpdatedAt(d.updatedAt)
-        setSource(d.source)
-        setLoading(false)
-        setRefreshing(false)
-      })
-      .catch(() => { setError(true); setLoading(false); setRefreshing(false) })
+    try {
+      const [res, mr] = await Promise.all([
+        getResults(),
+        supabase.from('match_results').select('*'),
+      ])
+      const cards = res.results || []
+      const scs = mr.data || []
+      // Attach our uploaded scorecard to each of our result rows (match by date)
+      for (const c of cards) {
+        if (!involved(c)) continue
+        const sc = scs.find(m => m.match_date === c._iso)
+        if (sc) c._scorecard = sc
+      }
+      setResults(cards)
+      setUpdatedAt(res.updatedAt)
+      setSource(res.source)
+    } catch {
+      setError(true)
+    }
+    setLoading(false)
+    setRefreshing(false)
   }
 
   useEffect(() => {
@@ -566,7 +664,7 @@ export default function ResultsPage() {
                   <DateHeader date={date} count={dateResults.length} index={gi} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {dateResults.map((result, i) => (
-                      <ResultCard key={i} result={result} index={i + gi * 2} />
+                      <ResultCard key={i} result={result} index={i + gi * 2} onScorecard={setScorecard} />
                     ))}
                   </div>
                 </div>
@@ -606,6 +704,10 @@ export default function ResultsPage() {
           </AnimatePresence>
         )}
       </div>
+
+      <AnimatePresence>
+        {scorecard && <ScorecardModal data={scorecard} onClose={() => setScorecard(null)} />}
+      </AnimatePresence>
 
       <Footer />
     </div>

@@ -10,6 +10,7 @@
 const DIVISION_ID = '137680'
 const LEAGUE_API = `https://admin.btcluk.com/api/divisionLeague/${DIVISION_ID}`
 const FIXTURES_API = `https://admin.btcluk.com/api/divisionFixture/${DIVISION_ID}`
+const RESULTS_API = `https://admin.btcluk.com/api/divisionResult/${DIVISION_ID}`
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December']
@@ -82,6 +83,61 @@ export async function getLeagueTable() {
     return { teams, rows: teams, source: d.source, updatedAt: d.updatedAt }
   } catch (e) {
     return { teams: [], rows: [], source: 'error', updatedAt: null }
+  }
+}
+
+// "26/07/2026" -> {iso:'2026-07-26', label:'26 Jul 2026'}
+function ddmmyyyy(s) {
+  const m = (s || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (!m) return { iso: '', label: s || '' }
+  const day = m[1].padStart(2, '0'), mon = m[2].padStart(2, '0')
+  const monShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[2] - 1] || ''
+  return { iso: `${m[3]}-${mon}-${day}`, label: `${day} ${monShort} ${m[3]}` }
+}
+
+function mapResults(data) {
+  if (!Array.isArray(data)) return []
+  const score = (runs, w) => (runs == null || runs === '') ? '' : (Number(w) >= 10 ? `${runs}` : `${runs}-${w}`)
+  return data
+    .map((r) => {
+      const d = ddmmyyyy(r.math_date || r.match_date)
+      const t1 = [r.left_club, r.left_team].filter(Boolean).join(' - ').trim()
+      const t2 = [r.right_club, r.right_team].filter(Boolean).join(' - ').trim()
+      const rd = r.result_description || ''
+      const msg = r.msg || ''
+      let winner = '', margin = ''
+      if (/abandon|cancel/i.test(msg + rd)) { margin = 'Match abandoned' }
+      else if (/\btie/i.test(msg + rd)) { margin = 'Match tied' }
+      else {
+        if (/won/i.test(rd)) winner = rd.replace(/\s*-\s*won\s*$/i, '').trim()
+        const mm = msg.match(/won by\s+(.+)$/i)
+        margin = mm ? mm[1].trim() : (winner ? 'Won' : '')
+      }
+      return {
+        _iso: d.iso, date: d.label,
+        team1: t1, score1: score(r.left_run, r.left_w), pts1: null,
+        team2: t2, score2: score(r.right_run, r.right_w), pts2: null,
+        winner, margin,
+      }
+    })
+    .filter((r) => r.team1 && r.team2)
+    .sort((a, b) => (a._iso < b._iso ? 1 : -1)) // most recent first
+}
+
+// Returns { results, source, updatedAt }.
+export async function getResults() {
+  try {
+    const r = await fetch(RESULTS_API, { headers: { Accept: 'application/json' } })
+    if (r.ok) {
+      const results = mapResults(await r.json())
+      if (results.length) return { results, source: 'live', updatedAt: new Date().toISOString() }
+    }
+  } catch (e) { /* fall through */ }
+  try {
+    const d = await (await fetch('/api/results')).json()
+    return { results: d.results || [], source: d.source, updatedAt: d.updatedAt }
+  } catch (e) {
+    return { results: [], source: 'error', updatedAt: null }
   }
 }
 
