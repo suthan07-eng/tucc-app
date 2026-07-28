@@ -86,9 +86,14 @@ export function SpatialBackground({ image, video, scrim }) {
   const skin = useSkinTokens()
   const orbs = skin.orbs
   const zoomRef = useRef(null)
-  const scrimBg = scrim || 'linear-gradient(to bottom, rgba(10,18,40,0.12) 0%, rgba(10,18,40,0.18) 50%, rgba(10,18,40,0.44) 100%)'
+  // Richer readability scrim — the cricket backdrop still reads through the top,
+  // but deepens toward the content so glass cards and text stay crisp.
+  const scrimBg = scrim || 'linear-gradient(to bottom, rgba(6,11,26,0.42) 0%, rgba(6,11,26,0.52) 42%, rgba(6,11,26,0.74) 100%)'
 
-  // Scroll-driven zoom: zoom IN to the subject on scroll down, OUT on scroll up
+  // Slow the hero video so the motion feels cinematic, not frantic.
+  const slowVideo = (e) => { try { e.target.playbackRate = 0.5 } catch (_) {} }
+
+  // Scroll-driven zoom: gentle push-in on scroll (subtle, not aggressive)
   useEffect(() => {
     const el = zoomRef.current
     if (!el) return
@@ -96,7 +101,7 @@ export function SpatialBackground({ image, video, scrim }) {
     let raf = 0
     const update = () => {
       raf = 0
-      const s = 1 + Math.min((window.scrollY || 0) / 1500, 0.32)
+      const s = 1 + Math.min((window.scrollY || 0) / 2400, 0.12)
       el.style.transform = `scale(${s})`
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
@@ -118,11 +123,11 @@ export function SpatialBackground({ image, video, scrim }) {
             {video ? (
               <>
                 <video key={video} className="spatial-hero spatial-hero-desktop" style={vidStyle}
-                  autoPlay muted loop playsInline preload="auto" poster={image}>
+                  autoPlay muted loop playsInline preload="auto" poster={image} onLoadedMetadata={slowVideo}>
                   <source src={video} type="video/mp4" />
                 </video>
                 <video key={`${video}-m`} className="spatial-hero spatial-hero-mobile" style={vidStyle}
-                  autoPlay muted loop playsInline preload="auto" poster={image && image.replace('.webp', '-m.webp')}>
+                  autoPlay muted loop playsInline preload="auto" poster={image && image.replace('.webp', '-m.webp')} onLoadedMetadata={slowVideo}>
                   <source src={video.replace('.mp4', '-m.mp4')} type="video/mp4" />
                 </video>
               </>
@@ -141,8 +146,10 @@ export function SpatialBackground({ image, video, scrim }) {
               </>
             )}
           </div>
-          {/* readability scrim — kept light so the cricket image stays visible behind every section incl. footer */}
+          {/* readability scrim — deepens toward the content so cards stay legible */}
           <div style={{ position: 'absolute', inset: 0, background: scrimBg }} />
+          {/* soft cinematic vignette — darkens the corners for a premium finish */}
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 22%, transparent 46%, rgba(4,8,20,0.5) 100%)' }} />
         </>
       )}
       {orbs.map((o, i) => (

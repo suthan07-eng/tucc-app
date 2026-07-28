@@ -166,7 +166,7 @@ function PlayerCard({ player, rank, cachedScore, isAdmin, index }) {
         boxShadow: medal
           ? `0 0 0 2px ${medal.glow}, 0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)`
           : `0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)`,
-        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: medal ? `2px solid ${medal.bg}` : `1px solid rgba(255,255,255,0.18)`,
@@ -395,7 +395,7 @@ function LeaderRow({ player, rank, cachedScore, onClick }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 16px',
-        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         borderRadius: 16,
@@ -629,7 +629,7 @@ export default function PlayersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
         style={{
-          background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+          background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
           backdropFilter: 'blur(20px) saturate(160%)',
           WebkitBackdropFilter: 'blur(20px) saturate(160%)',
           borderRadius: 24, padding: '32px 28px 28px', marginBottom: 22,
@@ -928,7 +928,7 @@ export default function PlayersPage() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
               transition={{ ease: [0.32, 0.72, 0, 1] }}
-              style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', borderRadius: 24, background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)' }}
+              style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', borderRadius: 24, background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)' }}
               onClick={e => e.stopPropagation()}
             >
               <PlayerCard

@@ -113,7 +113,7 @@ export default function LeagueTable() {
 
       {/* Table card */}
       <div style={{
-        background: 'linear-gradient(150deg, rgba(37,99,235,0.24), rgba(124,58,237,0.22) 60%, rgba(20,184,166,0.14))',
+        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
         borderRadius: 22,
         boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
         border: '1px solid rgba(255,255,255,0.18)',
