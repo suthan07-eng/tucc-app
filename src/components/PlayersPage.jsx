@@ -6,6 +6,7 @@ import { supabase } from '../supabase'
 import statsJson from '../data/stats-2026.json'
 import { loadMergedStats } from '../utils/statsOverlay'
 import { getSquad } from '../lib/squad'
+import { computeTuccScore, detectRole as _detectRole } from '../lib/tuccScore'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -34,53 +35,14 @@ function matchStat(arr, name) {
 }
 
 // ─── Score helpers ────────────────────────────────────────────────────────────
+// Formula lives in one place (lib/tuccScore) so the Players page and the cached
+// scores shown on the public pages are always identical.
+const _styles = (p) => ({ batStyle: p.batStyle, bowlStyle: p.bowlStyle })
 function computeScore(player) {
-  const bat  = player._bat
-  const bowl = player._bowl
-  const matches = player.stats?.matches || bat?.matches || bowl?.matches || 1
-  let batScore = 0
-  if (bat) {
-    const runsNorm = Math.min((bat.runs || 0) / 300, 1) * 40
-    const sr = parseFloat(bat.strike_rate) || 0
-    const srPts = sr >= 120 ? 30 : sr >= 90 ? 22 : sr >= 70 ? 15 : sr >= 50 ? 9 : 5
-    const avgNorm = Math.min((parseFloat(bat.average) || 0) / 60, 1) * 20
-    const milestones = Math.min((bat.fifties || 0) * 2 + (bat.hundreds || 0) * 5, 10)
-    batScore = runsNorm + srPts + avgNorm + milestones
-  }
-  let bowlScore = 0
-  if (bowl && (bowl.overs || 0) >= 4) {
-    const wktsNorm = Math.min((bowl.wickets || 0) / 15, 1) * 40
-    const econ = parseFloat(bowl.economy) || 99
-    const econPts = econ <= 5 ? 30 : econ <= 6.5 ? 22 : econ <= 8 ? 15 : econ <= 10 ? 9 : 5
-    const avg = parseFloat(bowl.average) || 99
-    const avgPts = avg <= 15 ? 20 : avg <= 22 ? 15 : avg <= 30 ? 10 : avg <= 40 ? 5 : 0
-    const fivefers = Math.min((bowl.five_fers || 0) * 10, 10)
-    bowlScore = wktsNorm + econPts + avgPts + fivefers
-  }
-  const role = detectRole(player)
-  let composite = 0
-  if (role === 'Bowler') composite = batScore * 0.20 + bowlScore * 0.80
-  else if (role === 'Batsman' || role === 'Wicket-Keeper') composite = batScore * 0.80 + bowlScore * 0.20
-  else {
-    const bonus = (bat?.runs || 0) >= 25 && (bowl?.wickets || 0) >= 3 ? Math.min(((bat?.runs || 0) / 60 + (bowl?.wickets || 0) / 5) * 5, 10) : 0
-    composite = batScore * 0.50 + bowlScore * 0.50 + bonus
-  }
-  const engMult   = 0.85 + 0.15 * Math.min(matches / 8, 1)
-  const confidence = Math.min(0.4 + Math.max(matches - 1, 0) / 3 * 0.6, 1)
-  const final = Math.min(composite * engMult * confidence, 100)
-  return { score: Math.round(final * 10) / 10, batScore: Math.round(batScore), bowlScore: Math.round(bowlScore) }
+  return computeTuccScore(player._bat, player._bowl, _styles(player), player.stats?.matches)
 }
-
 function detectRole(player) {
-  const batStyle  = (player.batStyle  || '').toLowerCase()
-  const bowlStyle = (player.bowlStyle || '').toLowerCase()
-  if (batStyle.includes('wicket') || bowlStyle.includes('wicket')) return 'Wicket-Keeper'
-  const hasBat  = player._bat  && (player._bat.innings  || player._bat.matches  || 0) >= 1
-  const hasBowl = player._bowl && (player._bowl.overs || 0) >= 4
-  if (hasBat && hasBowl) return 'All-Rounder'
-  if (hasBowl)  return 'Bowler'
-  if (bowlStyle && !hasBat) return 'Bowler'
-  return 'Batsman'
+  return _detectRole(player._bat, player._bowl, _styles(player))
 }
 
 // ─── Role config ──────────────────────────────────────────────────────────────

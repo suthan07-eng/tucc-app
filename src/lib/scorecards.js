@@ -8,6 +8,7 @@
 // PlayerID where the name matches the team roster, giving an exact id link.
 
 import { supabase } from '../supabase'
+import { computeTuccScore } from './tuccScore'
 
 const BTCL_ROSTER_URL = 'https://admin.btcluk.com/api/teamPlayer/286253'
 const DISPLAY_OVERRIDE = { 2233: 'Ajanthan Navaratnam', 4927: 'Krishen Daniel', 6296: 'Shenal Daniel Anthony' }
@@ -34,8 +35,31 @@ async function loadRoster() {
     return (raw || []).map((p) => ({
       id: p.PlayerID,
       display: title(DISPLAY_OVERRIDE[p.PlayerID] || `${p.Forename} ${p.Surname}`),
+      batStyle: p.BatStyle || '', bowlStyle: p.BowlStyle || '',
     }))
   } catch { return [] }
+}
+
+// Recompute the cached TUCC performance scores (tucc_player_scores.score) from
+// the fresh player_stats rows, using the SAME formula the Players page uses, so
+// the public pages never drift from the portal.
+async function syncCachedScores(rows, roster) {
+  const styleById = {}
+  for (const r of roster) styleById[r.id] = { batStyle: r.batStyle, bowlStyle: r.bowlStyle }
+  const updates = rows.filter((r) => r.btcl_player_id != null).map((r) => {
+    const bat = (r.bat_innings || r.bat_runs)
+      ? { runs: r.bat_runs, strike_rate: r.bat_strike_rate, average: r.bat_average, fifties: r.bat_fifties, hundreds: r.bat_hundreds, innings: r.bat_innings, matches: r.bat_matches }
+      : null
+    const bowl = (r.bowl_matches || r.bowl_overs)
+      ? { wickets: r.bowl_wickets, economy: r.bowl_economy, average: r.bowl_average, five_fers: r.bowl_five_fers, overs: r.bowl_overs, matches: r.bowl_matches }
+      : null
+    const matches = r.bat_matches || r.bowl_matches || 0
+    const { score } = computeTuccScore(bat, bowl, styleById[r.btcl_player_id] || {}, matches)
+    return { id: r.btcl_player_id, score }
+  })
+  await Promise.all(updates.map((u) =>
+    supabase.from('tucc_player_scores').update({ score: u.score }).eq('btcl_player_id', u.id)
+  ))
 }
 
 function makeRosterMatcher(roster) {
@@ -158,6 +182,9 @@ export async function recomputeAll() {
 
   await supabase.from('player_stats').delete().eq('season', '2026')
   if (rows.length) await supabase.from('player_stats').insert(rows)
+
+  // keep the cached public performance scores in sync with the live formula
+  try { await syncCachedScores(rows, roster) } catch (e) { /* non-fatal */ }
 
   const potw = autoPOTW(matchResults)
   if (potw) {
