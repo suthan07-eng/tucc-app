@@ -90,7 +90,7 @@ export default function Register() {
 
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
+        background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: '1px solid rgba(255,255,255,0.18)',
@@ -140,7 +140,7 @@ export default function Register() {
       <div style={{ flex: 1, maxWidth: MAX_WIDTH, margin: '0 auto', padding: '24px 16px 40px', width: '100%' }}>
         <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ transitionDelay: '0.2s' }}>
         <Card style={{
-          background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
+          background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
           border: '1px solid rgba(255,255,255,0.18)',
           boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
           borderRadius: 22,

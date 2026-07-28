@@ -162,7 +162,7 @@ function NextMatchBanner({ fixture, countdown }) {
       {/* Inner core */}
       <div style={{
         borderRadius: 26, overflow: 'hidden', position: 'relative',
-        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
+        background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: '1px solid rgba(255,255,255,0.18)',
@@ -300,7 +300,7 @@ function FixtureCard({ fixture, index }) {
       {/* Inner core */}
       <div style={{
         borderRadius: 21, overflow: 'hidden',
-        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
+        background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
         border: '1px solid rgba(255,255,255,0.18)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,.26)',
         backdropFilter: 'blur(20px) saturate(160%)',
@@ -619,7 +619,7 @@ export default function FixturesPage() {
                 initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:.4 }}
                 style={{ borderRadius:22, padding:2, background:'rgba(233,160,32,.1)', border:'1px solid rgba(233,160,32,.2)', marginTop:6 }}
               >
-                <div style={{ borderRadius:21, background:'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))', backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)', border:'1px solid rgba(255,255,255,0.18)', boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                <div style={{ borderRadius:21, background:'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))', backdropFilter:'blur(20px) saturate(160%)', WebkitBackdropFilter:'blur(20px) saturate(160%)', border:'1px solid rgba(255,255,255,0.18)', boxShadow:'0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', padding:'20px 22px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
                   <div>
                     <div style={{ fontFamily:FONT, fontSize:14, fontWeight:800, color:'#fff' }}>Full season schedule</div>
                     <div style={{ fontFamily:FONT, fontSize:12, color:'rgba(255,255,255,.3)', marginTop:3 }}>View on play-cricket.com</div>
