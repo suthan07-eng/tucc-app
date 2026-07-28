@@ -28,7 +28,7 @@ function SponsorBanner() {
         marginTop: 20,
         borderRadius: 18,
         overflow: 'hidden',
-        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: '1px solid rgba(255,255,255,0.18)',
@@ -217,7 +217,7 @@ function NextFixtureCard() {
   return (
     <motion.div
       variants={staggerItem}
-      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', position: 'relative', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))' }}
+      style={{ marginTop: 16, borderRadius: 22, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', position: 'relative', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))' }}
     >
       {/* Decorative blobs */}
       <div style={{ position: 'absolute', top: -36, right: -36, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,.06)', pointerEvents: 'none' }} />
@@ -434,13 +434,16 @@ function SeasonSnapshot() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {stats.map(({ label, value, color, bg }) => (
           <div key={label} style={{
-            background: bg, borderRadius: 18,
+            background: 'linear-gradient(160deg, rgba(24,28,56,0.92), rgba(12,15,32,0.94))',
+            borderRadius: 18,
             padding: '18px 10px 14px', textAlign: 'center',
-            border: `1.5px solid ${color}20`,
-            boxShadow: `0 4px 16px ${color}12`,
+            border: `1px solid ${color}33`,
+            boxShadow: `0 8px 22px rgba(0,0,0,0.38), inset 0 0 26px ${color}14`,
+            backdropFilter: 'blur(14px) saturate(150%)', WebkitBackdropFilter: 'blur(14px) saturate(150%)',
             position: 'relative', overflow: 'hidden',
           }}>
-            <div style={{ position: 'absolute', bottom: -10, right: -10, width: 44, height: 44, borderRadius: '50%', background: `${color}10`, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${color}, transparent)`, opacity: 0.6 }} />
+            <div style={{ position: 'absolute', bottom: -14, right: -14, width: 48, height: 48, borderRadius: '50%', background: `${color}1a`, pointerEvents: 'none', filter: 'blur(6px)' }} />
             <div style={{ fontFamily: FONT, fontSize: 28, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
             <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 800, color: `${color}99`, marginTop: 7, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</div>
           </div>
@@ -615,7 +618,7 @@ function ResultsTeaser() {
       onClick={() => nav('/results')}
       style={{
         marginTop: 16, cursor: 'pointer',
-        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         borderRadius: 16, padding: '16px 18px',
@@ -817,7 +820,7 @@ export default function Home() {
       <div
         className="hero-parallax"
         style={{
-          background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+          background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
           backdropFilter: 'blur(20px) saturate(160%)',
           WebkitBackdropFilter: 'blur(20px) saturate(160%)',
           borderBottom: '1px solid rgba(255,255,255,0.18)',
@@ -1066,7 +1069,7 @@ export default function Home() {
         )}
 
         {/* Player chips */}
-        <Card style={{ marginTop: 16, overflow: 'hidden', padding: 0, background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)' }}>
+        <Card style={{ marginTop: 16, overflow: 'hidden', padding: 0, background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)' }}>
           <div style={{
             padding: '14px 16px 12px',
             background: 'rgba(255,255,255,0.05)',
@@ -1148,7 +1151,7 @@ export default function Home() {
           <div
             style={{
               marginTop: 16,
-              background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+              background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
               backdropFilter: 'blur(20px) saturate(160%)',
               WebkitBackdropFilter: 'blur(20px) saturate(160%)',
               border: '1px solid rgba(255,255,255,0.18)',
@@ -1192,7 +1195,7 @@ export default function Home() {
             ['Deadline', deadline],
           ].filter(([, v]) => v)
           return (
-            <div style={{ marginTop: 14, background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)' }}>
+            <div style={{ marginTop: 14, background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)' }}>
               {/* Gold top bar */}
               <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#e9a020,#f59e0b,transparent)' }}/>
               <div style={{ padding: '16px 18px' }}>
@@ -1238,16 +1241,18 @@ export default function Home() {
                   key={m.id}
                   variants={staggerItem}
                   style={{
-                    background: m.is_active ? 'rgba(124,58,237,0.16)' : 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
+                    background: m.is_active
+                      ? 'linear-gradient(160deg, rgba(88,40,180,0.42), rgba(30,18,70,0.72))'
+                      : 'linear-gradient(160deg, rgba(20,24,48,0.78), rgba(11,14,30,0.82))',
+                    backdropFilter: 'blur(14px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(14px) saturate(150%)',
                     borderRadius: 16,
                     padding: '14px 16px',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10)',
+                    boxShadow: m.is_active ? '0 10px 30px -12px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.12)' : '0 6px 18px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.06)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 14,
-                    border: m.is_active ? `1.5px solid ${C.green}` : '1px solid rgba(255,255,255,0.10)',
+                    border: m.is_active ? `1.5px solid ${C.green}` : '1px solid rgba(255,255,255,0.09)',
                   }}
                 >
                   <div
@@ -1309,7 +1314,7 @@ function SelectedXICard({ match, teamSelection }) {
   return (
     <div
       style={{
-        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: '1px solid rgba(255,255,255,0.18)',

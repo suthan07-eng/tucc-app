@@ -80,9 +80,9 @@ function PosterCard({ hero, type, delay = 0, onClick }) {
       transition={{ duration: 0.5, delay, ease: [0.23, 1, 0.32, 1] }}
       onClick={onClick}
       style={{
-        flex: '1 1 150px', minWidth: 0, maxWidth: 200, width: '100%', cursor: 'pointer',
+        minWidth: 0, width: '100%', cursor: 'pointer',
         borderRadius: 18, overflow: 'hidden', position: 'relative',
-        background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+        background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
         backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: '1px solid rgba(255,255,255,0.18)',
         boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
@@ -235,7 +235,7 @@ function PosterCard({ hero, type, delay = 0, onClick }) {
 
 function ShimmerCard() {
   return (
-    <div style={{ flex: '1 1 150px', minWidth: 0, maxWidth: 200, width: '100%', borderRadius: 18, overflow: 'hidden', background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', height: 260, position: 'relative' }}>
+    <div style={{ minWidth: 0, width: '100%', borderRadius: 18, overflow: 'hidden', background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', height: 260, position: 'relative' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)', animation: 'shimmer 1.6s infinite' }} />
     </div>
   )
@@ -292,7 +292,7 @@ function CardModal({ hero, type, onClose }) {
           style={{
             width: '100%', maxWidth: 380,
             borderRadius: 28, overflow: 'hidden', position: 'relative',
-            background: 'linear-gradient(160deg, rgba(22,30,58,0.82), rgba(13,19,42,0.78))',
+            background: 'linear-gradient(160deg, rgba(28,32,64,0.90), rgba(13,16,36,0.92))',
             backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)',
             border: '1px solid rgba(255,255,255,0.18)',
             boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
@@ -475,7 +475,7 @@ export default function PlayerOfWeek({ compact = false }) {
       </div>
 
       {/* Poster cards — wrap into rows of 2 */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
         {loading ? (
           <><ShimmerCard /><ShimmerCard /></>
         ) : (
