@@ -56,6 +56,18 @@ function computeBowlingScores(rows) {
   })).sort((a, b) => b.composite - a.composite)
 }
 
+// Keep one row per unique key. If a metric is given, keep the row with the
+// highest metric value (the fullest record); otherwise keep the first seen.
+function dedupeByKey(rows, keyFn, metricFn) {
+  const m = new Map()
+  for (const r of rows) {
+    const k = keyFn(r)
+    const prev = m.get(k)
+    if (!prev || (metricFn && metricFn(r) > metricFn(prev))) m.set(k, r)
+  }
+  return [...m.values()]
+}
+
 function computeAllrounderScores(batScored, bowlScored) {
   // normalise bat scores and bowl scores independently
   const batMap  = Object.fromEntries(batScored.map(r => [r.player_name, r.composite]))
@@ -513,17 +525,21 @@ export default function TabAnalyse() {
           } catch (e) { console.warn('BTCL photo sync failed:', e); toast('⚠️ Could not fetch BTCL photos (saved without them)') }
         }
 
-        // Insert batting stats
+        // Insert batting stats — dedupe by player_id (the export can repeat a
+        // name, and all rows for a name map to one player row) to satisfy the
+        // UNIQUE(opponent_id, player_id) constraint; keep the fullest record.
         if (batRows.length > 0) {
           await supabase.from('opponent_batting_stats').delete().eq('opponent_id', oppId)
-          const { error: bErr } = await supabase.from('opponent_batting_stats').insert(
+          const batInsert = dedupeByKey(
             batRows.filter(r => playerMap[r.player_name]).map(r => ({
               opponent_id: oppId, player_id: playerMap[r.player_name],
               matches: Math.round(r.matches||0), innings: Math.round(r.innings||0), not_outs: Math.round(r.not_outs||0),
               runs: Math.round(r.runs||0), high_score: Math.round(r.high_score||0), high_score_not_out: r.high_score_not_out,
               avg: r.avg, strike_rate: r.strike_rate, fifties: Math.round(r.fifties||0), hundreds: Math.round(r.hundreds||0),
-            }))
+            })),
+            r => r.player_id, r => r.innings || 0
           )
+          const { error: bErr } = await supabase.from('opponent_batting_stats').insert(batInsert)
           if (bErr) throw bErr
         }
 
@@ -532,15 +548,17 @@ export default function TabAnalyse() {
         if (bowlRows.length > 0) {
           const batMatches = Object.fromEntries(batRows.map(b => [b.player_name, Math.round(b.matches || 0)]))
           await supabase.from('opponent_bowling_stats').delete().eq('opponent_id', oppId)
-          const { error: boErr } = await supabase.from('opponent_bowling_stats').insert(
+          const bowlInsert = dedupeByKey(
             bowlRows.filter(r => playerMap[r.player_name]).map(r => ({
               opponent_id: oppId, player_id: playerMap[r.player_name],
               matches: Math.round(r.matches||0) || batMatches[r.player_name] || 0, overs: r.overs, maidens: Math.round(r.maidens||0),
               runs: Math.round(r.runs||0), wickets: Math.round(r.wickets||0), best_bowling: r.best_bowling,
               five_wkt_haul: Math.round(r.five_wkt_haul||0), economy_rate: r.economy_rate,
               strike_rate: r.strike_rate, average: r.average,
-            }))
+            })),
+            r => r.player_id, r => Number(r.overs) || 0
           )
+          const { error: boErr } = await supabase.from('opponent_bowling_stats').insert(bowlInsert)
           if (boErr) throw boErr
         }
 
@@ -584,8 +602,11 @@ export default function TabAnalyse() {
             how_to_play: tag === 'AVOID' ? 'Dangerous all-rounder — neutralise their main skill first and avoid risks against them in both innings.' : tag === 'TARGET' ? 'Exploitable all-rounder — attack their weaker discipline and apply pressure early to force mistakes.' : 'Capable all-rounder — stay disciplined in both departments and deny them momentum.',
           }}),
         ].filter(r => r.player_id)
-        if (analysisRows.length > 0) {
-          const { error: aErr } = await supabase.from('opponent_analysis').insert(analysisRows)
+        // UNIQUE(opponent_id, player_id, category) — drop any duplicate players
+        // that resolved to the same id within a category.
+        const analysisInsert = dedupeByKey(analysisRows, r => `${r.player_id}:${r.category}`)
+        if (analysisInsert.length > 0) {
+          const { error: aErr } = await supabase.from('opponent_analysis').insert(analysisInsert)
           if (aErr) throw aErr
         }
       }
