@@ -168,7 +168,9 @@ function parseBattingExcel(buffer) {
       hundreds:           _int(cell(ws, h.map, r, ['100s', 'hundreds', '100', 'hundred'])),
     })
   }
-  return out
+  // Collapse any repeated player name (the export can list one twice) — keep the
+  // fullest record so downstream inserts never violate the unique constraint.
+  return dedupeByKey(out, r => r.player_name.toLowerCase().replace(/\s+/g, ' ').trim(), r => r.innings || 0)
 }
 
 function parseBowlingExcel(buffer) {
@@ -195,7 +197,7 @@ function parseBowlingExcel(buffer) {
       average:       _num(cell(ws, h.map, r, ['average', 'avg', 'ave'])),
     })
   }
-  return out
+  return dedupeByKey(out, r => r.player_name.toLowerCase().replace(/\s+/g, ' ').trim(), r => r.overs || 0)
 }
 
 // ── Small UI helpers ─────────────────────────────────────────────────────
