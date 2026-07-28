@@ -5,6 +5,8 @@ import Card from '../ui/Card'
 import Button from '../ui/Button'
 import { useToast } from '../Toast'
 import { recomputeAll } from '../../lib/scorecards'
+import { extractScorecardText } from '../../lib/pdfText'
+import { parseScorecard } from '../../lib/scorecardParser'
 
 const AC = { green:'#2563eb', greenDark:'#1e3a8a', greenBg:'#eff6ff', gold:'#e9a020', white:'#ffffff', gray1:'#f1f5f9', gray2:'#e2e8f0', gray3:'#94a3b8', gray4:'#64748b', gray5:'#334155', dark:'#0f172a', red:'#dc2626', redBg:'#fee2e2', ok:'#16a34a', okBg:'#dcfce7' }
 
@@ -42,16 +44,11 @@ export default function TabScorecards() {
     if (!/\.pdf$/i.test(file.name)) { toast('Please choose a PDF scorecard', 'error'); return }
     setParsing(true); setPreview(null); setFileName(file.name)
     try {
-      const b64 = await new Promise((res, rej) => {
-        const r = new FileReader()
-        r.onload = () => res(String(r.result).split(',')[1])
-        r.onerror = rej
-        r.readAsDataURL(file)
-      })
-      const r = await fetch('/api/parse-scorecard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pdf: b64 }) })
-      const j = await r.json()
-      if (!r.ok || !j.ok) throw new Error(j.error || 'Could not parse this PDF')
-      setPreview(j.parsed)
+      const buf = await file.arrayBuffer()
+      const text = await extractScorecardText(buf)
+      const parsed = parseScorecard(text)
+      if (!parsed.match_date) throw new Error('Could not read the match date — is this a play-cricket scorecard PDF?')
+      setPreview(parsed)
       toast('Scorecard read — review below, then save ✓')
     } catch (err) {
       toast(err.message || 'Failed to read scorecard', 'error')

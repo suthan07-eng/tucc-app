@@ -1,42 +1,12 @@
-// Serverless endpoint: POST { pdf: <base64> } -> parsed scorecard object.
-// Uses pdfjs-dist to extract text WITH x/y positions, reconstructs the column
-// layout (play-cricket scorecards are tabular), then parses batting/bowling/
-// fielding + match meta. Returns data the admin previews and saves.
-
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
+// Pure play-cricket scorecard text parser (browser + node safe, no PDF deps).
+// PDF text extraction lives in pdfText.js; this turns the reconstructed text
+// into a structured match object. Kept in sync with the aggregation in scorecards.js.
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const monthIdx = (m) => MONTHS.findIndex(x => x.toLowerCase() === (m || '').toLowerCase()) + 1
 
 const clean = (n) => (n || '').replace(/[*†]/g, '').replace(/\s+/g, ' ').trim()
 const isOurs = (n) => /dollishill|tamil united/i.test(n || '')
-
-// ── Reconstruct spaced text lines from positioned glyph items ──────────────
-async function extractText(buffer) {
-  const doc = await getDocument({ data: new Uint8Array(buffer), useSystemFonts: true }).promise
-  const lines = []
-  for (let pn = 1; pn <= doc.numPages; pn++) {
-    const page = await doc.getPage(pn)
-    const tc = await page.getTextContent()
-    const rows = {}
-    for (const it of tc.items) {
-      const y = Math.round(it.transform[5])
-      const x = it.transform[4]
-      ;(rows[y] = rows[y] || []).push({ x, s: it.str, w: (it.width || it.str.length * 3) })
-    }
-    for (const y of Object.keys(rows).map(Number).sort((a, b) => b - a)) {
-      const items = rows[y].sort((a, b) => a.x - b.x)
-      let line = '', lastEnd = null
-      for (const it of items) {
-        if (lastEnd !== null && it.x - lastEnd > 2.0) line += ' '
-        line += it.s
-        lastEnd = it.x + it.w
-      }
-      lines.push(line)
-    }
-  }
-  return lines.join('\n').replace(/ /g, ' ').replace(/[  ]/g, ' ')
-}
 
 function parseDate(txt) {
   const m = txt.match(/Date\s+\w+day\s+(\d{1,2})(?:st|nd|rd|th)?\s+(\w+)\s+(\d{4})/)
@@ -171,24 +141,5 @@ export function parseScorecard(txt) {
     their_score: theirScore?.runs ?? null, their_wickets: theirScore?.wkts ?? null, their_overs: theirScore?.overs ?? null,
     our_points: ourPts, their_points: theirPts, venue,
     scorecard: { innings }, our_batting: ourBat, our_bowling: ourBowl, our_fielding: ourField,
-  }
-}
-
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  if (req.method === 'OPTIONS') return res.status(200).end()
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-    const b64 = (body.pdf || '').replace(/^data:.*;base64,/, '')
-    if (!b64) return res.status(400).json({ error: 'No pdf provided' })
-    const buffer = Buffer.from(b64, 'base64')
-    const text = await extractText(buffer)
-    const parsed = parseScorecard(text)
-    if (!parsed.match_date) return res.status(422).json({ error: 'Could not read the match date from this PDF.' })
-    return res.status(200).json({ ok: true, parsed })
-  } catch (e) {
-    console.error('parse-scorecard error:', e.message)
-    return res.status(422).json({ error: e.message || 'Failed to parse scorecard' })
   }
 }
