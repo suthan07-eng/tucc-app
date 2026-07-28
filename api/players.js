@@ -1,13 +1,13 @@
-// Vercel Node.js serverless function — fetches BTCL squad + merges local stats
-import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+// Vercel serverless — BTCL squad list + season stats from the scorecard-derived
+// player_stats table (matched by BTCL PlayerID, then robust name). Replaces the
+// old Excel-file stats source so the profile card, Players page and Stats page
+// all show the SAME scorecard numbers.
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
 const BTCL_URL   = 'https://admin.btcluk.com/api/teamPlayer/286253'
 const PHOTO_BASE = 'https://admin.btcluk.com/players/'
+const SUPABASE_URL = 'https://nrbuweeexnoofitznffo.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnV3ZWVleG5vb2ZpdHpuZmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MDE2NzUsImV4cCI6MjA5NDI3NzY3NX0.rbzJIdXFbj7XrumesA1kFRZ3mp4VJO22QYEMbGuUYFE'
 
-// Hardcoded fallback — synced with BTCL API on 2026-06-20
 const BTCL_FALLBACK = [
   { PlayerID: 1377, Forename: 'Mohamed Nafaz', Surname: 'Mohamed Nawfer', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '4309WhatsApp Image 2022-04-27 at 5.51.37 PM.jpeg', player_type: 'Home', statName: 'Mohamed Nafaz', photoPos: 'center 72%' },
   { PlayerID: 1378, Forename: 'Gobinath', Surname: 'Navaratnam', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '90041.jpg', player_type: 'Home' },
@@ -39,147 +39,98 @@ const BTCL_FALLBACK = [
   { PlayerID: 7571, Forename: 'Himesh Hewage', Surname: 'Ramanayake', AgeGroup: 'Pro', BatStyle: 'Right Hand', BowlStyle: 'Right-arm fast', Photo: '7571.jpeg', player_type: 'Overseas Player' },
 ]
 
-function loadStats() {
+// ── Season stats from the scorecard table ────────────────────────────────────
+const COMMON = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj', 'singh', 'mohamad'])
+const norm = (s) => (s || '').toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim()
+const toks = (s) => new Set(norm(s).split(' ').filter(Boolean))
+const nnum = (v) => (v == null ? null : Number(v))
+
+async function loadScorecardStats() {
   try {
-    const raw = readFileSync(join(__dirname, '../src/data/stats-2026.json'), 'utf8')
-    return JSON.parse(raw)
-  } catch { return { batting: [], bowling: [], fielding: [] } }
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/player_stats?season=eq.2026&select=*`,
+      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } })
+    if (!r.ok) return []
+    return await r.json()
+  } catch { return [] }
 }
 
-// Words too common to be a reliable match signal (appear in many Tamil/Muslim names)
-const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj'])
-
-// Fuzzy name match — tries forename+surname and surname+forename
-// Pass statName=null  → always return null (no stats for this player)
-// Pass statName=string → exact lookup by that name only
-// Pass statName=undefined → fuzzy auto-match
-function matchStat(arr, forename, surname, statName) {
-  if (!arr || !arr.length) return null
-  // Explicit override: null = no stats, string = exact name in stats
-  if (statName === null) return null
-  if (typeof statName === 'string') {
-    return arr.find(p => p.name.toLowerCase().trim() === statName.toLowerCase().trim()) || null
-  }
-  const full1 = `${forename} ${surname}`.toLowerCase().replace(/\s+/g, ' ').trim()
-  const full2 = `${surname} ${forename}`.toLowerCase().replace(/\s+/g, ' ').trim()
-  // 1. Exact full-name match (both orderings)
-  let hit = arr.find(p => {
-    const n = p.name.toLowerCase().trim()
-    return n === full1 || n === full2
-  })
-  if (hit) return hit
-  // 2. Stricter partial — require at least one UNIQUE (non-common) meaningful word
-  //    from EACH of forename AND surname to appear in the stat name.
-  //    Filters out common words like "Mohamed", "Daniel" that cause false positives.
-  const fnWords = forename.toLowerCase().split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
-  const snWords = surname.toLowerCase().split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
-  if (fnWords.length > 0 && snWords.length > 0) {
-    hit = arr.find(p => {
-      const n = p.name.toLowerCase()
-      const fnOk = fnWords.some(w => n.includes(w))
-      const snOk = snWords.some(w => n.includes(w))
-      return fnOk && snOk
-    })
+// Find the player_stats row for a BTCL squad player: exact PlayerID, else name.
+function findStatRow(rows, byId, player) {
+  if (byId[player.PlayerID]) return byId[player.PlayerID]
+  const candidates = [
+    player.displayName,
+    `${player.Forename} ${player.Surname}`,
+    `${player.Surname} ${player.Forename}`,
+  ].filter(Boolean)
+  // exact
+  for (const c of candidates) {
+    const hit = rows.find((r) => norm(r.player_name) === norm(c))
     if (hit) return hit
   }
-  return null
+  // token subset with >=2 overlap incl. a non-common word
+  let best = null, bs = 0
+  for (const c of candidates) {
+    const ct = toks(c)
+    for (const r of rows) {
+      const rt = toks(r.player_name)
+      const inter = [...ct].filter((x) => rt.has(x))
+      const subset = [...ct].every((x) => rt.has(x)) || [...rt].every((x) => ct.has(x))
+      const meaningful = inter.filter((x) => !COMMON.has(x)).length
+      if (subset && inter.length >= 2 && meaningful >= 1 && inter.length > bs) { bs = inter.length; best = r }
+    }
+  }
+  return best
+}
+
+function statsFrom(row) {
+  if (!row) return { matches: null, runs: null, innings: null, highest: null, average: null, wickets: null, economy: null, bestWkt: null, catches: null }
+  const bat = nnum(row.bat_innings) || nnum(row.bat_runs)
+  const bowl = nnum(row.bowl_matches) || nnum(row.bowl_wickets) || nnum(row.bowl_overs)
+  return {
+    matches: nnum(row.bat_matches) || nnum(row.bowl_matches) || null,
+    runs: bat != null ? nnum(row.bat_runs) : null,
+    innings: nnum(row.bat_innings),
+    highest: nnum(row.bat_highest),
+    average: nnum(row.bat_average),
+    wickets: bowl != null ? nnum(row.bowl_wickets) : null,
+    economy: nnum(row.bowl_economy),
+    bestWkt: nnum(row.bowl_best_wickets),
+    catches: nnum(row.field_catches),
+  }
+}
+
+function buildPlayers(squad, statRows) {
+  const byId = {}
+  for (const r of statRows) if (r.btcl_player_id != null) byId[r.btcl_player_id] = r
+  const DISPLAY = {}, dispFromFallback = {}
+  for (const fb of BTCL_FALLBACK) if (fb.displayName) dispFromFallback[fb.PlayerID] = fb.displayName
+  return squad.map((p) => {
+    const displayName = dispFromFallback[p.PlayerID] || p.displayName || `${p.Forename} ${p.Surname}`
+    const name = displayName.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+    const row = findStatRow(statRows, byId, { ...p, displayName })
+    return {
+      id: p.PlayerID, forename: p.Forename, surname: p.Surname, name,
+      ageGroup: p.AgeGroup, batStyle: p.BatStyle || null, bowlStyle: p.BowlStyle || null,
+      playerType: p.player_type,
+      photoUrl: p.Photo ? `${PHOTO_BASE}${encodeURIComponent(p.Photo)}` : null,
+      photoPos: p.photoPos || null,
+      stats: statsFrom(row),
+    }
+  })
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  // 5-min CDN cache + serve stale for 60s while revalidating → squad changes appear within ~5 min
-  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60')
 
-  const stats = loadStats()
-
+  const statRows = await loadScorecardStats()
   try {
-    const r = await fetch(BTCL_URL, {
-      headers: {
-        'Accept': 'application/json',
-        'Origin': 'https://www.btcluk.com',
-        'Referer': 'https://www.btcluk.com/',
-      },
-    })
+    const r = await fetch(BTCL_URL, { headers: { Accept: 'application/json', Origin: 'https://www.btcluk.com', Referer: 'https://www.btcluk.com/' } })
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    const btclPlayers = await r.json()
-
-    // Build a displayName lookup from the fallback overrides so the live API also
-    // uses friendly names for players whose BTCL Forename/Surname are swapped/formal.
-    const DISPLAY_OVERRIDES = {}
-    const STAT_OVERRIDES    = {}
-    for (const fb of BTCL_FALLBACK) {
-      if (fb.displayName) DISPLAY_OVERRIDES[fb.PlayerID] = fb.displayName
-      if (fb.statName !== undefined) STAT_OVERRIDES[fb.PlayerID] = fb.statName
-    }
-
-    const players = btclPlayers.map(p => {
-      const displayName = DISPLAY_OVERRIDES[p.PlayerID] || `${p.Forename} ${p.Surname}`
-      // Normalize casing (some BTCL names are ALL CAPS or all lower)
-      const name = displayName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
-      const statName = p.PlayerID in STAT_OVERRIDES ? STAT_OVERRIDES[p.PlayerID] : undefined
-      const batStat   = matchStat(stats.batting,  p.Forename, p.Surname, statName)
-      const bowlStat  = matchStat(stats.bowling,  p.Forename, p.Surname, statName)
-      const fieldStat = matchStat(stats.fielding, p.Forename, p.Surname, statName)
-
-      return {
-        id:         p.PlayerID,
-        forename:   p.Forename,
-        surname:    p.Surname,
-        name,
-        ageGroup:   p.AgeGroup,
-        batStyle:   p.BatStyle || null,
-        bowlStyle:  p.BowlStyle || null,
-        playerType: p.player_type,
-        photoUrl:   p.Photo ? `${PHOTO_BASE}${encodeURIComponent(p.Photo)}` : null,
-        photoPos:   p.photoPos || null,
-        stats: {
-          matches: batStat?.matches ?? bowlStat?.matches ?? fieldStat?.matches ?? null,
-          runs:    batStat?.runs    ?? null,
-          innings: batStat?.innings ?? null,
-          highest: batStat?.highest ?? null,
-          average: batStat?.average ?? null,
-          wickets: bowlStat?.wickets ?? null,
-          economy: bowlStat?.economy ?? null,
-          bestWkt: bowlStat?.best_wickets ?? null,
-          catches: fieldStat?.catches ?? null,
-        },
-      }
-    })
-
-    return res.status(200).json({ players, source: 'live', updatedAt: new Date().toISOString() })
+    const squad = await r.json()
+    return res.status(200).json({ players: buildPlayers(squad, statRows), source: 'live', updatedAt: new Date().toISOString() })
   } catch (err) {
     console.error('Players API error:', err.message)
-    // Use hardcoded BTCL data + local stats as fallback
-    const players = BTCL_FALLBACK.map(p => {
-      const rawName = p.displayName || `${p.Forename} ${p.Surname}`
-      const name = rawName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
-      const batStat   = matchStat(stats.batting,  p.Forename, p.Surname, p.statName)
-      const bowlStat  = matchStat(stats.bowling,  p.Forename, p.Surname, p.statName)
-      const fieldStat = matchStat(stats.fielding, p.Forename, p.Surname, p.statName)
-      return {
-        id:         p.PlayerID,
-        forename:   p.Forename,
-        surname:    p.Surname,
-        name,
-        ageGroup:   p.AgeGroup,
-        batStyle:   p.BatStyle || null,
-        bowlStyle:  p.BowlStyle || null,
-        playerType: p.player_type,
-        photoUrl:   p.Photo ? `${PHOTO_BASE}${encodeURIComponent(p.Photo)}` : null,
-        photoPos:   p.photoPos || null,
-        stats: {
-          matches: batStat?.matches ?? bowlStat?.matches ?? fieldStat?.matches ?? null,
-          runs:    batStat?.runs    ?? null,
-          innings: batStat?.innings ?? null,
-          highest: batStat?.highest ?? null,
-          average: batStat?.average ?? null,
-          wickets: bowlStat?.wickets ?? null,
-          economy: bowlStat?.economy ?? null,
-          bestWkt: bowlStat?.best_wickets ?? null,
-          catches: fieldStat?.catches ?? null,
-        },
-      }
-    })
-    return res.status(200).json({ players, source: 'fallback', updatedAt: new Date().toISOString() })
+    return res.status(200).json({ players: buildPlayers(BTCL_FALLBACK, statRows), source: 'fallback', updatedAt: new Date().toISOString() })
   }
 }

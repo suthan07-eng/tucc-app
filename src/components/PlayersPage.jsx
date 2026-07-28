@@ -9,18 +9,27 @@ import Nav from './Nav'
 import Footer from './Footer'
 
 // ─── Name-match helper ────────────────────────────────────────────────────────
-const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj'])
+const COMMON_WORDS = new Set(['mohamed', 'daniel', 'anton', 'kumar', 'raj', 'singh', 'mohamad'])
+const _norm = s => (s || '').toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim()
+const _toks = s => _norm(s).split(' ').filter(w => w.length > 2)
+// Match a squad name to a scorecard stat row. Scorecard & BTCL names come from
+// the same source, so we match on token-sets (either ordering / extra middle
+// names), requiring 2+ shared tokens incl. a non-common one to avoid false hits.
 function matchStat(arr, name) {
   if (!arr?.length || !name) return null
-  const lower = name.toLowerCase().trim()
-  let hit = arr.find(p => p.name.toLowerCase().trim() === lower)
+  const target = _norm(name)
+  let hit = arr.find(p => _norm(p.name) === target)
   if (hit) return hit
-  const words = lower.split(' ').filter(w => w.length > 2 && !COMMON_WORDS.has(w))
-  if (words.length >= 2) {
-    hit = arr.find(p => { const n = p.name.toLowerCase(); return words.every(w => n.includes(w)) })
-    if (hit) return hit
+  const nt = new Set(_toks(name))
+  let best = null, bs = 0
+  for (const p of arr) {
+    const pt = new Set(_toks(p.name))
+    const inter = [...nt].filter(x => pt.has(x))
+    const subset = [...nt].every(x => pt.has(x)) || [...pt].every(x => nt.has(x))
+    const meaningful = inter.filter(x => !COMMON_WORDS.has(x)).length
+    if (subset && inter.length >= 2 && meaningful >= 1 && inter.length > bs) { bs = inter.length; best = p }
   }
-  return null
+  return best
 }
 
 // ─── Score helpers ────────────────────────────────────────────────────────────
