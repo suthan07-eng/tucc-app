@@ -1,48 +1,20 @@
 // Vercel Node.js serverless function — scrapes BTCL fixtures from play-cricket
 
 const BASE_URL = 'https://dtucc.play-cricket.com'
-const FIXTURES_URL = `${BASE_URL}/Matches?tab=Fixture`
+// play-cricket's Fixtures tab defaults to the CURRENT calendar month. Near the
+// end of a month (or once this month's games are done) that view is empty, so we
+// must query each month explicitly and merge. Build a per-month fixtures URL.
+const monthUrl = (month, year) =>
+  `${BASE_URL}/Matches?tab=Fixture&fixture_month=${month}&fixture_year=${year}`
 
 const FALLBACK = [
   {
-    date: 'Sunday 28 June 2026', time: '13:00',
-    venue: 'North Mymms Cricket Club Ground, Home Farm, Welham Green, North Mymms Park, Brookmans Park, Hertfordshire AL9 7TR',
-    team1: 'Stanly CC - A',
-    logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16364/7E8264ED-7826-4974-9CEF-2D36D2116E39.jpeg',
+    date: 'Sunday 02 August 2026', time: '13:00',
+    venue: 'Stanmore Common',
+    team1: 'West 3 CC - 1st XI',
+    logo1: '',
     team2: 'Dollishill Tamil United CC - Knights',
     logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
-  },
-  {
-    date: 'Sunday 05 July 2026', time: '13:00',
-    venue: 'Harrow Town Cricket Club, Rayners Lane, Harrow HA2 9TY',
-    team1: 'Dollishill Tamil United CC - Knights',
-    logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
-    team2: 'Redbridge Lankians Sports & Social Club CC - 1st XI',
-    logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/8492/logo.jpg',
-  },
-  {
-    date: 'Sunday 12 July 2026', time: '13:00',
-    venue: 'Tentelow Cricket Club, Tentelow Lane, Osterley, Middlesex, UB2 4LW',
-    team1: 'Northerns CC - A',
-    logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
-    team2: 'Dollishill Tamil United CC - Knights',
-    logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
-  },
-  {
-    date: 'Sunday 19 July 2026', time: '13:00',
-    venue: 'Orpington Cricket Club',
-    team1: 'Lewisham CC - A',
-    logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/11733/lcc_logo1.JPG',
-    team2: 'Dollishill Tamil United CC - Knights',
-    logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
-  },
-  {
-    date: 'Sunday 26 July 2026', time: '13:00',
-    venue: 'Harrow Town Cricket Club, Rayners Lane, Harrow HA2 9TY',
-    team1: 'Dollishill Tamil United CC - Knights',
-    logo1: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/15368/vector.png',
-    team2: 'Northerns CC - B',
-    logo2: 'https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/website_configuration/badge_image/16370/IMG_2013.jpeg',
   },
 ]
 
@@ -98,15 +70,43 @@ function parseFixtures(html) {
   return fixtures
 }
 
+// Fetch + parse the fixtures for one specific month/year (empty array on failure)
+async function fetchMonth(month, year) {
+  try {
+    const response = await fetch(monthUrl(month, year), { headers: HEADERS })
+    if (!response.ok) return []
+    return parseFixtures(await response.text())
+  } catch {
+    return []
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=300')
 
   try {
-    const response = await fetch(FIXTURES_URL, { headers: HEADERS })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const html = await response.text()
-    const fixtures = parseFixtures(html)
+    // Query the current month plus the next three, so upcoming fixtures are found
+    // even at month-end when the current month has no games left.
+    const now = new Date()
+    const months = [0, 1, 2, 3].map((offset) => {
+      const d = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+      return { month: d.getMonth() + 1, year: d.getFullYear() }
+    })
+
+    const results = await Promise.all(months.map((m) => fetchMonth(m.month, m.year)))
+
+    // Merge + de-duplicate by date+teams (a fixture only ever appears in one month)
+    const seen = new Set()
+    const fixtures = []
+    for (const list of results) {
+      for (const fx of list) {
+        const key = `${fx.date}|${fx.team1}|${fx.team2}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        fixtures.push(fx)
+      }
+    }
 
     if (fixtures.length > 0) {
       return res.status(200).json({ fixtures, updatedAt: new Date().toISOString(), source: 'live' })

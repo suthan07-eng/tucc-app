@@ -27,6 +27,7 @@ export default function TabMatch() {
   const [importing, setImporting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [pendingDelete, setPendingDelete] = useState(false)
+  const [rowConfirmId, setRowConfirmId] = useState(null) // per-row delete confirmation
 
   useEffect(() => { loadMatches() }, [])
 
@@ -132,29 +133,32 @@ export default function TabMatch() {
     loadMatches(selectedId)
   }
 
-  async function deleteMatch() {
+  async function deleteMatch(id = selectedId) {
+    if (!id) return
     setDeleting(true)
-    const wasActive = allMatches.find((x) => x.id === selectedId)?.is_active ?? false
+    const wasActive = allMatches.find((x) => x.id === id)?.is_active ?? false
 
     // 1. Delete all availability records for this match
-    await supabase.from('availability').delete().eq('match_id', selectedId)
+    await supabase.from('availability').delete().eq('match_id', id)
 
     // 2. Delete the match itself — use .select() so a silent RLS block is detectable
     const { data: deleted, error } = await supabase
       .from('matches')
       .delete()
-      .eq('id', selectedId)
+      .eq('id', id)
       .select()
     if (error) {
       toast(error.message || 'Delete failed', 'error')
       setDeleting(false)
       setPendingDelete(false)
+      setRowConfirmId(null)
       return
     }
     if (!deleted || deleted.length === 0) {
       toast('Delete was blocked by the database — no rows removed', 'error')
       setDeleting(false)
       setPendingDelete(false)
+      setRowConfirmId(null)
       return
     }
 
@@ -171,9 +175,12 @@ export default function TabMatch() {
       remaining[0] = { ...remaining[0], is_active: true }
     }
 
-    // 5. Update UI state
+    // 5. Update UI state — keep the current selection if it still exists
     setAllMatches(remaining)
-    if (remaining.length > 0) {
+    const stillSelected = remaining.find((m) => m.id === selectedId)
+    if (stillSelected) {
+      setForm({ ...EMPTY, ...stillSelected })
+    } else if (remaining.length > 0) {
       setSelectedId(remaining[0].id)
       setForm({ ...EMPTY, ...remaining[0] })
     } else {
@@ -184,6 +191,7 @@ export default function TabMatch() {
     toast('Match deleted successfully')
     setDeleting(false)
     setPendingDelete(false)
+    setRowConfirmId(null)
   }
 
   if (loading) {
@@ -257,6 +265,42 @@ export default function TabMatch() {
               {m.is_active && (
                 <span style={{ background: AC.greenBg, color: AC.green, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
                   Active
+                </span>
+              )}
+
+              {/* Per-row delete: ✕ → inline confirm (✓ / ✗) */}
+              {rowConfirmId === m.id ? (
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+                >
+                  <span style={{ fontFamily: FONT, fontSize: 11.5, fontWeight: 700, color: AC.red }}>Delete?</span>
+                  <span
+                    role="button"
+                    aria-label="Confirm delete"
+                    onClick={() => deleteMatch(m.id)}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 7, background: AC.red, color: '#fff', fontSize: 13, fontWeight: 800, cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.6 : 1 }}
+                  >
+                    ✓
+                  </span>
+                  <span
+                    role="button"
+                    aria-label="Cancel delete"
+                    onClick={() => setRowConfirmId(null)}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 7, background: AC.gray2, color: AC.gray5, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}
+                  >
+                    ✕
+                  </span>
+                </span>
+              ) : (
+                <span
+                  role="button"
+                  aria-label="Delete match"
+                  title="Delete this match"
+                  onClick={(e) => { e.stopPropagation(); setRowConfirmId(m.id) }}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, background: AC.white, border: `1.5px solid ${AC.gray2}`, color: AC.gray4, fontSize: 14, cursor: 'pointer', flexShrink: 0 }}
+                >
+                  🗑
                 </span>
               )}
             </motion.button>
