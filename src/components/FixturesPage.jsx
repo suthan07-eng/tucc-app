@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Clock, ArrowLeft, ExternalLink, RotateCw, Home, Plane, Calendar, Zap, ChevronRight } from 'lucide-react'
 import { FONT, MAX_WIDTH } from '../constants'
+import { getLeagueTable, getFixtures } from '../lib/btcl'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -444,8 +445,7 @@ export default function FixturesPage() {
   const [teamStats, setTeamStats]   = useState(null)
 
   useEffect(() => {
-    fetch('/api/league-table')
-      .then(r => r.json())
+    getLeagueTable()
       .then(d => {
         const ourRow = (d.rows || d.teams || []).find(t => isOursLeague(t.team))
         if (ourRow) setTeamStats(ourRow)
@@ -453,10 +453,9 @@ export default function FixturesPage() {
       .catch(() => {})
   }, [])
 
-  const load = (bust = false) => {
+  const load = () => {
     setRefreshing(true)
-    const qs = bust ? `?t=${Date.now()}` : ''
-    fetch(`/api/fixtures${qs}`).then(r => r.json()).then(fix => {
+    getFixtures().then(fix => {
       setFixtures(fix.fixtures || [])
       setSource(fix.source)
       setLoading(false)

@@ -6,6 +6,7 @@ import {
   TrendingUp, TrendingDown, Minus,
 } from 'lucide-react'
 import { C, FONT, MAX_WIDTH } from '../constants'
+import { getLeagueTable } from '../lib/btcl'
 import Nav from './Nav'
 import Footer from './Footer'
 
@@ -426,8 +427,7 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    fetch('/api/league-table')
-      .then(r => r.json())
+    getLeagueTable()
       .then(d => {
         const ourRow = (d.rows || d.teams || []).find(t => isOurs(t.team))
         if (ourRow) setTeamStats(ourRow)

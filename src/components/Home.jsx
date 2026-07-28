@@ -11,6 +11,7 @@ import Button from './ui/Button'
 import Badge from './ui/Badge'
 import { Skeleton } from './ui/Loader'
 import LeagueTable from './LeagueTable'
+import { getLeagueTable, getFixtures } from '../lib/btcl'
 import PlayerDashboard from './PlayerDashboard'
 import PlayerOfWeek from './PlayerOfWeek'
 
@@ -176,8 +177,7 @@ function NextFixtureCard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/fixtures')
-      .then(r => r.json())
+    getFixtures()
       .then(d => {
         const today = new Date(); today.setHours(0, 0, 0, 0)
         const next = (d.fixtures || []).find(f => {
@@ -384,8 +384,7 @@ function SeasonSnapshot() {
   const [row, setRow] = useState(null)
 
   useEffect(() => {
-    fetch('/api/league-table')
-      .then(r => r.json())
+    getLeagueTable()
       .then(d => {
         const found = (d.rows || []).find(r =>
           r.team?.toLowerCase().includes('tamil') ||
@@ -757,8 +756,7 @@ export default function Home() {
 
     // Also fetch next fixture from BTCL — strictly AFTER today (today's match is finished)
     try {
-      const r = await fetch('/api/fixtures')
-      const d = await r.json()
+      const d = await getFixtures()
       const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0); tomorrow.setDate(tomorrow.getDate() + 1)
       const next = (d.fixtures || []).filter(f => {
         if (!isOursFix(f.team1) && !isOursFix(f.team2)) return false

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import { FONT } from '../constants'
+import { getFixtures } from '../lib/btcl'
 import { Eye, EyeOff, Mail, Lock, User, Phone, ChevronRight, MapPin, Clock, Calendar, Home, Plane, ExternalLink } from 'lucide-react'
 
 const EASE = [0.16, 1, 0.3, 1]
@@ -82,7 +83,7 @@ function NextMatchCard({ nav }) {
   const [loadingFix, setLoadingFix] = useState(true)
 
   useEffect(() => {
-    fetch('/api/fixtures').then(r=>r.json()).then(data => {
+    getFixtures().then(data => {
       const today = new Date(); today.setHours(0,0,0,0)
       const list = (data.fixtures||[])
       const next = list.find(f => {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { C, FONT } from '../constants'
+import { getLeagueTable } from '../lib/btcl'
 
 const EASE_OUT = [0.23, 1, 0.32, 1]
 
@@ -59,8 +60,7 @@ export default function LeagueTable() {
   const [source, setSource]       = useState(null)
 
   useEffect(() => {
-    fetch('/api/league-table')
-      .then(r => r.json())
+    getLeagueTable()
       .then(d => {
         setTeams(d.teams || [])
         setUpdatedAt(d.updatedAt)

@@ -6,6 +6,7 @@ import { sendAvailabilityConfirmation } from '../emailService'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import Nav from './Nav'
 import Footer from './Footer'
+import { getFixtures } from '../lib/btcl'
 import Button from './ui/Button'
 import Card from './ui/Card'
 import Field, { Input, Textarea, Select } from './ui/Field'
@@ -123,8 +124,7 @@ export default function Availability() {
 
       // Auto-fetch next fixture from BTCL
       try {
-        const r = await fetch('/api/fixtures')
-        const d = await r.json()
+        const d = await getFixtures()
         const OUR = ['Tamil United','TUCC','Dollishill Tamil United','DTU']
         const isOurs = n => OUR.some(t => (n||'').toLowerCase().includes(t.toLowerCase()))
         const parseD = str => { const p = (str||'').match(/(\d{1,2})\s+(\w+)\s+(\d{4})/); return p ? new Date(`${p[2]} ${p[1]}, ${p[3]}`) : null }

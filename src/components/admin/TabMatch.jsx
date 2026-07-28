@@ -7,6 +7,7 @@ import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Field, { Input, Textarea, Select } from '../ui/Field'
 import { useToast } from '../Toast'
+import { getFixtures } from '../../lib/btcl'
 
 const EMPTY = {
   date: '', time: '', venue: '', address: '',
@@ -88,8 +89,7 @@ export default function TabMatch() {
   async function importFromBTCL() {
     setImporting(true)
     try {
-      const r = await fetch('/api/fixtures')
-      const data = await r.json()
+      const data = await getFixtures()
       const today = new Date(); today.setHours(0, 0, 0, 0)
       const fixtures = (data.fixtures || []).filter(f => {
         if (!isOurs(f.team1) && !isOurs(f.team2)) return false

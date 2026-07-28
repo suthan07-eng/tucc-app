@@ -5,6 +5,7 @@ import { supabase } from '../../supabase'
 import PublicNav from '../PublicNav'
 import PublicFooter from '../PublicFooter'
 import { SITE } from '../siteConfig'
+import { getLeagueTable, getFixtures } from '../../lib/btcl'
 
 const STATS = [
   { label: 'Est.', value: '2010', suffix: '' },
@@ -134,8 +135,7 @@ function PublicNextMatch() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/fixtures')
-      .then(r => r.json())
+    getFixtures()
       .then(d => {
         const today = new Date(); today.setHours(0,0,0,0)
         const next = (d.fixtures || []).find(f => {
@@ -360,14 +360,14 @@ const HERO_WORDS = [
 // Embedded fallback so the table always renders (live API used when deployed on Vercel).
 // Keep this in sync with the latest BTCL standings.
 const LEAGUE_FALLBACK = [
-  { pos: 1, team: 'Stanly CC - A',                                        p: '7', w: '7', l: '0', nrr: '3.22',  pts: '140' },
-  { pos: 2, team: 'Lewisham CC - A',                                      p: '7', w: '5', l: '1', nrr: '1.97',  pts: '117' },
-  { pos: 3, team: 'Northerns CC - A',                                     p: '7', w: '4', l: '3', nrr: '1.73',  pts: '98'  },
-  { pos: 4, team: 'Northerns CC - B',                                     p: '7', w: '3', l: '3', nrr: '-0.17', pts: '90'  },
-  { pos: 5, team: 'West 3 CC - 1st XI',                                   p: '7', w: '3', l: '4', nrr: '-1.28', pts: '87'  },
-  { pos: 6, team: 'Redbridge Lankians Sports & Social Club CC - 1st XI',  p: '7', w: '2', l: '5', nrr: '-1.79', pts: '73'  },
-  { pos: 7, team: 'Kent United CC - 1st XI',                              p: '7', w: '2', l: '4', nrr: '-1.09', pts: '69'  },
-  { pos: 8, team: 'Dollishill Tamil United CC - Knights',                 p: '7', w: '0', l: '6', nrr: '-2.36', pts: '51'  },
+  { pos: 1, team: 'Stanly CC - A',                                        p: '13', w: '12', l: '1',  nrr: '2.5',   pts: '248' },
+  { pos: 2, team: 'Lewisham CC - A',                                      p: '13', w: '10', l: '2',  nrr: '2.09',  pts: '223' },
+  { pos: 3, team: 'Northerns CC - A',                                     p: '13', w: '10', l: '3',  nrr: '2.09',  pts: '221' },
+  { pos: 4, team: 'West 3 CC - 1st XI',                                   p: '13', w: '5',  l: '8',  nrr: '-0.65', pts: '158' },
+  { pos: 5, team: 'Northerns CC - B',                                     p: '13', w: '5',  l: '7',  nrr: '-0.98', pts: '137' },
+  { pos: 6, team: 'Redbridge Lankians Sports & Social Club CC - 1st XI',  p: '13', w: '4',  l: '9',  nrr: '-1.47', pts: '135' },
+  { pos: 7, team: 'Kent United CC - 1st XI',                              p: '13', w: '3',  l: '9',  nrr: '-1.35', pts: '129' },
+  { pos: 8, team: 'Dollishill Tamil United CC - Knights',                 p: '13', w: '1',  l: '11', nrr: '-2.51', pts: '101' },
 ]
 
 const OUR_TEAM_KEYWORDS = ['dollishill', 'tamil united', 'tucc', 'dtu']
@@ -398,8 +398,7 @@ function LeagueSection() {
   const [meta, setMeta]   = useState({})
 
   useEffect(() => {
-    fetch('/api/league-table')
-      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json(); })
+    getLeagueTable()
       .then(d => {
         if (d.teams && d.teams.length) {
           setTeams(d.teams)
