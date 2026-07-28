@@ -11,6 +11,7 @@ import TabMatch from './TabMatch'
 import TabTeamSelection from './TabTeamSelection'
 import TabMessages from './TabMessages'
 import TabStats from './TabStats'
+import TabScorecards from './TabScorecards'
 import TabSettings from './TabSettings'
 import TabPOTW from './TabPOTW'
 import TabActivity from './TabActivity'
@@ -26,6 +27,7 @@ const TABS = [
   { id: 'team',         label: '🎽 Team' },
   { id: 'messages',     label: '💬 Messages' },
   { id: 'stats',        label: '📊 Stats' },
+  { id: 'scorecards',   label: '📄 Scorecards' },
   { id: 'potw',         label: '🏆 POTW' },
   { id: 'settings',     label: '⚙️ Settings' },
   { id: 'analyse',      label: '🔍 Analyse' },
@@ -136,6 +138,7 @@ export default function AdminDashboard() {
             {tab === 'team'         && <TabTeamSelection />}
             {tab === 'messages'     && <TabMessages />}
             {tab === 'stats'        && <TabStats />}
+            {tab === 'scorecards'  && <TabScorecards />}
             {tab === 'potw'        && <TabPOTW />}
             {tab === 'settings'    && <TabSettings />}
             {tab === 'analyse'    && <TabAnalyse />}
