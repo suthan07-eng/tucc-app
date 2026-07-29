@@ -287,10 +287,19 @@ function NextMatchCard({ nav }) {
 
 // ── Input Field ────────────────────────────────────────────────
 function Field({ icon: Icon, type, placeholder, value, onChange, rightEl, autoComplete }) {
+  const [focused, setFocused] = useState(false)
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:12, background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', borderRadius:14, padding:'14px 16px' }}>
-      <Icon size={16} color="rgba(255,255,255,.45)" strokeWidth={2}/>
+    <div style={{
+      display:'flex', alignItems:'center', gap:12,
+      background: focused ? 'rgba(34,211,238,.06)' : 'rgba(255,255,255,.07)',
+      border:`1px solid ${focused ? 'rgba(34,211,238,.6)' : 'rgba(255,255,255,.12)'}`,
+      borderRadius:14, padding:'14px 16px',
+      boxShadow: focused ? '0 0 0 3px rgba(34,211,238,.16), 0 8px 24px -8px rgba(34,211,238,.4)' : 'none',
+      transition:'border-color .2s ease, box-shadow .25s ease, background .2s ease',
+    }}>
+      <Icon size={16} color={focused ? '#22d3ee' : 'rgba(255,255,255,.45)'} strokeWidth={2}/>
       <input type={type} placeholder={placeholder} value={value} onChange={onChange} autoComplete={autoComplete}
+        onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
         style={{ flex:1, background:'none', border:'none', outline:'none', color:'#fff', fontSize:14, fontFamily:FONT }}/>
       {rightEl}
     </div>
