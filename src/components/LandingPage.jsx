@@ -136,14 +136,14 @@ function NextMatchCard({ nav }) {
       transition={{ delay:.5, duration:.6, ease:EASE }}
       style={{
         width:'100%', borderRadius:24, overflow:'hidden', marginBottom:12,
-        background:'linear-gradient(145deg,#060d2e 0%,#0f1e5a 35%,#1a1060 65%,#0a0730 100%)',
+        background:'radial-gradient(130% 90% at 12% -10%, rgba(34,211,238,0.10), transparent 55%), linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
         boxShadow:'0 20px 60px rgba(15,30,90,.7), 0 0 0 1px rgba(255,255,255,.09)',
         position:'relative',
       }}
     >
       {/* Animated orbs */}
       <motion.div animate={{ scale:[1,1.3,1], opacity:[.22,.06,.22] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
-        style={{ position:'absolute', top:-40, right:-40, width:180, height:180, borderRadius:'50%', background:'rgba(99,102,241,.3)', pointerEvents:'none' }}/>
+        style={{ position:'absolute', top:-40, right:-40, width:180, height:180, borderRadius:'50%', background:'rgba(34,211,238,.16)', pointerEvents:'none' }}/>
       <motion.div animate={{ scale:[1,1.2,1], opacity:[.15,.04,.15] }} transition={{ duration:8, repeat:Infinity, ease:'easeInOut', delay:2 }}
         style={{ position:'absolute', bottom:-30, left:-30, width:140, height:140, borderRadius:'50%', background:'rgba(233,160,32,.22)', pointerEvents:'none' }}/>
 
@@ -345,16 +345,16 @@ export default function LandingPage() {
   return (
     <div style={{
       minHeight:'100vh', width:'100%',
-      background:'linear-gradient(160deg, #020818 0%, #0f1f5c 28%, #1e1b4b 60%, #0d0a2e 100%)',
+      background:'linear-gradient(160deg, #0a0e18 0%, #0d1220 45%, #090c16 100%)',
       display:'flex', flexDirection:'column', alignItems:'center',
       position:'relative', overflow:'hidden', fontFamily:FONT,
     }}>
-      {/* Animated blobs */}
+      {/* Animated blobs — subtle cyan/teal to match the portal */}
       {[
-        { w:380,h:380,top:'-100px',left:'-100px',color:'rgba(37,99,235,.55)' },
-        { w:300,h:300,bottom:'60px',right:'-80px',color:'rgba(109,40,217,.45)' },
-        { w:200,h:200,top:'40%',left:'60%',color:'rgba(233,160,32,.12)' },
-        { w:220,h:220,top:'20%',right:'-40px',color:'rgba(99,102,241,.3)' },
+        { w:380,h:380,top:'-100px',left:'-100px',color:'rgba(34,211,238,.16)' },
+        { w:300,h:300,bottom:'60px',right:'-80px',color:'rgba(45,212,191,.12)' },
+        { w:200,h:200,top:'40%',left:'60%',color:'rgba(233,160,32,.07)' },
+        { w:220,h:220,top:'20%',right:'-40px',color:'rgba(34,211,238,.10)' },
       ].map((b,i)=>(
         <motion.div key={i}
           animate={{ scale:[1,1.14,1], rotate:[0,10,0] }}
@@ -374,7 +374,7 @@ export default function LandingPage() {
       <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px)', backgroundSize:'40px 40px' }}/>
 
       {/* Premium radial spotlight from top */}
-      <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:700, height:500, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 0%, rgba(37,99,235,.35) 0%, transparent 70%)', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:700, height:500, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 0%, rgba(34,211,238,.16) 0%, transparent 70%)', pointerEvents:'none' }}/>
 
       {/* Gold vignette bottom */}
       <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:500, height:300, borderRadius:'50%', background:'radial-gradient(ellipse at 50% 100%, rgba(233,160,32,.08) 0%, transparent 70%)', pointerEvents:'none' }}/>
@@ -429,11 +429,11 @@ export default function LandingPage() {
           transition={{ delay:.65, duration:.6, ease:EASE }}
           style={{
             width:'100%', marginTop:4,
-            background:'rgba(255,255,255,.055)',
-            backdropFilter:'blur(28px)',
-            border:'1px solid rgba(255,255,255,.11)',
+            background:'radial-gradient(130% 90% at 12% -10%, rgba(34,211,238,0.10), transparent 55%), linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
+            backdropFilter:'blur(28px) saturate(160%)', WebkitBackdropFilter:'blur(28px) saturate(160%)',
+            border:'1px solid rgba(255,255,255,.14)',
             borderRadius:26, padding:'26px 22px',
-            boxShadow:'0 40px 80px rgba(0,0,0,.45)',
+            boxShadow:'0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,0.18)',
           }}
         >
           {/* Tab — hide when in forgot mode */}
