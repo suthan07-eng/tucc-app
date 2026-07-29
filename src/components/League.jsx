@@ -45,7 +45,7 @@ export default function League() {
       <Nav />
 
       {/* Header */}
-      <div style={{ background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', padding: '24px 20px' }}>
+      <div style={{ background: 'radial-gradient(130% 90% at 12% -10%, rgba(45,212,191,0.07), transparent 55%), linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', padding: '24px 20px' }}>
         <motion.div variants={staggerList} initial="hidden" animate="visible" style={{ maxWidth: MAX_WIDTH, margin: '0 auto' }}>
           <motion.button
             variants={fadeUp}
@@ -114,7 +114,7 @@ export default function League() {
             style={{
               borderRadius: 22,
               overflow: 'hidden',
-              background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
+              background: 'radial-gradient(130% 90% at 12% -10%, rgba(45,212,191,0.07), transparent 55%), linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
               border: '1px solid rgba(255,255,255,0.18)',
               boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
               backdropFilter: 'blur(20px) saturate(160%)',
@@ -170,7 +170,7 @@ function FallbackCard() {
   return (
     <div
       style={{
-        background: 'linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
+        background: 'radial-gradient(130% 90% at 12% -10%, rgba(45,212,191,0.07), transparent 55%), linear-gradient(160deg, rgba(24,27,38,0.92), rgba(13,15,22,0.94))',
         border: '1px solid rgba(255,255,255,0.18)',
         borderRadius: 22,
         boxShadow: '0 26px 64px -20px rgba(37,40,120,0.62), 0 0 40px -16px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.26)',
