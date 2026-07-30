@@ -10,6 +10,7 @@ import Nav from './Nav'
 import { C, FONT, MAX_WIDTH } from '../constants'
 import statsJson from '../data/stats-2026.json'
 import { loadMergedStats } from '../utils/statsOverlay'
+import { generateScoutingPDF } from '../lib/scoutingPdf'
 
 const EASE = [0.23, 1, 0.32, 1]
 
@@ -807,6 +808,18 @@ export default function AnalysePage() {
   const [arAnalysis,   setArAnalysis]   = useState([])
 
   const [activeTab, setActiveTab] = useState('batting')
+  const [downloading, setDownloading] = useState(false)
+
+  async function downloadPDF(opp) {
+    setDownloading(true)
+    try {
+      await generateScoutingPDF({ opp, batAnalysis, bowlAnalysis, arAnalysis, batStats, bowlStats })
+    } catch (e) {
+      console.error('PDF export failed:', e)
+      alert('Could not generate the PDF. Please try again.')
+    }
+    setDownloading(false)
+  }
   const [ourStats, setOurStats] = useState(statsJson)
 
   // 0. Load our team's stats (Excel + admin overlay) for the comparison tab
@@ -1015,6 +1028,25 @@ export default function AnalysePage() {
               ))}
             </select>
           </div>
+
+          {/* Download scouting report as PDF (share on WhatsApp etc.) */}
+          {selectedOpp && !loadingData && (batAnalysis.length > 0 || batStats.length > 0) && (
+            <motion.button
+              onClick={() => downloadPDF(selectedOpp)}
+              disabled={downloading}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: downloading ? 'rgba(255,255,255,0.12)' : 'linear-gradient(135deg,#e9a020,#f59e0b)',
+                color: downloading ? 'rgba(255,255,255,0.6)' : '#1a1206',
+                border: 'none', borderRadius: 12, padding: '11px 18px',
+                fontFamily: FONT, fontSize: 13.5, fontWeight: 800, cursor: downloading ? 'wait' : 'pointer',
+                boxShadow: downloading ? 'none' : '0 8px 22px -8px rgba(233,160,32,0.6)',
+              }}
+            >
+              {downloading ? '⏳ Preparing PDF…' : '📄 Download PDF report'}
+            </motion.button>
+          )}
         </motion.div>
 
         {/* ── Loading skeleton ── */}
